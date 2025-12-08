@@ -1,0 +1,314 @@
+<!DOCTYPE HTML>
+<!--
+	Dimension by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+
+<head>
+	<title>Md Fayek Mubarrat Jamee | Portfolio</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<link rel="stylesheet" href="assets/css/main.css" />
+	<noscript>
+		<link rel="stylesheet" href="assets/css/noscript.css" />
+	</noscript>
+
+	<!-- CUSTOM CSS TO MATCH YOUR SCREENSHOT LAYOUT -->
+	<style>
+		/* Tech Stack Pills */
+		.tech-badge {
+			display: inline-block;
+			background: rgba(255, 255, 255, 0.15);
+			border: 1px solid rgba(255, 255, 255, 0.3);
+			color: #ffffff;
+			padding: 4px 12px;
+			border-radius: 15px;
+			font-size: 0.7em;
+			font-weight: 600;
+			margin: 0 4px 8px 0;
+			letter-spacing: 1px;
+			text-transform: uppercase;
+		}
+
+		/* Metric Rows (The "Detection Accuracy: 96%" look) */
+		.metric-container {
+			background: rgba(0, 0, 0, 0.2);
+			border-radius: 8px;
+			padding: 15px;
+			margin: 1.5rem 0;
+			border-left: 3px solid #ffffff;
+		}
+
+		.metric-row {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+			padding: 8px 0;
+			font-size: 0.9em;
+		}
+
+		.metric-row:last-child {
+			border-bottom: none;
+		}
+
+		.metric-label {
+			color: #b2bec3;
+			font-weight: 400;
+		}
+
+		.metric-value {
+			color: #55efc4;
+			/* Bright Green/Teal for stats */
+			font-weight: 700;
+			text-align: right;
+		}
+
+		/* Impact Statement */
+		.impact-box {
+			margin-top: 1rem;
+			font-size: 0.9em;
+			font-style: italic;
+			color: #dfe6e9;
+			border-top: 1px dashed rgba(255, 255, 255, 0.2);
+			padding-top: 10px;
+		}
+
+		/* Profile specific formatting */
+		.story-highlight {
+			color: #74b9ff;
+			/* Light blue for emphasis */
+			font-weight: bold;
+		}
+	</style>
+</head>
+
+<body class="is-preload">
+
+	<!-- Wrapper -->
+	<div id="wrapper">
+
+		<!-- Header -->
+		<header id="header">
+			<div class="logo">
+				<span class="icon fa-microscope"></span>
+			</div>
+			<div class="content">
+				<div class="inner">
+					<h1>Md Fayek Mubarrat Jamee</h1>
+					<p>Engineering Assistant Manager (EY) & <strong>Computer Vision Researcher</strong>.</p>
+				</div>
+			</div>
+			<nav>
+				<ul>
+					<li><a href="#about">About Me</a></li>
+					<li><a href="#projects">Research</a></li>
+					<li><a href="#experience">Experience</a></li>
+					<li><a href="#contact">Contact</a></li>
+				</ul>
+			</nav>
+		</header>
+
+		<!-- Main -->
+		<div id="main">
+
+			<!-- About Me -->
+			<article id="about">
+				<h2 class="major">About Me</h2>
+				<span class="image main"><img src="images/profile.jpg" alt="Fayek Profile" /></span>
+
+				<p>Hi, I'm <strong>Fayek</strong>. Currently, I serve as an <strong>Assistant Manager (Technical Lead)
+						at Ernst & Young</strong>. However, I have discovered a new calling: <span
+						class="story-highlight">applying AI to save lives, not just optimize business processes.</span>
+				</p>
+
+				<p>After five years building enterprise systems, I witnessed Dhaka's 2023 dengue outbreak claim over
+					<strong>1,600 lives</strong>. Clinics ran out of diagnostic supplies. Patients went untreated. I
+					realized I needed to use my engineering skills for something more critical.
+				</p>
+
+				<p>So, alongside my corporate responsibilities, I dedicated myself to computer vision. I built
+					<strong>PlateletVision</strong>—a dengue diagnostic system achieving <strong>96.56% detection
+						accuracy</strong>. I validated the results mathematically, proving that rigorous engineering
+					discipline can produce research-grade medical tools.
+				</p>
+
+				<p> My goal is to bridge the gap between robust software architecture and advanced medical
+					imaging to build resilient diagnostic systems for resource-limited settings.</p>
+
+				<ul class="actions">
+					<li><a href="#projects" class="button primary icon solid fa-flask">See My Research</a></li>
+					<li><a href="https://github.com/fmubarrat" target="_blank"
+							class="button icon brands fa-github">GitHub Profile</a></li>
+				</ul>
+			</article>
+
+			<!-- Research Projects -->
+			<article id="projects">
+				<h2 class="major">Research Projects</h2>
+				<p>My transition from Enterprise Engineering to Applied Research.</p>
+
+				<!-- PROJECT 1: PLATELETVISION -->
+				<hr />
+				<h3>🩸 PlateletVision - Dengue Analyzer</h3>
+				<p>AI-powered platelet morphometry system for dengue recovery prediction using microscopy images. Novel
+					RBC-based auto-calibration eliminates manual microscope settings.</p>
+
+				<!-- Tech Stack Badges -->
+				<div>
+					<span class="tech-badge">YOLOv8</span>
+					<span class="tech-badge">OpenCV</span>
+					<span class="tech-badge">Medical Imaging</span>
+					<span class="tech-badge">Python</span>
+					<span class="tech-badge">Flask</span>
+					<span class="tech-badge">Angular</span>
+				</div>
+
+				<!-- Metrics Container -->
+				<div class="metric-container">
+					<div class="metric-row">
+						<span class="metric-label">Detection Accuracy:</span>
+						<span class="metric-value">96.56% mAP@50</span>
+					</div>
+					<div class="metric-row">
+						<span class="metric-label">Morphometric Validation:</span>
+						<span class="metric-value">7.01 fL MPV<br><span
+								style="font-size:0.8em; font-weight:normal; color:#aaa">(clinical: 7.2-11.7
+								fL)</span></span>
+					</div>
+					<div class="metric-row">
+						<span class="metric-label">Processing Speed:</span>
+						<span class="metric-value">84ms per image (Real-time)</span>
+					</div>
+					<div class="metric-row">
+						<span class="metric-label">Dataset:</span>
+						<span class="metric-value">BCCD (60 images, 907 cells)</span>
+					</div>
+				</div>
+
+				<div class="impact-box">
+					<strong>Impact:</strong> Reagent-free testing ($0 vs $5-10 per test) enabling outbreak response in
+					resource-limited settings.
+				</div>
+
+				<br>
+				<ul class="actions">
+					<li><a href="https://github.com/fmubarrat/PlateletVision" target="_blank"
+							class="button primary icon brands fa-github">GitHub Code</a></li>
+				</ul>
+
+				<!-- PROJECT 2: FISH METER -->
+				<hr />
+				<h3>🐟 Fish Meter - Quality System</h3>
+				<p>Multi-modal computer vision system for fish freshness detection with real-time market price
+					intelligence. Novel head-weighted sampling and silver fish adaptation algorithms.</p>
+
+				<div>
+					<span class="tech-badge">YOLO</span>
+					<span class="tech-badge">OpenCV</span>
+					<span class="tech-badge">K-Means</span>
+					<span class="tech-badge">Flask</span>
+					<span class="tech-badge">Web Scraping</span>
+				</div>
+
+				<div class="metric-container">
+					<div class="metric-row">
+						<span class="metric-label">Species Accuracy:</span>
+						<span class="metric-value">82% (12+ fish types)</span>
+					</div>
+					<div class="metric-row">
+						<span class="metric-label">Freshness Correlation:</span>
+						<span class="metric-value">0.85 (vs Expert Ratings)</span>
+					</div>
+					<div class="metric-row">
+						<span class="metric-label">Price Sources:</span>
+						<span class="metric-value">3 Retailers (Real-time)</span>
+					</div>
+				</div>
+
+				<div class="impact-box">
+					<strong>Impact:</strong> Empowers consumers to save ৳50-100 per purchase through informed
+					decision-making and chemical-free checking.
+				</div>
+
+				<br>
+				<ul class="actions">
+					<li><a href="https://github.com/fmubarrat/FishMeter-Non-Invasive-Quality-Assessment-AI"
+							target="_blank" class="button primary icon brands fa-github">GitHub Code</a></li>
+
+					<li><a target="_blank" href="http://linkedin.com/posts/md-fayek-mubarrat-jamee_computervision-ai-machinelearning-activity-7400204442631028736-x4Nt/?utm_source=social_share_send&utm_medium=member_desktop_web&rcm=ACoAACAKaUgBHE2x3y3SnUfb4110KqiRUOjoddI" class="button icon solid fa-video">Demo Video</a></li>
+
+				</ul>
+
+			</article>
+
+			<!-- Experience -->
+			<article id="experience">
+				<h2 class="major">Experience</h2>
+
+				<h3>Ernst & Young (EY)</h3>
+				<p><strong>Assistant Manager (Technical Lead)</strong> | <em>Oct 2024 – Present</em></p>
+				<ul>
+					<li>Leading a team of 5 engineers to architect scalable ESG (Environmental, Social, Governance)
+						solutions on <strong>Azure Cloud</strong>.</li>
+					<li>Designing relational data models in MS SQL and enforcing strict MVC patterns.</li>
+					<li>Mentoring junior staff on complex backend logic and API security.</li>
+				</ul>
+
+				<p><strong>Software Engineer</strong> | <em>May 2022 – Sept 2024</em></p>
+				<ul>
+					<li>Built high-availability dashboards using Java, .NET, and Angular.</li>
+					<li>Implemented Role-Based Access Control (RBAC) using JWT and OAuth2.</li>
+					<li>Promoted to Assistant Manager (Fast-Track) for technical excellence.</li>
+				</ul>
+
+				<hr />
+
+				<h3>Southtech Group</h3>
+				<p><strong>Software Engineer</strong> | <em>Apr 2019 – May 2022</em></p>
+				<ul>
+					<li>Developed core modules for the National Agricultural Technology Program.</li>
+					<li>Stack: Java Spring Boot, Hibernate, MySQL.</li>
+				</ul>
+			</article>
+
+			<!-- Contact -->
+			<article id="contact">
+				<h2 class="major">Get in Touch</h2>
+				<p>I am actively seeking research opportunities and Master's admission for Fall 2025. If you are
+					interested in my work on PlateletVision or FishMeter, please reach out.</p>
+
+				<ul class="actions stacked">
+					<li><a href="mailto:fmubarrat@gmail.com" class="button primary fit icon solid fa-envelope">Email
+							Me</a></li>
+					<li><a href="https://www.linkedin.com/in/md-fayek-mubarrat-jamee/" target="_blank"
+							class="button fit icon brands fa-linkedin">LinkedIn</a></li>
+					<li><a href="https://github.com/fmubarrat" target="_blank"
+							class="button fit icon brands fa-github">GitHub</a></li>
+				</ul>
+			</article>
+
+		</div>
+
+		<!-- Footer -->
+		<footer id="footer">
+			<p class="copyright">&copy; Md Fayek Mubarrat Jamee. Design: <a href="https://html5up.net">HTML5 UP</a>.</p>
+		</footer>
+
+	</div>
+
+	<!-- BG -->
+	<div id="bg"></div>
+
+	<!-- Scripts -->
+	<script src="assets/js/jquery.min.js"></script>
+	<script src="assets/js/browser.min.js"></script>
+	<script src="assets/js/breakpoints.min.js"></script>
+	<script src="assets/js/util.js"></script>
+	<script src="assets/js/main.js"></script>
+
+</body>
+
+</html>
