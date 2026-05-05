@@ -1996,7 +1996,8 @@
     </div>
   </section>
 
-  <!-- ═══════════ CONTACT — FIXED: No Canada mention ═══════════ -->
+  <!-- ═══════════ CONTACT ═══════════ -->
+   
   <section id="contact">
     <div class="container">
       <div class="reveal">
@@ -2005,30 +2006,25 @@
       </div>
 
       <div class="contact-grid">
-
-        <!-- LEFT SIDE -->
+        <!-- LEFT SIDE (Links) -->
         <div class="reveal">
           <p style="color:var(--text2);line-height:1.85;margin-bottom:1.5rem">
             Actively seeking research opportunities in Computer Vision for accessible healthcare.
             If your research involves vision-based health assessment, sketch analysis, or motor monitoring — I'd love to
             connect.
           </p>
-
           <div class="contact-links" style="display:flex;flex-direction:column;gap:.8rem">
             <a href="mailto:fmubarrat@gmail.com" class="clink"><span class="clink-icon">✉</span>fmubarrat@gmail.com</a>
             <a href="https://linkedin.com/in/md-fayek-mubarrat-jamee/" target="_blank" class="clink"><span
                 class="clink-icon">in</span>linkedin.com/in/md-fayek-mubarrat-jamee</a>
-            <a href="https://fmubarrat.github.io/portfolio/" target="_blank" class="clink"><span
-                class="clink-icon">◈</span>fmubarrat.github.io/portfolio</a>
             <a href="https://github.com/fmubarrat" target="_blank" class="clink"><span
                 class="clink-icon">⌥</span>github.com/fmubarrat</a>
             <a href="tel:+8801714624707" class="clink"><span class="clink-icon">☏</span>+880 1714 624 707</a>
           </div>
         </div>
 
-        <!-- RIGHT SIDE -->
+        <!-- RIGHT SIDE (Form & Success Message) -->
         <div class="reveal">
-
           <div class="avatar-wrap" style="margin-bottom:1rem">
             <canvas id="avatarCanvas" width="320" height="220"></canvas>
             <div class="avatar-speech" id="avatarSpeech">
@@ -2036,32 +2032,62 @@
             </div>
           </div>
 
-          <!-- FORM START -->
-          <form class="contact-form-wrap" action="https://formspree.io/f/xvzlrprn" method="POST">
-
+          <!-- THE FORM -->
+          <form class="contact-form-wrap" id="contact-form" action="https://formspree.io/f/xvzlrprn" method="POST">
             <div class="fgrp">
               <label class="flbl">YOUR NAME</label>
               <input class="finput" type="text" name="name" placeholder="Professor / Researcher" required>
             </div>
-
             <div class="fgrp">
               <label class="flbl">EMAIL</label>
               <input class="finput" type="email" name="email" placeholder="university@email.com" required>
             </div>
-
             <div class="fgrp">
               <label class="flbl">MESSAGE</label>
               <textarea class="ftextarea" name="message" placeholder="Tell me about your research group..."
                 oninput="avatarTyping()" onblur="avatarIdle()" required></textarea>
             </div>
-
-            <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:.9rem">
+            <button type="submit" id="submit-btn" class="btn btn-primary"
+              style="width:100%;justify-content:center;padding:.9rem">
               Send Message
             </button>
-
           </form>
-          <!-- FORM END -->
 
+          <!-- SUCCESS STATE (Placed OUTSIDE the form) -->
+          <div id="contact-success" style="display: none;">
+            <div class="proj-card"
+              style="border-color: var(--gold); background: rgba(251, 191, 36, 0.05); text-align: center; padding: 2.5rem 1.5rem;">
+              <div style="position: relative; display: inline-block; margin-bottom: 1.5rem;">
+                <div class="award-trophy" style="font-size: 3.5rem; margin-bottom: 0;">🚀</div>
+                <div
+                  style="position: absolute; top: -10px; left: -10px; border: 2px solid var(--gold); width: 15px; height: 15px; border-right: 0; border-bottom: 0;">
+                </div>
+                <div
+                  style="position: absolute; bottom: -10px; right: -10px; border: 2px solid var(--gold); width: 15px; height: 15px; border-left: 0; border-top: 0;">
+                </div>
+                <div
+                  style="position: absolute; top: -20px; left: 0; font-family: var(--f-mono); font-size: 0.55rem; color: var(--gold); background: rgba(251, 191, 36, 0.2); padding: 1px 5px; white-space: nowrap;">
+                  CLASS: MSG_SENT [CONF: 0.99]
+                </div>
+              </div>
+
+              <h3 class="proj-title" style="color: var(--gold); font-size: 1.1rem;">Transmission Successful</h3>
+              <p class="proj-desc" style="font-size: 0.8rem; margin-bottom: 1rem;">
+                Signal received. I'll process this and ping you back at the provided endpoint.
+              </p>
+
+              <div class="out-log"
+                style="text-align: left; font-size: 0.65rem; min-height: auto; border-color: rgba(251, 191, 36, 0.2);">
+                &gt; Packet delivery verified...<br>
+                &gt; Status: <span style="color: var(--gold)">Awaiting Human Response</span>
+              </div>
+
+              <button onclick="resetForm()" class="btn btn-outline"
+                style="margin-top: 1.5rem; padding: 0.5rem 1rem; font-size: 0.6rem;">
+                ⟳ New Inference
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -2292,6 +2318,55 @@
 
     let ticking = false;
     window.addEventListener('scroll', () => { if (!ticking) { requestAnimationFrame(() => { const heroContent = document.querySelector('.hero-content'); if (heroContent) heroContent.style.transform = `translateY(${window.scrollY * .25}px)`; ticking = false; }); ticking = true; } });
+
+    // Handle the Formspree submission via AJAX to keep the user on the page
+    const contactForm = document.querySelector('.contact-form-wrap');
+    const successPanel = document.getElementById('contact-success');
+
+    if (contactForm) {
+      contactForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        // 1. Trigger Avatar "Processing"
+        avatarTyping();
+        document.getElementById('avatarSpeech').textContent = "Optimizing transmission... 📡";
+
+        // 2. Prepare Form Data
+        const data = new FormData(contactForm);
+
+        try {
+          const response = await fetch(contactForm.action, {
+            method: 'POST',
+            body: data,
+            headers: { 'Accept': 'application/json' }
+          });
+
+          if (response.ok) {
+            // 3. Success Transition
+            contactForm.style.display = 'none';
+            successPanel.style.display = 'block';
+            successPanel.classList.add('in');
+
+            // 4. Update Avatar to Thumbs Up (matching your existing function)
+            startAvatar('thumbsup');
+            document.getElementById('avatarSpeech').textContent = "Message received! I'll ping you back soon. 🚀";
+          } else {
+            throw new Error('Inference Failed');
+          }
+        } catch (error) {
+          document.getElementById('avatarSpeech').textContent = "Connection Error. Please check your network. ⚠️";
+        }
+      });
+    }
+
+    function resetForm() {
+      contactForm.reset();
+      contactForm.style.display = 'flex';
+      successPanel.style.display = 'none';
+      startAvatar('idle');
+      avatarIdle();
+    }
+
   </script>
 
 
