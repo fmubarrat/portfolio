@@ -682,6 +682,7 @@
       background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(139, 92, 246, .08), transparent 60%);
       opacity: 0;
       transition: opacity .3s;
+      pointer-events: none;
     }
 
     .proj-card:hover {
@@ -1993,49 +1994,76 @@
   </section>
 
   <!-- ═══════════ CONTACT — FIXED: No Canada mention ═══════════ -->
-  <section id="contact">
-    <div class="container">
+ <section id="contact">
+  <div class="container">
+    <div class="reveal">
+      <div class="sec-label">Get In Touch</div>
+      <h2 class="sec-title">Let's Build Something<br>Remarkable</h2>
+    </div>
+
+    <div class="contact-grid">
+
+      <!-- LEFT SIDE -->
       <div class="reveal">
-        <div class="sec-label">Get In Touch</div>
-        <h2 class="sec-title">Let's Build Something<br>Remarkable</h2>
+        <p style="color:var(--text2);line-height:1.85;margin-bottom:1.5rem">
+          Actively seeking research opportunities in Computer Vision for accessible healthcare.
+          If your research involves vision-based health assessment, sketch analysis, or motor monitoring — I'd love to connect.
+        </p>
+
+        <div class="contact-links" style="display:flex;flex-direction:column;gap:.8rem">
+          <a href="mailto:fmubarrat@gmail.com" class="clink"><span class="clink-icon">✉</span>fmubarrat@gmail.com</a>
+          <a href="https://linkedin.com/in/md-fayek-mubarrat-jamee/" target="_blank" class="clink"><span class="clink-icon">in</span>linkedin.com/in/md-fayek-mubarrat-jamee</a>
+          <a href="https://fmubarrat.github.io/portfolio/" target="_blank" class="clink"><span class="clink-icon">◈</span>fmubarrat.github.io/portfolio</a>
+          <a href="https://github.com/fmubarrat" target="_blank" class="clink"><span class="clink-icon">⌥</span>github.com/fmubarrat</a>
+          <a href="tel:+8801714624707" class="clink"><span class="clink-icon">☏</span>+880 1714 624 707</a>
+        </div>
       </div>
-      <div class="contact-grid">
-        <div class="reveal">
-          <p style="color:var(--text2);line-height:1.85;margin-bottom:1.5rem">Actively seeking research opportunities in
-            Computer Vision for accessible healthcare. If your research involves vision-based health assessment, sketch
-            analysis, or motor monitoring — I'd love to connect.</p>
-          <div class="contact-links" style="display:flex;flex-direction:column;gap:.8rem">
-            <a href="mailto:fmubarrat@gmail.com" class="clink"><span class="clink-icon">✉</span>fmubarrat@gmail.com</a>
-            <a href="https://linkedin.com/in/md-fayek-mubarrat-jamee/" target="_blank" class="clink"><span
-                class="clink-icon">in</span>linkedin.com/in/md-fayek-mubarrat-jamee</a>
-            <a href="https://fmubarrat.github.io/portfolio/" target="_blank" class="clink"><span
-                class="clink-icon">◈</span>fmubarrat.github.io/portfolio</a>
-            <a href="https://github.com/fmubarrat" target="_blank" class="clink"><span
-                class="clink-icon">⌥</span>github.com/fmubarrat</a>
-            <a href="tel:+8801714624707" class="clink"><span class="clink-icon">☏</span>+880 1714 624 707</a>
+
+      <!-- RIGHT SIDE -->
+      <div class="reveal">
+
+        <div class="avatar-wrap" style="margin-bottom:1rem">
+          <canvas id="avatarCanvas" width="320" height="220"></canvas>
+          <div class="avatar-speech" id="avatarSpeech">
+            Hey there! 👋 I'm Fayek. Write me a message and I'll come alive...
           </div>
         </div>
-        <div class="reveal">
-          <div class="avatar-wrap" style="margin-bottom:1rem">
-            <canvas id="avatarCanvas" width="320" height="220"></canvas>
-            <div class="avatar-speech" id="avatarSpeech">Hey there! 👋 I'm Fayek. Write me a message and I'll come
-              alive...</div>
+
+        <!-- FORM START -->
+        <form class="contact-form-wrap"
+              action="https://formspree.io/f/xvzlrprn"
+              method="POST">
+
+          <div class="fgrp">
+            <label class="flbl">YOUR NAME</label>
+            <input class="finput" type="text" name="name" placeholder="Professor / Researcher" required>
           </div>
-          <div class="contact-form-wrap">
-            <div class="fgrp"><label class="flbl">YOUR NAME</label><input class="finput" type="text"
-                placeholder="Professor / Researcher" id="cName"></div>
-            <div class="fgrp"><label class="flbl">EMAIL</label><input class="finput" type="email"
-                placeholder="university@email.com" id="cEmail"></div>
-            <div class="fgrp"><label class="flbl">MESSAGE</label><textarea class="ftextarea"
-                placeholder="Tell me about your research group..." id="cMsg" oninput="avatarTyping()"
-                onblur="avatarIdle()"></textarea></div>
-            <button class="btn btn-primary" style="width:100%;justify-content:center;padding:.9rem"
-              onclick="submitContact()">Send Message</button>
+
+          <div class="fgrp">
+            <label class="flbl">EMAIL</label>
+            <input class="finput" type="email" name="email" placeholder="university@email.com" required>
           </div>
-        </div>
+
+          <div class="fgrp">
+            <label class="flbl">MESSAGE</label>
+            <textarea class="ftextarea" name="message"
+              placeholder="Tell me about your research group..."
+              oninput="avatarTyping()" onblur="avatarIdle()"
+              required></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary"
+            style="width:100%;justify-content:center;padding:.9rem">
+            Send Message
+          </button>
+
+        </form>
+        <!-- FORM END -->
+
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
   <footer>
     <div class="ft">Md Fayek Mubarrat Jamee · <span>Computer Vision Researcher</span> · Dhaka, Bangladesh</div>
