@@ -3,15 +3,15 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>Md Fayek Mubarrat Jamee — CV Researcher</title>
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔬</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link
     href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap"
     rel="stylesheet">
-
-  <script data-goatcounter="https://fayekportfolio.goatcounter.com/count" async src="//gc.zgo.at/count.js">
-  </script>
+  <script data-goatcounter="https://fayekportfolio.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 
   <style>
     :root {
@@ -19,8 +19,8 @@
       --bg2: #090c20;
       --surface: #0d1230;
       --surface2: #111840;
-      --border: rgba(120, 100, 255, 0.15);
-      --border2: rgba(120, 100, 255, 0.35);
+      --border: rgba(120, 100, 255, .15);
+      --border2: rgba(120, 100, 255, .35);
       --blue: #4f7fff;
       --purple: #8b5cf6;
       --cyan: #22d3ee;
@@ -32,9 +32,12 @@
       --f-display: 'Outfit', sans-serif;
       --f-mono: 'JetBrains Mono', monospace;
       --f-serif: 'Playfair Display', serif;
+      --nav-h: 64px;
     }
 
-    * {
+    *,
+    *::before,
+    *::after {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
@@ -56,77 +59,331 @@
       overflow: hidden;
     }
 
-    /* ═══════════════ CUSTOM CURSOR + ZOOM ═══════════════ */
+    @media (max-width: 768px) {
+      body {
+        cursor: auto;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .reveal [style*="grid-template-columns:1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+      }
+    }
+
+    /* ── FIX: Research Vision 3-col grid on mobile ── */
+    @media (max-width: 768px) {
+      #research-vision [style*="grid-template-columns:repeat(3"] {
+        grid-template-columns: 1fr !important;
+      }
+
+      .roadmap-grid {
+        grid-template-columns: 1fr !important;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .stat-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-name {
+        font-size: 2.4rem;
+      }
+
+      .sec-title {
+        font-size: 1.5rem;
+      }
+
+      .proj-metrics {
+        gap: .8rem;
+      }
+
+      .contact-grid {
+        gap: 1.5rem;
+      }
+    }
+
+    /* ── CURSOR ── */
     #cur {
       position: fixed;
-      width: 10px;
-      height: 10px;
-      background: var(--blue);
+      width: 6px;
+      height: 6px;
+      background: var(--cyan);
       border-radius: 50%;
       pointer-events: none;
       z-index: 99999;
       mix-blend-mode: screen;
-      transition: transform .1s;
+      transform: translate(-50%, -50%);
     }
 
     #cur-ring {
       position: fixed;
-      width: 36px;
-      height: 36px;
-      border: 1.5px solid rgba(79, 127, 255, .5);
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       pointer-events: none;
       z-index: 99998;
-      transition: width .3s cubic-bezier(.23, 1, .32, 1), height .3s cubic-bezier(.23, 1, .32, 1), border-color .3s, background .3s, backdrop-filter .3s;
-      background: transparent;
+      transform: translate(-50%, -50%);
+      overflow: hidden;
+      border: 1px solid rgba(34, 211, 238, .5);
+      box-shadow: 0 0 6px rgba(34, 211, 238, .15);
+      transition: width .35s cubic-bezier(.23, 1, .32, 1), height .35s cubic-bezier(.23, 1, .32, 1), border-color .3s;
       backdrop-filter: none;
+    }
+
+    #cur-lens {
+      position: fixed;
+      pointer-events: none;
+      z-index: 99997;
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
     }
 
     body:has(a:hover) #cur-ring,
     body:has(button:hover) #cur-ring {
-      width: 60px;
-      height: 60px;
+      width: 70px;
+      height: 70px;
       border-color: var(--purple);
-      background: rgba(139, 92, 246, .08);
-      backdrop-filter: blur(1px);
     }
 
-    body:has(.proj-card:hover) #cur-ring,
-    body:has(.award-card:hover) #cur-ring,
-    body:has(img:hover) #cur-ring {
-      width: 80px;
-      height: 80px;
-      border-color: rgba(34, 211, 238, .6);
-      background: rgba(34, 211, 238, .04);
-      backdrop-filter: blur(0.5px);
+    @media (hover:none),
+    (max-width:768px) {
+
+      #cur,
+      #cur-ring,
+      #cur-lens {
+        display: none;
+      }
     }
 
-    /* Zoom magnifier canvas */
-    #zoom-lens {
+    /* ── READING PROGRESS ── */
+    #progress-bar {
       position: fixed;
-      width: 100px;
-      height: 100px;
+      top: 0;
+      left: 0;
+      height: 2px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--blue), var(--cyan), var(--purple));
+      z-index: 10001;
+      transition: width .05s linear;
+      box-shadow: 0 0 8px var(--cyan);
+    }
+
+    /* ── BACK TO TOP ── */
+    #back-top {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      width: 42px;
+      height: 42px;
       border-radius: 50%;
-      border: 2px solid rgba(34, 211, 238, .5);
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      color: var(--cyan);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      cursor: pointer;
+      z-index: 999;
+      opacity: 0;
       pointer-events: none;
-      z-index: 99997;
-      display: none;
-      box-shadow: 0 0 30px rgba(34, 211, 238, .15), inset 0 0 20px rgba(0, 0, 0, .3);
+      transform: translateY(12px);
+      transition: all .3s;
+    }
+
+    #back-top.visible {
+      opacity: 1;
+      pointer-events: all;
+      transform: translateY(0);
+    }
+
+    #back-top:hover {
+      background: var(--surface2);
+      border-color: var(--cyan);
+    }
+
+    /* ── ACTIVE NAV ── */
+    .nav-links a.active-sec {
+      color: var(--cyan) !important;
+    }
+
+    .nav-links a.active-sec::after {
+      transform: scaleX(1) !important;
+      background: var(--cyan);
+    }
+
+    /* ── TYPED CURSOR ── */
+    .typed-cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1.1em;
+      background: var(--cyan);
+      vertical-align: text-bottom;
+      margin-left: 1px;
+      animation: blink .7s step-end infinite;
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0
+      }
+    }
+
+    /* ── RESEARCH STATEMENT BANNER ── */
+    .research-statement {
+      background: linear-gradient(135deg, rgba(34, 211, 238, .06), rgba(79, 127, 255, .06));
+      border: 1px solid rgba(34, 211, 238, .2);
+      border-radius: 12px;
+      padding: 1.5rem 2rem;
+      margin-top: 2rem;
+      position: relative;
       overflow: hidden;
-      background: rgba(6, 8, 26, .85);
     }
 
-    #zoom-lens.active {
-      display: block;
+    .research-statement::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: linear-gradient(to bottom, var(--cyan), var(--blue));
+      border-radius: 3px 0 0 3px;
     }
 
-    #zoom-lens canvas {
-      width: 100%;
-      height: 100%;
+    .research-statement h4 {
+      font-family: var(--f-mono);
+      font-size: .65rem;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: .6rem;
+    }
+
+    .research-statement p {
+      color: var(--text2);
+      font-size: .9rem;
+      line-height: 1.8;
+    }
+
+    /* ── FUNDING READINESS INDICATOR ── */
+    .funding-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      background: rgba(251, 191, 36, .08);
+      border: 1px solid rgba(251, 191, 36, .3);
+      border-radius: 100px;
+      padding: .3rem .9rem;
+      font-family: var(--f-mono);
+      font-size: .6rem;
+      letter-spacing: .12em;
+      color: var(--gold);
+      margin-top: 1rem;
+    }
+
+    .funding-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
+      background: var(--gold);
+      animation: pulse 2s infinite;
+      flex-shrink: 0;
     }
 
-    /* ══════════════ SPLASH SCREEN ══════════════ */
+    /* ── CITATION STYLE PUBLICATIONS ── */
+    .pub-doi {
+      font-family: var(--f-mono);
+      font-size: .6rem;
+      color: var(--text3);
+      margin-top: .4rem;
+    }
+
+    .pub-doi a {
+      color: var(--blue);
+      text-decoration: none;
+    }
+
+    .pub-doi a:hover {
+      color: var(--cyan);
+    }
+
+    .pub-status-badge {
+      display: inline-block;
+      padding: .15rem .55rem;
+      border-radius: 4px;
+      font-family: var(--f-mono);
+      font-size: .55rem;
+      letter-spacing: .08em;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+
+    /* ── FUTURE RESEARCH ROADMAP ── */
+    .roadmap-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .roadmap-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.2rem;
+      position: relative;
+      transition: border-color .3s, transform .3s;
+    }
+
+    .roadmap-item:hover {
+      border-color: var(--border2);
+      transform: translateY(-3px);
+    }
+
+    .roadmap-item .ri-num {
+      font-family: var(--f-mono);
+      font-size: .6rem;
+      color: var(--text3);
+      margin-bottom: .5rem;
+    }
+
+    .roadmap-item .ri-title {
+      font-weight: 700;
+      font-size: .9rem;
+      margin-bottom: .4rem;
+      line-height: 1.3;
+    }
+
+    .roadmap-item .ri-desc {
+      font-size: .78rem;
+      color: var(--text2);
+      line-height: 1.65;
+    }
+
+    .roadmap-item .ri-tag {
+      display: inline-block;
+      margin-top: .7rem;
+      padding: .18rem .55rem;
+      border-radius: 100px;
+      font-family: var(--f-mono);
+      font-size: .55rem;
+      background: rgba(79, 127, 255, .1);
+      border: 1px solid rgba(79, 127, 255, .25);
+      color: var(--blue);
+    }
+
     #splash {
       position: fixed;
       inset: 0;
@@ -138,6 +395,7 @@
       justify-content: center;
       gap: 3rem;
       transition: opacity .8s ease, transform .8s ease;
+      padding: 1.5rem;
     }
 
     #splash.exit {
@@ -148,13 +406,15 @@
 
     .splash-letters {
       display: flex;
-      gap: clamp(.6rem, 2vw, 1.4rem);
+      gap: clamp(.4rem, 1.5vw, 1.4rem);
       align-items: flex-end;
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
     .splash-letter {
       font-family: var(--f-display);
-      font-size: clamp(3rem, 10vw, 7rem);
+      font-size: clamp(2.5rem, 10vw, 7rem);
       font-weight: 900;
       letter-spacing: -.02em;
       color: transparent;
@@ -173,12 +433,13 @@
 
     .splash-sub {
       font-family: var(--f-mono);
-      font-size: .8rem;
+      font-size: clamp(.65rem, .8rem, 1rem);
       letter-spacing: .3em;
       text-transform: uppercase;
       color: var(--text2);
       opacity: 0;
       transition: opacity .5s ease;
+      text-align: center;
     }
 
     .splash-sub.in {
@@ -186,7 +447,7 @@
     }
 
     .splash-loader {
-      width: clamp(200px, 40vw, 420px);
+      width: clamp(200px, 80vw, 420px);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -237,19 +498,21 @@
       letter-spacing: .1em;
     }
 
-    /* ═══════════════ NAV ═══════════════ */
+    /* ── NAV ── */
     nav {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       z-index: 1000;
-      padding: 1rem 3rem;
+      padding: 0 clamp(1rem, 4vw, 3rem);
+      height: var(--nav-h);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: rgba(6, 8, 26, .75);
+      background: rgba(6, 8, 26, .85);
       backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
       transform: translateY(-100%);
       transition: transform .7s cubic-bezier(.23, 1, .32, 1);
@@ -265,11 +528,12 @@
       color: var(--cyan);
       letter-spacing: .2em;
       text-transform: uppercase;
+      white-space: nowrap;
     }
 
     .nav-links {
       display: flex;
-      gap: 2rem;
+      gap: clamp(.6rem, 2vw, 2rem);
       list-style: none;
       align-items: center;
     }
@@ -278,11 +542,12 @@
       color: var(--text2);
       text-decoration: none;
       font-family: var(--f-mono);
-      font-size: .7rem;
+      font-size: .68rem;
       letter-spacing: .12em;
       text-transform: uppercase;
       position: relative;
       transition: color .3s;
+      white-space: nowrap;
     }
 
     .nav-links a::after {
@@ -331,16 +596,132 @@
       display: none !important;
     }
 
-    /* ═══════════════ SECTION WRAPPERS ═══════════════ */
+    /* Mobile hamburger */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: 8px;
+      border: none;
+      background: none;
+      z-index: 1100;
+    }
+
+    .hamburger span {
+      width: 22px;
+      height: 2px;
+      background: var(--text2);
+      border-radius: 2px;
+      transition: all .3s;
+      display: block;
+    }
+
+    .hamburger.open span:nth-child(1) {
+      transform: rotate(45deg) translate(5px, 5px);
+    }
+
+    .hamburger.open span:nth-child(2) {
+      opacity: 0;
+    }
+
+    .hamburger.open span:nth-child(3) {
+      transform: rotate(-45deg) translate(5px, -5px);
+    }
+
+    /* Mobile nav drawer */
+    .nav-drawer {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 9999;
+      background: rgba(6, 8, 26, .98);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.8rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .4s;
+      overflow-y: auto;
+      padding: 5rem 2rem 3rem;
+    }
+
+    .nav-drawer.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    @media (max-width: 900px) {
+      .nav-links {
+        display: none;
+      }
+
+      .hamburger {
+        display: none;
+        flex-direction: column;
+        gap: 5px;
+        cursor: pointer;
+        padding: 8px;
+        border: none;
+        background: none;
+        z-index: 10000;
+      }
+
+      .nav-drawer {
+        display: flex;
+      }
+    }
+
+    .nav-drawer a {
+      font-family: var(--f-mono);
+      font-size: 1.1rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--text2);
+      text-decoration: none;
+      transition: color .2s;
+    }
+
+    .nav-drawer a:hover {
+      color: var(--cyan);
+    }
+
+    .nav-drawer .nav-cv-btn {
+      margin-top: .5rem;
+      font-size: .8rem;
+      padding: .7rem 1.4rem;
+    }
+
+    @media (max-width: 900px) {
+      .nav-links {
+        display: none;
+      }
+
+      .hamburger {
+        display: flex;
+      }
+
+      .nav-drawer {
+        display: flex;
+      }
+    }
+
+    /* ── LAYOUT ── */
     section {
-      padding: 7rem 0;
+      padding: clamp(4rem, 8vw, 7rem) 0;
       position: relative;
     }
 
     .container {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 0 3rem;
+      padding: 0 clamp(1.2rem, 5vw, 3rem);
     }
 
     .sec-label {
@@ -360,19 +741,21 @@
       width: 40px;
       height: 1px;
       background: var(--cyan);
+      flex-shrink: 0;
     }
 
     .sec-title {
-      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-size: clamp(1.7rem, 4vw, 3.2rem);
       font-weight: 800;
       line-height: 1.05;
       letter-spacing: -.03em;
       margin-bottom: 1.2rem;
     }
 
-    /* ═══════════════ HERO ═══════════════ */
+    /* ── HERO ── */
     #hero {
       height: 100vh;
+      min-height: 500px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -392,7 +775,8 @@
       z-index: 10;
       text-align: center;
       max-width: 860px;
-      padding: 2rem;
+      padding: clamp(1rem, 4vw, 2rem);
+      width: 100%;
     }
 
     .hero-badge {
@@ -404,11 +788,13 @@
       border-radius: 100px;
       padding: .35rem .9rem;
       font-family: var(--f-mono);
-      font-size: .65rem;
+      font-size: clamp(.55rem, .7rem, 1rem);
       letter-spacing: .15em;
       color: var(--blue);
       margin-bottom: 1.5rem;
       animation: fadeUp .8s .2s both;
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
     .hero-badge::before {
@@ -418,6 +804,7 @@
       background: var(--cyan);
       border-radius: 50%;
       animation: pulse 2s infinite;
+      flex-shrink: 0;
     }
 
     @keyframes pulse {
@@ -436,7 +823,7 @@
 
     .hero-name {
       font-family: var(--f-display);
-      font-size: clamp(3.5rem, 9vw, 7.5rem);
+      font-size: clamp(2.8rem, 9vw, 7.5rem);
       font-weight: 900;
       line-height: .93;
       letter-spacing: -.03em;
@@ -453,33 +840,36 @@
     .hero-sub {
       font-family: var(--f-serif);
       font-style: italic;
-      font-size: clamp(1rem, 2.5vw, 1.35rem);
+      font-size: clamp(.9rem, 2.5vw, 1.35rem);
       color: var(--text2);
       margin-bottom: 2.5rem;
       animation: fadeUp .8s .5s both;
+      padding: 0 .5rem;
     }
 
     .hero-btns {
       display: flex;
-      gap: 1rem;
+      gap: .8rem;
       justify-content: center;
       flex-wrap: wrap;
       animation: fadeUp .8s .65s both;
+      padding: 0 .5rem;
     }
 
     .btn {
       display: inline-flex;
       align-items: center;
       gap: .5rem;
-      padding: .75rem 1.8rem;
+      padding: .7rem 1.4rem;
       border-radius: 6px;
       font-family: var(--f-mono);
-      font-size: .72rem;
+      font-size: clamp(.65rem, .72rem, 1rem);
       letter-spacing: .1em;
       cursor: pointer;
       text-decoration: none;
       border: none;
       transition: all .3s;
+      white-space: nowrap;
     }
 
     .btn-primary {
@@ -555,7 +945,7 @@
       }
     }
 
-    /* ═══════════════ ABOUT ═══════════════ */
+    /* ── ABOUT ── */
     #about {
       background: var(--bg2);
     }
@@ -563,14 +953,20 @@
     .about-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 5rem;
-      align-items: center;
+      gap: clamp(2rem, 5vw, 5rem);
+      align-items: start;
+    }
+
+    @media (max-width:768px) {
+      .about-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     .about-text p {
       color: var(--text2);
       line-height: 1.85;
-      font-size: 1rem;
+      font-size: clamp(.88rem, 1.5vw, 1rem);
       margin-bottom: 1.4rem;
     }
 
@@ -602,7 +998,7 @@
 
     .stat-num {
       font-family: var(--f-mono);
-      font-size: 1.7rem;
+      font-size: clamp(1.2rem, 2.5vw, 1.7rem);
       font-weight: 700;
       background: linear-gradient(135deg, var(--blue), var(--cyan));
       -webkit-background-clip: text;
@@ -639,6 +1035,7 @@
       width: 9px;
       height: 9px;
       border-radius: 50%;
+      flex-shrink: 0;
     }
 
     .cv-panel-body {
@@ -651,7 +1048,13 @@
       display: block;
     }
 
-    /* ═══════════════ PROJECTS ═══════════════ */
+    canvas#cv-platelet-demo {
+      width: 100%;
+      border-radius: 6px;
+      display: block;
+    }
+
+    /* ── PROJECTS ── */
     #projects {
       background: var(--bg);
     }
@@ -663,15 +1066,20 @@
       margin-top: 2.5rem;
     }
 
+    @media (max-width:768px) {
+      .proj-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .proj-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 14px;
-      padding: 1.8rem;
+      padding: clamp(1.2rem, 3vw, 1.8rem);
       position: relative;
       overflow: hidden;
       transition: transform .3s, border-color .3s;
-      cursor: pointer;
     }
 
     .proj-card::before {
@@ -699,6 +1107,12 @@
       border-color: rgba(34, 211, 238, .25);
     }
 
+    @media (max-width:768px) {
+      .proj-card.featured {
+        grid-column: auto;
+      }
+    }
+
     .proj-tag {
       display: inline-block;
       padding: .22rem .7rem;
@@ -713,7 +1127,7 @@
     }
 
     .proj-title {
-      font-size: 1.3rem;
+      font-size: clamp(1.05rem, 2vw, 1.3rem);
       font-weight: 700;
       margin-bottom: .6rem;
       line-height: 1.2;
@@ -721,7 +1135,7 @@
 
     .proj-desc {
       color: var(--text2);
-      font-size: .88rem;
+      font-size: clamp(.8rem, 1.5vw, .88rem);
       line-height: 1.75;
       margin-bottom: 1.2rem;
     }
@@ -734,7 +1148,7 @@
 
     .metric-val {
       font-family: var(--f-mono);
-      font-size: 1.3rem;
+      font-size: clamp(1.1rem, 2vw, 1.3rem);
       font-weight: 700;
       color: var(--blue);
     }
@@ -781,7 +1195,6 @@
       gap: .8rem;
     }
 
-    /* NEW badge */
     .badge-new {
       display: inline-block;
       padding: .15rem .5rem;
@@ -809,7 +1222,7 @@
       }
     }
 
-    /* ═══════════════ DEMO SECTION ═══════════════ */
+    /* ── DEMO ── */
     #demo {
       background: var(--bg2);
     }
@@ -826,17 +1239,25 @@
       display: flex;
       background: var(--bg);
       border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .demo-tabs::-webkit-scrollbar {
+      display: none;
     }
 
     .dtab {
-      padding: .9rem 1.4rem;
+      padding: .9rem clamp(.8rem, 2vw, 1.4rem);
       font-family: var(--f-mono);
-      font-size: .68rem;
+      font-size: clamp(.6rem, .68rem, 1rem);
       letter-spacing: .1em;
       color: var(--text3);
       cursor: pointer;
       border-bottom: 2px solid transparent;
       transition: all .25s;
+      white-space: nowrap;
     }
 
     .dtab.active {
@@ -846,7 +1267,7 @@
 
     .dpanel {
       display: none;
-      padding: 1.8rem;
+      padding: clamp(1rem, 3vw, 1.8rem);
     }
 
     .dpanel.active {
@@ -865,6 +1286,9 @@
       border: 1px solid var(--border);
       flex-shrink: 0;
       cursor: crosshair;
+      width: 100%;
+      max-width: 400px;
+      height: auto;
     }
 
     .demo-ctrl {
@@ -934,7 +1358,7 @@
       margin-top: .9rem;
     }
 
-    /* ═══════════════ SKILLS ═══════════════ */
+    /* ── SKILLS ── */
     #skills {
       background: var(--bg);
     }
@@ -942,8 +1366,14 @@
     .skills-layout {
       display: grid;
       grid-template-columns: 1fr 2fr;
-      gap: 4rem;
+      gap: clamp(2rem, 5vw, 4rem);
       margin-top: 2.5rem;
+    }
+
+    @media (max-width:768px) {
+      .skills-layout {
+        grid-template-columns: 1fr;
+      }
     }
 
     .skill-cat {
@@ -967,6 +1397,7 @@
       align-items: center;
       padding: .55rem 0;
       border-bottom: 1px solid rgba(255, 255, 255, .03);
+      gap: .5rem;
     }
 
     .skill-name {
@@ -979,6 +1410,7 @@
       height: 3px;
       background: var(--border);
       border-radius: 2px;
+      flex-shrink: 0;
     }
 
     .skill-bar {
@@ -989,7 +1421,7 @@
       transition: width 1.1s cubic-bezier(.23, 1, .32, 1);
     }
 
-    /* ═══════════════ EXPERIENCE ═══════════════ */
+    /* ── EXPERIENCE ── */
     #experience {
       background: var(--bg2);
     }
@@ -1049,7 +1481,7 @@
     }
 
     .tl-role {
-      font-size: 1.1rem;
+      font-size: clamp(.95rem, 1.5vw, 1.1rem);
       font-weight: 700;
       margin-bottom: .15rem;
     }
@@ -1066,7 +1498,7 @@
       line-height: 1.7;
     }
 
-    /* ═══════════════ AWARDS ═══════════════ */
+    /* ── AWARDS ── */
     #awards {
       background: var(--bg);
     }
@@ -1078,11 +1510,23 @@
       margin-top: 2.5rem;
     }
 
+    @media (max-width:768px) {
+      .awards-scene {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (min-width:400px) and (max-width:768px) {
+      .awards-scene {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
     .award-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 16px;
-      padding: 2rem 1.5rem;
+      padding: clamp(1.2rem, 3vw, 2rem) 1.5rem;
       text-align: center;
       position: relative;
       overflow: hidden;
@@ -1146,7 +1590,7 @@
     }
 
     .award-title {
-      font-size: 1rem;
+      font-size: clamp(.9rem, 1.5vw, 1rem);
       font-weight: 700;
       margin-bottom: .4rem;
       line-height: 1.3;
@@ -1167,6 +1611,7 @@
       left: 50%;
       transform: translate(-50%, -50%);
       animation: orbit-spin 12s linear infinite;
+      pointer-events: none;
     }
 
     .award-orbit::before {
@@ -1185,7 +1630,7 @@
       }
     }
 
-    /* ═══════════════ PUBLICATIONS ═══════════════ */
+    /* ── PUBLICATIONS ── */
     #publications {
       background: var(--bg2);
     }
@@ -1194,12 +1639,20 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 1.3rem 1.8rem;
+      padding: clamp(1rem, 2vw, 1.3rem) clamp(1.1rem, 3vw, 1.8rem);
       margin-bottom: .9rem;
       display: flex;
       gap: 1.8rem;
       align-items: flex-start;
       transition: border-color .3s, transform .3s;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width:480px) {
+      .pub-card {
+        flex-direction: column;
+        gap: .6rem;
+      }
     }
 
     .pub-card:hover {
@@ -1216,7 +1669,7 @@
     }
 
     .pub-title {
-      font-size: .95rem;
+      font-size: clamp(.88rem, 1.5vw, .95rem);
       font-weight: 600;
       margin-bottom: .35rem;
     }
@@ -1237,7 +1690,7 @@
       vertical-align: middle;
     }
 
-    /* ═══════════════ CONTACT ═══════════════ */
+    /* ── CONTACT ── */
     #contact {
       background: var(--bg);
     }
@@ -1245,9 +1698,25 @@
     .contact-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 4rem;
+      gap: clamp(2rem, 5vw, 4rem);
       margin-top: 2.5rem;
       align-items: start;
+    }
+
+    @media (max-width:768px) {
+      .contact-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .rs-inner-grid {
+        grid-template-columns: 1fr !important;
+      }
+
+      .rs-pillars {
+        grid-template-columns: 1fr !important;
+      }
     }
 
     .clink {
@@ -1262,6 +1731,7 @@
       border: 1px solid var(--border);
       border-radius: 8px;
       transition: all .3s;
+      word-break: break-all;
     }
 
     .clink:hover {
@@ -1274,6 +1744,7 @@
       color: var(--cyan);
       min-width: 18px;
       text-align: center;
+      flex-shrink: 0;
     }
 
     .avatar-wrap {
@@ -1290,6 +1761,9 @@
     #avatarCanvas {
       border-radius: 10px;
       display: block;
+      width: 100%;
+      max-width: 320px;
+      height: auto;
     }
 
     .avatar-speech {
@@ -1350,14 +1824,102 @@
       resize: vertical;
     }
 
-    /* ═══════════════ FOOTER ═══════════════ */
+    /* ── READING PROGRESS BAR ── */
+    #progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 0%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--blue), var(--purple), var(--cyan));
+      z-index: 10001;
+      transition: width .1s linear;
+      box-shadow: 0 0 8px var(--purple);
+    }
+
+    /* ── BACK TO TOP ── */
+    #back-top {
+      position: fixed;
+      bottom: 2rem;
+      right: 1.5rem;
+      z-index: 998;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .3s, transform .3s;
+      box-shadow: 0 4px 20px rgba(79, 127, 255, .3);
+    }
+
+    #back-top.visible {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    #back-top:hover {
+      transform: translateY(-3px) scale(1.05);
+    }
+
+    #back-top svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: #fff;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* ── ACTIVE SECTION NAV INDICATOR ── */
+    .nav-links a.active-sec {
+      color: var(--cyan);
+    }
+
+    .nav-links a.active-sec::after {
+      transform: scaleX(1);
+      background: var(--cyan);
+    }
+
+    /* ── TYPED HEADLINE CURSOR ── */
+    .typed-cursor {
+      display: inline-block;
+      width: 3px;
+      height: .85em;
+      background: var(--cyan);
+      margin-left: 4px;
+      vertical-align: middle;
+      animation: blink-cursor .7s step-end infinite;
+    }
+
+    @keyframes blink-cursor {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0
+      }
+    }
+
+    /* ── FOOTER ── */
     footer {
       background: var(--bg);
       border-top: 1px solid var(--border);
-      padding: 1.8rem 3rem;
+      padding: 1.8rem clamp(1.2rem, 5vw, 3rem);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
     }
 
     .ft {
@@ -1370,7 +1932,7 @@
       color: var(--cyan);
     }
 
-    /* ═══════════════ REVEAL ═══════════════ */
+    /* ── REVEAL ── */
     .reveal {
       opacity: 0;
       transform: translateY(32px);
@@ -1382,7 +1944,7 @@
       transform: none;
     }
 
-    /* ═══════════════ SCANLINES ═══════════════ */
+    /* ── SCANLINES ── */
     body::after {
       content: '';
       position: fixed;
@@ -1392,47 +1954,55 @@
       z-index: 9990;
     }
 
-    /* ═══════════════ RESPONSIVE ═══════════════ */
-    @media(max-width:768px) {
-
-      .about-grid,
-      .skills-layout,
-      .proj-grid,
-      .contact-grid {
-        grid-template-columns: 1fr;
+    /* ── MOBILE DEMO CANVAS SIZING ── */
+    @media (max-width:600px) {
+      .demo-cw {
+        flex-direction: column;
       }
 
-      .awards-scene {
-        grid-template-columns: 1fr;
+      .demo-cw canvas {
+        max-width: 100%;
       }
 
-      .proj-card.featured {
-        grid-column: auto;
+      #nn-canvas {
+        min-height: 280px;
       }
+    }
 
+    /* ── TOOLTIP ON STAT CARDS ── */
+    .stat-card {
+      cursor: default;
+    }
+
+    /* ── ACTIVE SECTION HIGHLIGHT ── */
+    .tl-item.active-tl .tl-dot {
+      background: var(--cyan);
+      transform: scale(1.4);
+      box-shadow: 0 0 10px var(--cyan);
+    }
+
+    /* ── RESEARCH STATEMENT 3-PILLAR RESPONSIVE ── */
+    @media (max-width: 480px) {
+      .rs-pillars {
+        grid-template-columns: 1fr !important;
+      }
+    }
+
+    /* Safe area insets for notched phones */
+    @supports (padding:max(0px)) {
       nav {
-        padding: .9rem 1.5rem;
+        padding-left: max(1rem, env(safe-area-inset-left));
+        padding-right: max(1rem, env(safe-area-inset-right));
+      }
+
+      footer {
+        padding-left: max(1.2rem, env(safe-area-inset-left));
+        padding-right: max(1.2rem, env(safe-area-inset-right));
       }
 
       .container {
-        padding: 0 1.5rem;
-      }
-
-      .nav-links {
-        gap: 1rem;
-      }
-
-      .nav-links a {
-        font-size: .62rem;
-      }
-
-      #cur,
-      #cur-ring {
-        display: none;
-      }
-
-      body {
-        cursor: auto;
+        padding-left: max(1.2rem, env(safe-area-inset-left));
+        padding-right: max(1.2rem, env(safe-area-inset-right));
       }
     }
   </style>
@@ -1440,11 +2010,21 @@
 
 <body class="splash-active">
 
+  <!-- READING PROGRESS -->
+  <div id="progress-bar"></div>
+
   <!-- CURSOR -->
   <div id="cur"></div>
   <div id="cur-ring"></div>
 
-  <!-- ═══════════ SPLASH ═══════════ -->
+  <!-- BACK TO TOP -->
+  <button id="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
+    <svg viewBox="0 0 24 24">
+      <polyline points="18 15 12 9 6 15"></polyline>
+    </svg>
+  </button>
+
+  <!-- ═══ SPLASH ═══ -->
   <div id="splash">
     <div class="splash-letters" id="splash-letters"></div>
     <div class="splash-sub" id="splash-sub">Computer Vision Researcher · AI Engineer</div>
@@ -1457,28 +2037,45 @@
     </div>
   </div>
 
-  <!-- ═══════════ NAV — ADDED CV DOWNLOAD ═══════════ -->
+  <!-- ═══ NAV ═══ -->
   <nav id="nav">
     <div class="nav-logo">fmubarrat.cv</div>
     <ul class="nav-links">
-      <li><a href="#about">About</a></li>
-      <li><a href="#projects">Research</a></li>
-      <li><a href="#demo">Live Demo</a></li>
-      <li><a href="#skills">Skills</a></li>
-      <li><a href="#experience">Experience</a></li>
-      <li><a href="#publications">Papers</a></li>
-      <li><a href="#contact">Contact</a></li>
-      <li><a href="Fayek_Jamee_CV.pdf" download class="nav-cv-btn">⬇ Download CV</a></li>
+      <li><a href="#about" data-sec="about">About</a></li>
+      <li><a href="#projects" data-sec="projects">Research</a></li>
+      <li><a href="#demo" data-sec="demo">Demo</a></li>
+      <li><a href="#skills" data-sec="skills">Skills</a></li>
+      <li><a href="#experience" data-sec="experience">Experience</a></li>
+      <li><a href="#publications" data-sec="publications">Papers</a></li>
+      <li><a href="#roadmap" data-sec="roadmap">Roadmap</a></li>
+      <li><a href="#contact" data-sec="contact">Contact</a></li>
+      <li><a href="Fayek_Jamee_CV.pdf" download class="nav-cv-btn">⬇ CV</a></li>
     </ul>
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
   </nav>
 
-  <!-- ═══════════ HERO ═══════════ -->
+  <!-- Mobile drawer -->
+  <nav class="nav-drawer" id="nav-drawer">
+    <a href="#about" onclick="closeDrawer()">About</a>
+    <a href="#projects" onclick="closeDrawer()">Research</a>
+    <a href="#demo" onclick="closeDrawer()">Demo</a>
+    <a href="#skills" onclick="closeDrawer()">Skills</a>
+    <a href="#experience" onclick="closeDrawer()">Experience</a>
+    <a href="#publications" onclick="closeDrawer()">Papers</a>
+    <a href="#roadmap" onclick="closeDrawer()">Roadmap</a>
+    <a href="#contact" onclick="closeDrawer()">Contact</a>
+    <a href="Fayek_Jamee_CV.pdf" download class="nav-cv-btn" onclick="closeDrawer()">⬇ Download CV</a>
+  </nav>
+
+  <!-- ═══ HERO ═══ -->
   <section id="hero">
     <canvas id="hero-canvas"></canvas>
     <div class="hero-content">
-      <div class="hero-badge">Computer Vision &amp; AI Researcher</div>
+      <div class="hero-badge">Seeking PhD / MS · Fall 2027 · Computer Vision for Accessible Healthcare</div>
       <h1 class="hero-name">Md Fayek<br><span class="g">Mubarrat Jamee</span></h1>
-      <p class="hero-sub">Building intelligent vision systems for healthcare &amp; accessible diagnostics</p>
+      <p class="hero-sub" id="hero-typed"></p>
       <div class="hero-btns">
         <a href="#projects" class="btn btn-primary">View Research</a>
         <a href="Fayek_Jamee_CV.pdf" download class="btn btn-outline">⬇ Download CV</a>
@@ -1490,16 +2087,17 @@
     </div>
   </section>
 
-  <!-- ═══════════ ABOUT  ═══════════ -->
+  <!-- ═══ ABOUT ═══ -->
   <section id="about">
     <div class="container">
       <div class="about-grid">
+        <!-- LEFT COLUMN -->
         <div class="about-text reveal">
           <div class="sec-label">About Me</div>
           <h2 class="sec-title">Vision &amp; Intelligence<br>for the Real World</h2>
-          <p> Software engineering professional with <em> 7+ years of experience </em>, including<em> 4 years at Ernst &
-              Young </em>, working at the intersection of <em> Computer Vision and Deep Learning. <em> My systems see,
-                measure, and decide — in healthcare, agriculture, and motor assessment.</p>
+          <p>Software engineering professional with <em>7+ years of experience</em>, including <em>4 years at Ernst
+              &amp; Young</em>, working at the intersection of <em>Computer Vision and Deep Learning</em>. My systems
+            see, measure, and decide — in healthcare, agriculture, and motor assessment.</p>
           <p>Focused on <em>lightweight AI for low-resource environments</em> — from platelet detection in dengue
             telemedicine to video-based Parkinson's motor monitoring using nothing but a smartphone camera.</p>
           <p>Seeking <em>graduate research opportunities</em> to push the boundary of intelligent visual systems with
@@ -1518,29 +2116,142 @@
               <div class="stat-lbl">Micrographia Detection (PD Study)</div>
             </div>
             <div class="stat-card reveal">
-              <div class="stat-num">3</div>
-              <div class="stat-lbl">Research Projects (CV + Health)</div>
+              <div class="stat-num">3.31</div>
+              <div class="stat-lbl">CGPA / 4.00 — BSc ICE, BUP</div>
             </div>
           </div>
         </div>
-        <div class="reveal">
-          <div class="cv-panel">
+        <!-- RIGHT COLUMN -->
+        <div class="reveal" style="position:sticky;top:80px">
+          <div class="cv-panel" style="margin-bottom:1rem">
             <div class="cv-panel-bar">
               <div class="dot" style="background:#ff5f57"></div>
               <div class="dot" style="background:#febc2e"></div>
               <div class="dot" style="background:#28c840"></div>
-              <span style="margin-left:.5rem">platelet_vision.py — live sim</span>
+              <span style="margin-left:.5rem">parkinsons_kinematic.py — spiral drawing comparison</span>
             </div>
             <div class="cv-panel-body">
               <canvas id="cv-demo" height="260"></canvas>
             </div>
           </div>
+          <div class="cv-panel">
+            <div class="cv-panel-bar">
+              <div class="dot" style="background:#ff5f57"></div>
+              <div class="dot" style="background:#febc2e"></div>
+              <div class="dot" style="background:#28c840"></div>
+              <span style="margin-left:.5rem">platelet_vision.py — YOLOv8-Nano blood smear scan</span>
+            </div>
+            <div class="cv-panel-body">
+              <canvas id="cv-platelet-demo" height="220"></canvas>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      </div><!-- end .about-grid -->
+
+      <!-- ══ FULL-WIDTH RESEARCH STATEMENT ══ -->
+      <div class="reveal" style="
+        margin-top: 2.5rem;
+        background: linear-gradient(145deg, rgba(34,211,238,.05), rgba(139,92,246,.06), rgba(79,127,255,.04));
+        border: 1px solid rgba(34,211,238,.2);
+        border-radius: 16px;
+        padding: 2.5rem 3rem;
+        position: relative;
+        overflow: hidden;
+      ">
+        <div
+          style="position:absolute;top:12px;left:12px;width:16px;height:16px;border-left:2px solid var(--cyan);border-top:2px solid var(--cyan);opacity:.5">
+        </div>
+        <div
+          style="position:absolute;bottom:12px;right:12px;width:16px;height:16px;border-right:2px solid var(--cyan);border-bottom:2px solid var(--cyan);opacity:.5">
+        </div>
+        <div
+          style="position:absolute;top:-40px;right:-40px;width:160px;height:160px;background:radial-gradient(circle,rgba(34,211,238,.1),transparent 70%);pointer-events:none">
+        </div>
+
+        <div style="display:flex;align-items:center;gap:.7rem;margin-bottom:1.2rem">
+          <div
+            style="width:4px;height:32px;background:linear-gradient(to bottom,var(--cyan),var(--blue));border-radius:2px;flex-shrink:0">
+          </div>
+          <div>
+            <div
+              style="font-family:var(--f-mono);font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:var(--cyan)">
+              Research Statement</div>
+            <div style="font-family:var(--f-mono);font-size:.5rem;color:var(--text3);margin-top:.15rem">CORE QUESTION ·
+              ACCESSIBLE HEALTH DIAGNOSTICS</div>
+          </div>
+        </div>
+
+        <div class="rs-inner-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;align-items:center">
+          <div>
+            <p style="color:var(--text);font-size:1.15rem;line-height:1.9;margin-bottom:1.2rem;font-weight:400">
+              <span style="color:var(--cyan);font-weight:700;font-size:1.3rem">"</span>
+              How can we bring clinical-grade diagnostics to patients who cannot afford clinical hardware?
+              <span style="color:var(--cyan);font-weight:700;font-size:1.3rem">"</span>
+            </p>
+            <p style="color:var(--text2);font-size:.88rem;line-height:1.85">
+              I build <strong style="color:var(--text)">lightweight, calibration-free Computer Vision systems</strong>
+              that run on commodity smartphones — turning a <span style="color:var(--cyan);font-weight:600">$0
+                camera</span> into a Parkinson's motor assessor or a dengue platelet counter. My work sits at the
+              intersection of medical imaging, motor neuroscience, and on-device ML.
+            </p>
+          </div>
+          <div>
+            <div class="rs-pillars"
+              style="display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin-bottom:1.3rem">
+              <div
+                style="background:rgba(6,8,26,.5);border:1px solid var(--border);border-radius:8px;padding:.9rem .7rem;text-align:center">
+                <div style="font-family:var(--f-mono);font-size:1.2rem;font-weight:700;color:var(--cyan)">p=.019</div>
+                <div style="font-size:.62rem;color:var(--text3);margin-top:.2rem;font-family:var(--f-mono)">PD Motor
+                  Detection</div>
+              </div>
+              <div
+                style="background:rgba(6,8,26,.5);border:1px solid var(--border);border-radius:8px;padding:.9rem .7rem;text-align:center">
+                <div style="font-family:var(--f-mono);font-size:1.2rem;font-weight:700;color:var(--blue)">96.56%</div>
+                <div style="font-size:.62rem;color:var(--text3);margin-top:.2rem;font-family:var(--f-mono)">Platelet
+                  mAP@50</div>
+              </div>
+              <div
+                style="background:rgba(6,8,26,.5);border:1px solid var(--border);border-radius:8px;padding:.9rem .7rem;text-align:center">
+                <div style="font-family:var(--f-mono);font-size:1.2rem;font-weight:700;color:var(--gold)">$0</div>
+                <div style="font-size:.62rem;color:var(--text3);margin-top:.2rem;font-family:var(--f-mono)">Hardware
+                  Required</div>
+              </div>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem">
+              <span
+                style="padding:.2rem .6rem;border-radius:100px;font-family:var(--f-mono);font-size:.55rem;background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.25);color:var(--cyan)">Medical
+                CV</span>
+              <span
+                style="padding:.2rem .6rem;border-radius:100px;font-family:var(--f-mono);font-size:.55rem;background:rgba(79,127,255,.08);border:1px solid rgba(79,127,255,.25);color:var(--blue)">Motor
+                Neuroscience</span>
+              <span
+                style="padding:.2rem .6rem;border-radius:100px;font-family:var(--f-mono);font-size:.55rem;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.25);color:var(--purple)">On-Device
+                ML</span>
+              <span
+                style="padding:.2rem .6rem;border-radius:100px;font-family:var(--f-mono);font-size:.55rem;background:rgba(244,114,182,.08);border:1px solid rgba(244,114,182,.25);color:var(--pink)">Sketch
+                Process</span>
+              <span
+                style="padding:.2rem .6rem;border-radius:100px;font-family:var(--f-mono);font-size:.55rem;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);color:var(--gold)">Accessible
+                Health</span>
+            </div>
+            <div
+              style="display:inline-flex;align-items:center;gap:.6rem;background:linear-gradient(135deg,rgba(251,191,36,.1),rgba(79,127,255,.08));border:1px solid rgba(251,191,36,.3);border-radius:100px;padding:.4rem 1rem">
+              <span
+                style="width:7px;height:7px;border-radius:50%;background:var(--gold);animation:pulse 2s infinite;flex-shrink:0"></span>
+              <span style="font-family:var(--f-mono);font-size:.6rem;letter-spacing:.12em;color:var(--gold)">🎓 Seeking
+                PhD/MS — Fall 2027 · Fully-Funded</span>
+            </div>
+          </div>
+        </div>
+      </div><!-- end research statement -->
+
+    </div><!-- end .container -->
+  </section><!-- end #about -->
+  </div>
+  </div>
   </section>
 
-  <!-- ═══════════ PROJECTS — ADDED PD RESEARCH (FEATURED) ═══════════ -->
+  <!-- ═══ PROJECTS ═══ -->
   <section id="projects">
     <div class="container">
       <div class="reveal">
@@ -1549,7 +2260,6 @@
       </div>
       <div class="proj-grid">
 
-        <!-- ★ NEW: PD Parkinson's Study — Featured full-width -->
         <div class="proj-card featured reveal" onmousemove="cardGlow(event,this)">
           <div class="proj-tag"
             style="color:var(--gold);border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.07)">Neuro-Motor
@@ -1592,7 +2302,6 @@
           </div>
         </div>
 
-        <!-- Platelet Vision -->
         <div class="proj-card reveal" onmousemove="cardGlow(event,this)">
           <div class="proj-tag">Medical Imaging · Healthcare AI</div>
           <h3 class="proj-title">Platelet Vision</h3>
@@ -1609,15 +2318,12 @@
               <div class="metric-lbl">MPV · clinically validated</div>
             </div>
           </div>
-          <div class="proj-pipeline">
-            <span class="pipe-step">YOLOv8-Nano</span><span class="pipe-step">Otsu Masking</span><span
-              class="pipe-step">Auto-Calibration</span><span class="pipe-step">RBC Anchoring</span><span
-              class="pipe-step">Morphometrics</span>
-          </div>
+          <div class="proj-pipeline"><span class="pipe-step">YOLOv8-Nano</span><span class="pipe-step">Otsu
+              Masking</span><span class="pipe-step">Auto-Calibration</span><span class="pipe-step">RBC
+              Anchoring</span><span class="pipe-step">Morphometrics</span></div>
           <a href="https://github.com/fmubarrat/PlateletVision" target="_blank" class="proj-link">GitHub →</a>
         </div>
 
-        <!-- Fish Meter -->
         <div class="proj-card reveal" onmousemove="cardGlow(event,this)">
           <div class="proj-tag" style="color:#fb923c;border-color:rgba(251,146,60,.3);background:rgba(251,146,60,.07)">
             Agri-Tech · Edge AI</div>
@@ -1635,15 +2341,13 @@
               <div class="metric-lbl">Live market price scraping</div>
             </div>
           </div>
-          <div class="proj-pipeline">
-            <span class="pipe-step">K-Means</span><span class="pipe-step">HSV Analysis</span><span
-              class="pipe-step">Gill Segmentation</span><span class="pipe-step">Edge-Cloud</span>
+          <div class="proj-pipeline"><span class="pipe-step">K-Means</span><span class="pipe-step">HSV
+              Analysis</span><span class="pipe-step">Gill Segmentation</span><span class="pipe-step">Edge-Cloud</span>
           </div>
           <a href="https://github.com/fmubarrat/FishMeter-Non-Invasive-Quality-Assessment-AI" target="_blank"
             class="proj-link">GitHub →</a>
         </div>
 
-        <!-- Fake News -->
         <div class="proj-card reveal" onmousemove="cardGlow(event,this)">
           <div class="proj-tag"
             style="color:#a78bfa;border-color:rgba(167,139,250,.3);background:rgba(167,139,250,.07)">NLP · ML Research
@@ -1652,45 +2356,97 @@
           <p class="proj-desc">Undergraduate thesis — comparative study of multiple ML approaches for automated
             misinformation detection. Published at Dhaka University Student Conference on Science and Engineering 2018.
           </p>
-          <div class="proj-pipeline">
-            <span class="pipe-step">Multi-Model</span><span class="pipe-step">NLP Features</span><span
-              class="pipe-step">Ensemble</span><span class="pipe-step">Published 2018</span>
-          </div>
-
+          <div class="proj-pipeline"><span class="pipe-step">Multi-Model</span><span class="pipe-step">NLP
+              Features</span><span class="pipe-step">Ensemble</span><span class="pipe-step">Published 2018</span></div>
           <a href="https://github.com/fmubarrat/fake-news-detection-using-machine-learning-classifiers" target="_blank"
             class="proj-link">GitHub →</a>
         </div>
 
-        <div class="proj-card reveal"
-          style="background:linear-gradient(135deg,rgba(79,127,255,.04),rgba(139,92,246,.04));border-color:rgba(139,92,246,.25)"
-          onmousemove="cardGlow(event,this)">
-          <div class="proj-tag"
-            style="color:#f472b6;border-color:rgba(244,114,182,.3);background:rgba(244,114,182,.07)">Research Vision ·
-            Grad Opportunities</div>
-          <h3 class="proj-title">What's Next</h3>
-          <p class="proj-desc">Seeking graduate research positions (PhD/MS, Fall 2027) to advance computer vision for
-            accessible health — sketch-process modeling for motor assessment, lightweight DL for resource-constrained
-            clinical settings, video-based diagnostics replacing expensive equipment with smartphone cameras.</p>
-          <div style="margin-top:1.2rem;padding-top:1.2rem;border-top:1px solid var(--border)">
-            <div style="font-family:var(--f-mono);font-size:.6rem;color:var(--text3);margin-bottom:.7rem">RESEARCH
-              INTERESTS</div>
-            <div style="display:flex;flex-wrap:wrap;gap:.4rem">
-              <span class="pipe-step" style="color:var(--cyan);border-color:rgba(34,211,238,.25)">Sketch Process
-                Analysis</span>
-              <span class="pipe-step" style="color:var(--cyan);border-color:rgba(34,211,238,.25)">Medical CV</span>
-              <span class="pipe-step" style="color:var(--cyan);border-color:rgba(34,211,238,.25)">Motor
-                Assessment</span>
-              <span class="pipe-step" style="color:var(--cyan);border-color:rgba(34,211,238,.25)">Lightweight DL</span>
-              <span class="pipe-step" style="color:var(--cyan);border-color:rgba(34,211,238,.25)">Accessible Health
-                AI</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ RESEARCH VISION ═══════════════ -->
+  <section id="research-vision" style="background:var(--bg2);padding:5rem 0">
+    <div class="container">
+      <div class="reveal">
+        <div class="sec-label">Research Direction</div>
+        <h2 class="sec-title">Where I'm Headed</h2>
+      </div>
+      <div class="reveal" style="
+        background: linear-gradient(135deg, rgba(139,92,246,.06), rgba(34,211,238,.04));
+        border: 1px solid rgba(139,92,246,.25);
+        border-radius: 16px;
+        padding: 2.5rem;
+        margin-top: 2rem;
+        position: relative;
+        overflow: hidden;
+      ">
+        <div
+          style="position:absolute;top:-60px;right:-60px;width:200px;height:200px;background:radial-gradient(circle,rgba(139,92,246,.12),transparent 70%);pointer-events:none">
+        </div>
+
+        <p style="color:var(--text2);font-size:1rem;line-height:1.85;max-width:720px;margin-bottom:1.5rem">
+          Seeking graduate research positions <strong style="color:var(--cyan)">(PhD/MS, Spring–Fall 2027)</strong> to
+          advance
+          computer vision for accessible health — sketch-process modeling for motor assessment, lightweight deep
+          learning for
+          resource-constrained clinical settings, and video-based diagnostics replacing expensive equipment with
+          smartphone cameras.
+        </p>
+
+        <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.5rem">
+          <span class="pipe-step"
+            style="color:var(--cyan);border-color:rgba(34,211,238,.3);padding:.3rem .8rem;font-size:.68rem">Sketch
+            Process Analysis</span>
+          <span class="pipe-step"
+            style="color:var(--cyan);border-color:rgba(34,211,238,.3);padding:.3rem .8rem;font-size:.68rem">Medical
+            CV</span>
+          <span class="pipe-step"
+            style="color:var(--cyan);border-color:rgba(34,211,238,.3);padding:.3rem .8rem;font-size:.68rem">Motor
+            Assessment</span>
+          <span class="pipe-step"
+            style="color:var(--cyan);border-color:rgba(34,211,238,.3);padding:.3rem .8rem;font-size:.68rem">Lightweight
+            DL</span>
+          <span class="pipe-step"
+            style="color:var(--cyan);border-color:rgba(34,211,238,.3);padding:.3rem .8rem;font-size:.68rem">Accessible
+            Health AI</span>
+          <span class="pipe-step"
+            style="color:var(--cyan);border-color:rgba(34,211,238,.3);padding:.3rem .8rem;font-size:.68rem">Video-Based
+            Diagnostics</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem">
+          <div
+            style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.1rem;text-align:center">
+            <div style="font-size:1.8rem;margin-bottom:.4rem">🧠</div>
+            <div style="font-family:var(--f-mono);font-size:.65rem;color:var(--text3);letter-spacing:.08em">NEURO-MOTOR
             </div>
+            <div style="font-size:.78rem;color:var(--text2);margin-top:.3rem">Parkinson's drawing process analysis via
+              hand tracking</div>
+          </div>
+          <div
+            style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.1rem;text-align:center">
+            <div style="font-size:1.8rem;margin-bottom:.4rem">🔬</div>
+            <div style="font-family:var(--f-mono);font-size:.65rem;color:var(--text3);letter-spacing:.08em">CELL
+              DETECTION</div>
+            <div style="font-size:.78rem;color:var(--text2);margin-top:.3rem">Platelet morphometry for telemedicine with
+              $0 hardware</div>
+          </div>
+          <div
+            style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.1rem;text-align:center">
+            <div style="font-size:1.8rem;margin-bottom:.4rem">📱</div>
+            <div style="font-family:var(--f-mono);font-size:.65rem;color:var(--text3);letter-spacing:.08em">EDGE AI
+            </div>
+            <div style="font-size:.78rem;color:var(--text2);margin-top:.3rem">Smartphone-only systems for low-resource
+              environments</div>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ═══════════ DEMO — Unchanged ═══════════ -->
+  <!-- ═══ DEMO ═══ -->
   <section id="demo">
     <div class="container">
       <div class="reveal">
@@ -1705,6 +2461,7 @@
           <div class="dtab" onclick="switchTab('segment')">Segmentation</div>
           <div class="dtab" onclick="switchTab('cluster')">K-Means</div>
           <div class="dtab" onclick="switchTab('yolo')">YOLO Sim</div>
+          <div class="dtab" onclick="switchTab('platelet')">Platelet Sim</div>
         </div>
         <div class="dpanel active" id="panel-edge">
           <div class="demo-cw">
@@ -1719,9 +2476,12 @@
               </div>
               <div class="ctrl-grp">
                 <div class="ctrl-lbl">BRUSH</div>
-                <div class="ctrl-row"><button class="cbtn active" onclick="setBrush(8)">Small</button><button
-                    class="cbtn" onclick="setBrush(18)">Medium</button><button class="cbtn"
-                    onclick="setBrush(34)">Large</button><button class="cbtn" onclick="clearEdge()">Clear</button></div>
+                <div class="ctrl-row">
+                  <button class="cbtn active" onclick="setBrush(8,this)">Small</button>
+                  <button class="cbtn" onclick="setBrush(18,this)">Medium</button>
+                  <button class="cbtn" onclick="setBrush(34,this)">Large</button>
+                  <button class="cbtn" onclick="clearEdge()">Clear</button>
+                </div>
               </div>
               <div class="out-log" id="edge-log">&gt; Sobel kernel ready<br>&gt; Draw to detect edges</div>
             </div>
@@ -1789,11 +2549,39 @@
             </div>
           </div>
         </div>
+        <div class="dpanel" id="panel-platelet">
+          <div class="demo-cw">
+            <canvas id="plateletCanvas" width="400" height="300"></canvas>
+            <div class="demo-ctrl">
+              <h3>PlateletVision Blood Smear Sim</h3>
+              <p>Simulated peripheral blood smear. RBCs (pink), normal platelets (blue), and giant platelets (cyan)
+                drift through
+                the field. Auto-calibration uses RBC diameter (7.5µm) as biological ruler — no external hardware needed.
+              </p>
+              <div class="ctrl-grp">
+                <div class="ctrl-lbl">DETECTION THRESHOLD</div>
+                <input type="range" min="8" max="18" value="12" id="giantThresh"
+                  style="width:100%;accent-color:var(--cyan)">
+              </div>
+              <div class="ctrl-grp">
+                <div class="ctrl-lbl">VIEW</div>
+                <div class="ctrl-row">
+                  <button class="cbtn active" onclick="setPlateletView('detect')">Detect</button>
+                  <button class="cbtn" onclick="setPlateletView('measure')">Measure</button>
+                  <button class="cbtn" onclick="resetPlatelet()">Reset</button>
+                </div>
+              </div>
+              <div class="out-log" id="platelet-log">&gt; PlateletVision loaded · scanning for giant platelets<br>&gt;
+                RBC anchor: 7.5µm · auto-calibration active</div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </section>
 
-  <!-- ═══════════ SKILLS ═══════════ -->
+  <!-- ═══ SKILLS ═══ -->
   <section id="skills">
     <div class="container">
       <div class="reveal">
@@ -1880,7 +2668,7 @@
     </div>
   </section>
 
-  <!-- ═══════════ EXPERIENCE ═══════════ -->
+  <!-- ═══ EXPERIENCE ═══ -->
   <section id="experience">
     <div class="container">
       <div class="reveal">
@@ -1923,7 +2711,7 @@
     </div>
   </section>
 
-  <!-- ═══════════ AWARDS ═══════════ -->
+  <!-- ═══ AWARDS ═══ -->
   <section id="awards">
     <div class="container">
       <div class="reveal">
@@ -1932,22 +2720,19 @@
       </div>
       <div class="awards-scene">
         <div class="award-card reveal">
-          <div class="award-orbit"></div>
-          <span class="award-trophy">🥈</span>
+          <div class="award-orbit"></div><span class="award-trophy">🥈</span>
           <div class="award-year">May 2017</div>
           <div class="award-title">Runner-Up — Android App Contest</div>
           <div class="award-org">Daffodil International University · National Competition</div>
         </div>
         <div class="award-card reveal">
-          <div class="award-orbit"></div>
-          <span class="award-trophy">🥈</span>
+          <div class="award-orbit"></div><span class="award-trophy">🥈</span>
           <div class="award-year">Oct 2016</div>
           <div class="award-title">Runner-Up — IUT CSE Fest</div>
           <div class="award-org">Islamic University of Technology · Engineering Festival</div>
         </div>
         <div class="award-card reveal">
-          <div class="award-orbit"></div>
-          <span class="award-trophy">🎓</span>
+          <div class="award-orbit"></div><span class="award-trophy">🎓</span>
           <div class="award-year">2017</div>
           <div class="award-title">Technical Instructor — C Programming</div>
           <div class="award-org">Workshops for undergraduate students · Logic &amp; algorithms</div>
@@ -1956,63 +2741,136 @@
     </div>
   </section>
 
-  <!-- ═══════════ PUBLICATIONS — ADDED PD PAPER ═══════════ -->
+  <!-- ═══ PUBLICATIONS ═══ -->
   <section id="publications">
     <div class="container">
       <div class="reveal">
         <div class="sec-label">Publications</div>
         <h2 class="sec-title">Research Output</h2>
+        <p style="color:var(--text2);max-width:560px;line-height:1.8;margin-top:.8rem">Papers authored independently as
+          a self-directed researcher — all work conducted outside of institutional affiliation, demonstrating autonomous
+          research capacity.</p>
       </div>
       <div style="margin-top:2rem">
-        <!-- PD Paper — NEW -->
         <div class="pub-card reveal" style="border-color:rgba(34,211,238,.25)">
           <div class="pub-year" style="color:var(--cyan)">2025</div>
-          <div>
+          <div style="flex:1">
             <div class="pub-title">From Drawing Product to Drawing Process: Combining 2D Sketch Analysis with
-              Video-Based 3D Hand Kinematics for Parkinson's Motor Assessment <span class="pub-badge"
+              Video-Based 3D Hand Kinematics for Parkinson's Motor Assessment <span class="pub-badge pub-status-badge"
                 style="background:rgba(34,211,238,.12);color:var(--cyan);border:1px solid rgba(34,211,238,.3)">Manuscript</span>
             </div>
-            <div class="pub-venue">M. F. M. Jamee · Independent Research · Manuscript in preparation,</div>
+            <div class="pub-venue" style="margin-top:.35rem"><strong style="color:var(--text2)">Jamee, M. F. M.</strong>
+              (2025). Independent research. Manuscript in preparation for submission.</div>
+            <div class="pub-doi">
+              Key result: Cohen's d = 3.2 · p = 0.019 · +2101% tremor jerk magnitude · N=204 participants · $0 hardware
+              requirement
+              <span style="display:block;margin-top:.3rem;color:var(--text3)">GitHub: <a
+                  href="https://github.com/fmubarrat/Parkinsons-Hand-Kinematic-Analysis-Smartphone"
+                  target="_blank">fmubarrat/Parkinsons-Hand-Kinematic-Analysis</a> · <a
+                  href="Video_Based_Hand_Kinematic_Analysis_for_Parkinson_s_Motor_Symptom_Detection_During_Drawing_Tasks__A_Smartphone_Feasibility_Study.pdf">Preprint
+                  PDF →</a></span>
+            </div>
           </div>
         </div>
-        <!-- Platelet — In Prep -->
         <div class="pub-card reveal" style="border-color:rgba(251,191,36,.2)">
           <div class="pub-year" style="color:var(--gold)">In Prep</div>
-          <div>
-            <div class="pub-title">PlateletVision: Calibration-Free Giant Platelet Detection for Dengue Telemedicine
-            </div>
-            <div class="pub-venue">Target: IEEE ISBI / MICCAI Workshop</div>
+          <div style="flex:1">
+            <div class="pub-title">PlateletVision: Calibration-Free Giant Platelet Detection and MPV Estimation for
+              Dengue Telemedicine Using YOLOv8-Nano <span class="pub-status-badge"
+                style="background:rgba(251,191,36,.1);color:var(--gold);border:1px solid rgba(251,191,36,.3)">Targeting
+                Submission</span></div>
+            <div class="pub-venue" style="margin-top:.35rem"><strong style="color:var(--text2)">Jamee, M. F. M.</strong>
+              (2025). Target venues: <em>IEEE ISBI 2026</em> · <em>MICCAI Workshop on Computational Pathology</em></div>
+            <div class="pub-doi">Key result: 96.56% mAP@50 · Clinically-validated MPV 8.61 fL · Novel RBC-anchored
+              auto-calibration (no scale bar) · GitHub: <a href="https://github.com/fmubarrat/PlateletVision"
+                target="_blank">fmubarrat/PlateletVision</a></div>
           </div>
         </div>
-        <!-- Fake News -->
         <div class="pub-card reveal">
           <div class="pub-year">2018</div>
-          <div>
+          <div style="flex:1">
             <div class="pub-title">Fake News Detection using Different Machine Learning Approaches</div>
-            <div class="pub-venue">Dhaka University Student Conference on Science and Engineering 2018</div>
+            <div class="pub-venue" style="margin-top:.35rem"><strong style="color:var(--text2)">Jamee, M. F. M.</strong>
+              (2018). <em>Proceedings of the Dhaka University Student Conference on Science and Engineering (DUCSE
+                2018)</em>. Dhaka, Bangladesh.</div>
+            <div class="pub-doi">Conference paper · Undergraduate thesis research · First published work · GitHub: <a
+                href="https://github.com/fmubarrat/fake-news-detection-using-machine-learning-classifiers"
+                target="_blank">fmubarrat/fake-news-detection</a></div>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ═══════════ CONTACT ═══════════ -->
-   
+  <!-- ═══ RESEARCH ROADMAP ═══ -->
+  <section id="roadmap" style="background:var(--bg2);">
+    <div class="container">
+      <div class="reveal">
+        <div class="sec-label">PhD Research Vision</div>
+        <h2 class="sec-title">Where I Want to Take This</h2>
+        <p style="color:var(--text2);max-width:640px;line-height:1.8;margin-top:.8rem">The work I've done is a proof of
+          concept. Here is the research agenda I aim to pursue with a funded graduate position — concrete problems,
+          tractable methods, and measurable clinical impact.</p>
+      </div>
+      <div class="roadmap-grid">
+        <div class="roadmap-item reveal">
+          <div class="ri-num">01 / CORE</div>
+          <div class="ri-title">Sketch-Process Biomarkers for Early-Stage Parkinson's Detection</div>
+          <div class="ri-desc">Extend my feasibility study (N=204) to a longitudinal, multi-site cohort. Build a
+            validated temporal kinematic biomarker suite from drawing tasks, targeting sensitivity &gt;85% at Stage 1 PD
+            — before tremor is visible to clinicians.</div>
+          <span class="ri-tag">Longitudinal Study</span>
+          <span class="ri-tag"
+            style="color:var(--cyan);border-color:rgba(34,211,238,.25);background:rgba(34,211,238,.07)">Smartphone-Only</span>
+        </div>
+        <div class="roadmap-item reveal">
+          <div class="ri-num">02 / EXTENSION</div>
+          <div class="ri-title">Calibration-Free Hematology at Point-of-Care</div>
+          <div class="ri-desc">Scale PlateletVision beyond dengue to full 5-part differential count on unstained blood
+            smears. Deploy on Android for rural telemedicine in Southeast Asia — zero microscope, zero lab technician.
+          </div>
+          <span class="ri-tag">MICCAI / IEEE ISBI</span>
+          <span class="ri-tag"
+            style="color:var(--pink);border-color:rgba(244,114,182,.25);background:rgba(244,114,182,.07)">Low-Resource
+            AI</span>
+        </div>
+        <div class="roadmap-item reveal">
+          <div class="ri-num">03 / THEORY</div>
+          <div class="ri-title">Temporal Process Modeling for Fine-Motor Signals</div>
+          <div class="ri-desc">Develop a general representation learning framework for temporal kinematic processes —
+            unifying drawing, gait, and handwriting into a single diagnostic signal space. Bridging computer vision and
+            motor neuroscience.</div>
+          <span class="ri-tag">NeurIPS / CVPR</span>
+          <span class="ri-tag"
+            style="color:var(--gold);border-color:rgba(251,191,36,.25);background:rgba(251,191,36,.07)">Foundational</span>
+        </div>
+        <div class="roadmap-item reveal">
+          <div class="ri-num">04 / IMPACT</div>
+          <div class="ri-title">$0-Hardware Clinical Trial Integration</div>
+          <div class="ri-desc">Partner with neurology clinics to conduct IRB-approved trials of smartphone-based motor
+            assessment as a supplementary diagnostic tool. Aim to publish in <em>npj Digital Medicine</em> or <em>NEJM
+              AI</em>.</div>
+          <span class="ri-tag">Clinical Translation</span>
+          <span class="ri-tag"
+            style="color:var(--purple);border-color:rgba(139,92,246,.25);background:rgba(139,92,246,.07)">IRB
+            Study</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CONTACT ═══ -->
   <section id="contact">
     <div class="container">
       <div class="reveal">
         <div class="sec-label">Get In Touch</div>
         <h2 class="sec-title">Let's Build Something<br>Remarkable</h2>
       </div>
-
       <div class="contact-grid">
-        <!-- LEFT SIDE (Links) -->
         <div class="reveal">
-          <p style="color:var(--text2);line-height:1.85;margin-bottom:1.5rem">
-            Actively seeking research opportunities in Computer Vision for accessible healthcare.
-            If your research involves vision-based health assessment, sketch analysis, or motor monitoring — I'd love to
-            connect.
-          </p>
+          <p style="color:var(--text2);line-height:1.85;margin-bottom:1.5rem">Actively seeking research opportunities in
+            Computer Vision for accessible healthcare. If your research involves vision-based health assessment, sketch
+            analysis, or motor monitoring — I'd love to connect.</p>
           <div class="contact-links" style="display:flex;flex-direction:column;gap:.8rem">
             <a href="mailto:fmubarrat@gmail.com" class="clink"><span class="clink-icon">✉</span>fmubarrat@gmail.com</a>
             <a href="https://linkedin.com/in/md-fayek-mubarrat-jamee/" target="_blank" class="clink"><span
@@ -2022,70 +2880,38 @@
             <a href="tel:+8801714624707" class="clink"><span class="clink-icon">☏</span>+880 1714 624 707</a>
           </div>
         </div>
-
-        <!-- RIGHT SIDE (Form & Success Message) -->
         <div class="reveal">
           <div class="avatar-wrap" style="margin-bottom:1rem">
             <canvas id="avatarCanvas" width="320" height="220"></canvas>
-            <div class="avatar-speech" id="avatarSpeech">
-              Hey there! 👋 I'm Fayek. Write me a message and I'll come alive...
-            </div>
+            <div class="avatar-speech" id="avatarSpeech">Hey there! 👋 I'm Fayek. Write me a message and I'll come
+              alive...</div>
           </div>
-
-          <!-- THE FORM -->
           <form class="contact-form-wrap" id="contact-form" action="https://formspree.io/f/xvzlrprn" method="POST">
-            <div class="fgrp">
-              <label class="flbl">YOUR NAME</label>
-              <input class="finput" type="text" name="name" placeholder="Professor / Researcher" required>
-            </div>
-            <div class="fgrp">
-              <label class="flbl">EMAIL</label>
-              <input class="finput" type="email" name="email" placeholder="university@email.com" required>
-            </div>
-            <div class="fgrp">
-              <label class="flbl">MESSAGE</label>
-              <textarea class="ftextarea" name="message" placeholder="Tell me about your research group..."
-                oninput="avatarTyping()" onblur="avatarIdle()" required></textarea>
-            </div>
+            <div class="fgrp"><label class="flbl">YOUR NAME</label><input class="finput" type="text" name="name"
+                placeholder="Professor / Researcher" required></div>
+            <div class="fgrp"><label class="flbl">EMAIL</label><input class="finput" type="email" name="email"
+                placeholder="university@email.com" required></div>
+            <div class="fgrp"><label class="flbl">MESSAGE</label><textarea class="ftextarea" name="message"
+                placeholder="Tell me about your research group..." oninput="avatarTyping()" onblur="avatarIdle()"
+                required></textarea></div>
             <button type="submit" id="submit-btn" class="btn btn-primary"
-              style="width:100%;justify-content:center;padding:.9rem">
-              Send Message
-            </button>
+              style="width:100%;justify-content:center;padding:.9rem">Send Message</button>
           </form>
-
-          <!-- SUCCESS STATE (Placed OUTSIDE the form) -->
-          <div id="contact-success" style="display: none;">
+          <div id="contact-success" style="display:none;">
             <div class="proj-card"
-              style="border-color: var(--gold); background: rgba(251, 191, 36, 0.05); text-align: center; padding: 2.5rem 1.5rem;">
-              <div style="position: relative; display: inline-block; margin-bottom: 1.5rem;">
-                <div class="award-trophy" style="font-size: 3.5rem; margin-bottom: 0;">🚀</div>
-                <div
-                  style="position: absolute; top: -10px; left: -10px; border: 2px solid var(--gold); width: 15px; height: 15px; border-right: 0; border-bottom: 0;">
-                </div>
-                <div
-                  style="position: absolute; bottom: -10px; right: -10px; border: 2px solid var(--gold); width: 15px; height: 15px; border-left: 0; border-top: 0;">
-                </div>
-                <div
-                  style="position: absolute; top: -20px; left: 0; font-family: var(--f-mono); font-size: 0.55rem; color: var(--gold); background: rgba(251, 191, 36, 0.2); padding: 1px 5px; white-space: nowrap;">
-                  CLASS: MSG_SENT [CONF: 0.99]
-                </div>
+              style="border-color:var(--gold);background:rgba(251,191,36,.05);text-align:center;padding:2.5rem 1.5rem;">
+              <div style="position:relative;display:inline-block;margin-bottom:1.5rem;">
+                <div class="award-trophy" style="font-size:3.5rem;margin-bottom:0;">🚀</div>
               </div>
-
-              <h3 class="proj-title" style="color: var(--gold); font-size: 1.1rem;">Transmission Successful</h3>
-              <p class="proj-desc" style="font-size: 0.8rem; margin-bottom: 1rem;">
-                Signal received. I'll process this and ping you back at the provided endpoint.
-              </p>
-
+              <h3 class="proj-title" style="color:var(--gold);font-size:1.1rem;">Transmission Successful</h3>
+              <p class="proj-desc" style="font-size:.8rem;margin-bottom:1rem;">Signal received. I'll process this and
+                ping you back at the provided endpoint.</p>
               <div class="out-log"
-                style="text-align: left; font-size: 0.65rem; min-height: auto; border-color: rgba(251, 191, 36, 0.2);">
-                &gt; Packet delivery verified...<br>
-                &gt; Status: <span style="color: var(--gold)">Awaiting Human Response</span>
+                style="text-align:left;font-size:.65rem;min-height:auto;border-color:rgba(251,191,36,.2);">&gt; Packet
+                delivery verified...<br>&gt; Status: <span style="color:var(--gold)">Awaiting Human Response</span>
               </div>
-
               <button onclick="resetForm()" class="btn btn-outline"
-                style="margin-top: 1.5rem; padding: 0.5rem 1rem; font-size: 0.6rem;">
-                ⟳ New Inference
-              </button>
+                style="margin-top:1.5rem;padding:.5rem 1rem;font-size:.6rem;">⟳ New Inference</button>
             </div>
           </div>
         </div>
@@ -2099,36 +2925,99 @@
   </footer>
 
   <script>
-    // ════════════════════════════════════════════
-    //  CURSOR — Enhanced with zoom ring effect
-    // ════════════════════════════════════════════
-    const cur = document.getElementById('cur');
-    const ring = document.getElementById('cur-ring');
-    let mx = 0, my = 0, rx = 0, ry = 0;
-    document.addEventListener('mousemove', e => {
-      mx = e.clientX; my = e.clientY;
-      cur.style.left = (mx - 5) + 'px'; cur.style.top = (my - 5) + 'px';
-    });
-    (function animRing() {
-      rx += (mx - rx) * .12; ry += (my - ry) * .12;
-      const w = parseFloat(getComputedStyle(ring).width) || 36;
-      ring.style.left = (rx - w / 2) + 'px'; ring.style.top = (ry - w / 2) + 'px';
-      requestAnimationFrame(animRing);
+    // ══ CURSOR ══
+    let mx = 0, my = 0;
+    (function () {
+      if (!window.matchMedia('(hover:hover)').matches) return;
+      const dot = document.getElementById('cur');
+      const ring = document.getElementById('cur-ring');
+      let rx = 0, ry = 0;
+      document.addEventListener('mousemove', e => {
+        mx = e.clientX; my = e.clientY;
+        dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+      });
+      (function animRing() {
+        rx += (mx - rx) * 0.13; ry += (my - ry) * 0.13;
+        ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+        requestAnimationFrame(animRing);
+      })();
+      document.querySelectorAll('a,button').forEach(el => {
+        el.addEventListener('mouseenter', () => ring.classList.add('ring-hover'));
+        el.addEventListener('mouseleave', () => ring.classList.remove('ring-hover'));
+      });
     })();
 
-    // ════════════════════════════════════════════
-    //  SPLASH SCREEN
-    // ════════════════════════════════════════════
-    const SPLASH_WORD = "RESEARCHER";
-    const BIG_LETTERS = ["F", "A", "Y", "E", "K"];
+    // ══ HAMBURGER ══
+    const ham = document.getElementById('hamburger'), drawer = document.getElementById('nav-drawer');
+    ham.addEventListener('click', () => { ham.classList.toggle('open'); drawer.classList.toggle('open'); });
+    function closeDrawer() { ham.classList.remove('open'); drawer.classList.remove('open'); }
+    drawer.addEventListener('click', e => { if (e.target === drawer) closeDrawer(); });
+
+    // ══ READING PROGRESS BAR ══
+    const progressBar = document.getElementById('progress-bar');
+    window.addEventListener('scroll', () => {
+      const scrollTop = document.documentElement.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      progressBar.style.width = (scrollTop / scrollHeight * 100) + '%';
+    }, { passive: true });
+
+    // ══ BACK TO TOP ══
+    const backTop = document.getElementById('back-top');
+    window.addEventListener('scroll', () => { backTop.classList.toggle('visible', window.scrollY > 400); }, { passive: true });
+
+    // ══ ACTIVE NAV SECTION INDICATOR ══
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-links a[data-sec]');
+    const sectionObserver = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          navLinks.forEach(a => a.classList.remove('active-sec'));
+          const active = document.querySelector('.nav-links a[data-sec="' + e.target.id + '"]');
+          if (active) active.classList.add('active-sec');
+        }
+      });
+    }, { threshold: .3, rootMargin: '-80px 0px -60% 0px' });
+    sections.forEach(s => sectionObserver.observe(s));
+
+    // ══ TYPED HERO SUBTITLE ══
+    const typedEl = document.getElementById('hero-typed');
+    const phrases = [
+      'Building intelligent vision systems for healthcare & accessible diagnostics',
+      "Parkinson's Motor Assessment · $0 hardware",
+      'Platelet Detection · 96.56% mAP@50',
+      'Lightweight AI for resource-constrained clinical settings'
+    ];
+    let pIdx = 0, cIdx = 0, deleting = false;
+    function typeLoop() {
+      const phrase = phrases[pIdx];
+      if (!deleting) {
+        typedEl.innerHTML = phrase.slice(0, ++cIdx) + '<span class="typed-cursor"></span>';
+        if (cIdx === phrase.length) { deleting = true; setTimeout(typeLoop, 2200); return; }
+        setTimeout(typeLoop, 50 + Math.random() * 30);
+      } else {
+        typedEl.innerHTML = phrase.slice(0, --cIdx) + '<span class="typed-cursor"></span>';
+        if (cIdx === 0) { deleting = false; pIdx = (pIdx + 1) % phrases.length; setTimeout(typeLoop, 300); return; }
+        setTimeout(typeLoop, 25);
+      }
+    }
+    setTimeout(typeLoop, 1800);
+
+    // ══ SPLASH ══
+    const SPLASH_WORD = "RESEARCHER", BIG_LETTERS = ["F", "A", "Y", "E", "K"];
     const splashLettersEl = document.getElementById('splash-letters');
     const loaderLettersEl = document.getElementById('loader-letters');
     const loaderFill = document.getElementById('loader-fill');
     const loaderPct = document.getElementById('loader-pct');
     const splashSub = document.getElementById('splash-sub');
 
-    BIG_LETTERS.forEach(l => { const d = document.createElement('div'); d.className = 'splash-letter'; d.textContent = l; splashLettersEl.appendChild(d); });
-    SPLASH_WORD.split('').forEach(l => { const d = document.createElement('div'); d.className = 'loader-letter'; d.textContent = l; loaderLettersEl.appendChild(d); });
+    BIG_LETTERS.forEach(l => {
+      const d = document.createElement('div'); d.className = 'splash-letter'; d.textContent = l;
+      splashLettersEl.appendChild(d);
+    });
+    SPLASH_WORD.split('').forEach(l => {
+      const d = document.createElement('div'); d.className = 'loader-letter'; d.textContent = l;
+      loaderLettersEl.appendChild(d);
+    });
 
     const bigEls = document.querySelectorAll('.splash-letter');
     const loaderEls = document.querySelectorAll('.loader-letter');
@@ -2136,10 +3025,12 @@
     setTimeout(() => { bigEls.forEach((el, i) => setTimeout(() => el.classList.add('in'), i * 120)); }, 100);
     setTimeout(() => splashSub.classList.add('in'), 750);
 
-    let pct = 0; const totalMs = 2400, step = 16, inc = 100 / (totalMs / step);
+    let pct = 0;
+    const totalMs = 1400, step = 16, inc = 100 / (totalMs / step);
     const loaderInterval = setInterval(() => {
       pct = Math.min(100, pct + inc + Math.random() * .5);
-      loaderFill.style.width = pct + '%'; loaderPct.textContent = Math.round(pct) + '%';
+      loaderFill.style.width = pct + '%';
+      loaderPct.textContent = Math.round(pct) + '%';
       const lit = Math.round((pct / 100) * SPLASH_WORD.length);
       loaderEls.forEach((el, i) => el.classList.toggle('lit', i < lit));
       if (pct >= 100) { clearInterval(loaderInterval); setTimeout(exitSplash, 400); }
@@ -2148,228 +3039,666 @@
     function exitSplash() {
       document.getElementById('splash').classList.add('exit');
       document.body.classList.remove('splash-active');
-      setTimeout(() => { document.getElementById('splash').style.display = 'none'; document.getElementById('nav').classList.add('visible'); }, 900);
+      setTimeout(() => {
+        document.getElementById('splash').style.display = 'none';
+        document.getElementById('nav').classList.add('visible');
+      }, 900);
     }
 
-    // ════════════════════════════════════════════
-    //  HERO CANVAS
-    // ════════════════════════════════════════════
-    const hc = document.getElementById('hero-canvas'); const hx = hc.getContext('2d'); let HW, HH, parts = [];
+    // ══ HERO CANVAS ══
+    const hc = document.getElementById('hero-canvas'), hx = hc.getContext('2d');
+    let HW, HH, parts = [];
     function resizeHero() { HW = hc.width = window.innerWidth; HH = hc.height = window.innerHeight; }
-    resizeHero(); window.addEventListener('resize', resizeHero);
-    for (let i = 0; i < 130; i++)parts.push({ x: Math.random() * 1920, y: Math.random() * 1080, vx: (Math.random() - .5) * .4, vy: (Math.random() - .5) * .4, r: Math.random() * 1.8 + .4, type: Math.random() > .82 ? 'bright' : 'normal', life: Math.random() * Math.PI * 2 });
+    resizeHero(); window.addEventListener('resize', resizeHero, { passive: true });
+    for (let i = 0; i < 130; i++) parts.push({
+      x: Math.random() * 1920, y: Math.random() * 1080,
+      vx: (Math.random() - .5) * .4, vy: (Math.random() - .5) * .4,
+      r: Math.random() * 1.8 + .4, type: Math.random() > .82 ? 'bright' : 'normal',
+      life: Math.random() * Math.PI * 2
+    });
     (function heroLoop() {
       hx.clearRect(0, 0, HW, HH);
       for (let i = 0; i < parts.length; i++) {
         const p = parts[i]; p.x += p.vx; p.y += p.vy; p.life += .012;
-        if (p.x < 0) p.x = HW; if (p.x > HW) p.x = 0; if (p.y < 0) p.y = HH; if (p.y > HH) p.y = 0;
+        if (p.x < 0) p.x = HW; if (p.x > HW) p.x = 0;
+        if (p.y < 0) p.y = HH; if (p.y > HH) p.y = 0;
         const dx = mx - p.x, dy = my - p.y, d = Math.sqrt(dx * dx + dy * dy);
         if (d < 180) { p.vx += dx / d * .018; p.vy += dy / d * .018; }
-        const spd = Math.sqrt(p.vx * p.vx + p.vy * p.vy); if (spd > 1.4) { p.vx /= spd; p.vy /= spd; }
+        const spd = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+        if (spd > 1.4) { p.vx /= spd; p.vy /= spd; }
         for (let j = i + 1; j < parts.length; j++) {
           const q = parts[j], ex = p.x - q.x, ey = p.y - q.y, ed = Math.sqrt(ex * ex + ey * ey);
-          if (ed < 110) { hx.beginPath(); hx.moveTo(p.x, p.y); hx.lineTo(q.x, q.y); hx.strokeStyle = `rgba(79,127,255,${(1 - ed / 110) * .25})`; hx.lineWidth = .6; hx.stroke(); }
+          if (ed < 110) {
+            hx.beginPath(); hx.moveTo(p.x, p.y); hx.lineTo(q.x, q.y);
+            hx.strokeStyle = 'rgba(79,127,255,' + ((1 - ed / 110) * .25) + ')';
+            hx.lineWidth = .6; hx.stroke();
+          }
         }
         const a = p.type === 'bright' ? .9 : .45 + .35 * Math.sin(p.life);
         hx.beginPath(); hx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        hx.fillStyle = p.type === 'bright' ? `rgba(34,211,238,${a})` : `rgba(79,127,255,${a})`; hx.fill();
+        hx.fillStyle = p.type === 'bright' ? 'rgba(34,211,238,' + a + ')' : 'rgba(79,127,255,' + a + ')';
+        hx.fill();
       }
       requestAnimationFrame(heroLoop);
     })();
 
-    // ════════════════════════════════════════════
-    //  CV DEMO — PLATELET SIM
-    // ════════════════════════════════════════════
-    const cvC = document.getElementById('cv-demo'); const cvX = cvC.getContext('2d');
-    cvC.width = cvC.offsetWidth || 360; let scanX = 0, cvCells = [];
-    for (let i = 0; i < 24; i++) { const r = Math.random() * 12 + 5; cvCells.push({ x: 40 + Math.random() * (cvC.width - 80), y: 40 + Math.random() * 180, r, vx: (Math.random() - .5) * .35, vy: (Math.random() - .5) * .35, type: r > 14 ? 'giant' : Math.random() > .55 ? 'platelet' : 'rbc', conf: .8 + Math.random() * .19, da: 0 }); }
-    (function cvLoop() {
-      cvX.fillStyle = 'rgba(6,8,26,.45)'; cvX.fillRect(0, 0, cvC.width, 260);
-      scanX = (scanX + 1.8) % cvC.width;
-      const sg = cvX.createLinearGradient(scanX - 28, 0, scanX + 10, 0);
-      sg.addColorStop(0, 'transparent'); sg.addColorStop(.8, 'rgba(34,211,238,.06)'); sg.addColorStop(1, 'rgba(34,211,238,.22)');
-      cvX.fillStyle = sg; cvX.fillRect(scanX - 28, 0, 40, 260);
-      cvX.beginPath(); cvX.moveTo(scanX, 0); cvX.lineTo(scanX, 260); cvX.strokeStyle = 'rgba(34,211,238,.35)'; cvX.lineWidth = 1; cvX.stroke();
-      const colors = { rbc: '#f472b6', platelet: '#4f7fff', giant: '#22d3ee' };
-      cvCells.forEach(c => {
-        c.x += c.vx; c.y += c.vy; if (c.x < c.r || c.x > cvC.width - c.r) c.vx *= -1; if (c.y < c.r || c.y > 260 - c.r) c.vy *= -1;
-        const near = Math.abs(c.x - scanX) < 32; c.da = near ? Math.min(1, c.da + .06) : Math.max(0, c.da - .025);
-        cvX.beginPath(); if (c.type === 'rbc') cvX.ellipse(c.x, c.y, c.r * 1.3, c.r * .82, 0, 0, Math.PI * 2); else cvX.arc(c.x, c.y, c.r, 0, Math.PI * 2);
-        cvX.fillStyle = colors[c.type] + '99'; cvX.fill(); cvX.strokeStyle = colors[c.type]; cvX.lineWidth = .9; cvX.stroke();
-        if (c.da > .05) { const pd = 6; cvX.strokeStyle = `rgba(34,211,238,${c.da})`; cvX.lineWidth = 1.5; cvX.strokeRect(c.x - c.r - pd, c.y - c.r - pd, (c.r + pd) * 2, (c.r + pd) * 2); cvX.fillStyle = `rgba(34,211,238,${c.da})`; cvX.font = '8px JetBrains Mono,monospace'; cvX.fillText(`${c.type} ${(c.conf * 100).toFixed(0)}%`, c.x - c.r - pd, c.y - c.r - pd - 2); }
-      });
-      cvX.fillStyle = 'rgba(6,8,26,.82)'; cvX.fillRect(6, 6, 175, 56); cvX.font = '8px JetBrains Mono,monospace';
-      cvX.fillStyle = '#f472b6'; cvX.fillText(`RBC: ${cvCells.filter(c => c.type === 'rbc').length}`, 14, 22);
-      cvX.fillStyle = '#4f7fff'; cvX.fillText(`Platelet: ${cvCells.filter(c => c.type === 'platelet').length}`, 14, 36);
-      cvX.fillStyle = '#22d3ee'; cvX.fillText(`Giant (GP): ${cvCells.filter(c => c.type === 'giant').length}`, 14, 50);
-      requestAnimationFrame(cvLoop);
+    // ══ PARKINSON'S KINEMATIC DRAWING SIM ══
+    (function () {
+      const cvC = document.getElementById('cv-demo'), cvX = cvC.getContext('2d');
+      cvC.width = cvC.offsetWidth || 360;
+      const W = cvC.width, H = 260;
+      let t = 0;
+      const HEALTHY_COLOR = '#22d3ee', PD_COLOR = '#f472b6';
+      const healthyPath = [], pdPath = [], MAX_PATH = 80;
+      let spiralAngle = 0, spiralR = 8;
+
+      let sparc = 0, jerk = 0, frameN = 0;
+
+      function drawFrame() {
+        cvX.fillStyle = 'rgba(6,8,26,.6)'; cvX.fillRect(0, 0, W, H);
+        t++; frameN++;
+        spiralAngle += 0.045;
+        spiralR = 8 + (spiralAngle / (Math.PI * 2)) * 4.5;
+        if (spiralR > 68) { spiralAngle = 0; spiralR = 8; healthyPath.length = 0; pdPath.length = 0; }
+
+        const hcx = W * 0.27, hcy = H * 0.5;
+        const pcx = W * 0.72, pcy = H * 0.5;
+
+        const hpx = hcx + Math.cos(spiralAngle) * spiralR;
+        const hpy = hcy + Math.sin(spiralAngle) * spiralR;
+        healthyPath.push({ x: hpx, y: hpy });
+        if (healthyPath.length > MAX_PATH) healthyPath.shift();
+
+        const tremorFreq = 0.31, tremorAmp = 4.5 + 2 * Math.sin(t * 0.04);
+        const ppx = pcx + Math.cos(spiralAngle) * spiralR + Math.sin(t * tremorFreq) * tremorAmp + Math.cos(t * tremorFreq * 1.3) * tremorAmp * 0.6;
+        const ppy = pcy + Math.sin(spiralAngle) * spiralR + Math.cos(t * tremorFreq * 0.9) * tremorAmp + Math.sin(t * tremorFreq * 1.7) * tremorAmp * 0.4;
+        pdPath.push({ x: ppx, y: ppy });
+        if (pdPath.length > MAX_PATH) pdPath.shift();
+
+        // Divider
+        cvX.strokeStyle = 'rgba(120,100,255,.12)'; cvX.lineWidth = 1;
+        cvX.setLineDash([4, 4]);
+        cvX.beginPath(); cvX.moveTo(W / 2, 10); cvX.lineTo(W / 2, H - 10); cvX.stroke();
+        cvX.setLineDash([]);
+
+        // Labels
+        cvX.font = '8px JetBrains Mono,monospace'; cvX.textAlign = 'center';
+        cvX.fillStyle = HEALTHY_COLOR; cvX.fillText('HEALTHY', W * 0.27, 18);
+        cvX.fillStyle = PD_COLOR; cvX.fillText("PARKINSON'S", W * 0.72, 18);
+        cvX.textAlign = 'left';
+
+        // Healthy path
+        if (healthyPath.length > 1) {
+          cvX.beginPath(); cvX.moveTo(healthyPath[0].x, healthyPath[0].y);
+          for (let i = 1; i < healthyPath.length; i++) {
+            cvX.strokeStyle = 'rgba(34,211,238,' + (i / healthyPath.length * 0.85) + ')';
+            cvX.lineWidth = 1.5; cvX.lineTo(healthyPath[i].x, healthyPath[i].y);
+          }
+          cvX.stroke();
+        }
+
+        // PD path
+        for (let i = 1; i < pdPath.length; i++) {
+          const alpha = (i / pdPath.length) * 0.85;
+          cvX.beginPath(); cvX.moveTo(pdPath[i - 1].x, pdPath[i - 1].y); cvX.lineTo(pdPath[i].x, pdPath[i].y);
+          cvX.strokeStyle = 'rgba(244,114,182,' + alpha + ')'; cvX.lineWidth = 1.5; cvX.stroke();
+        }
+
+        // Dots
+        cvX.beginPath(); cvX.arc(hpx, hpy, 4, 0, Math.PI * 2); cvX.fillStyle = HEALTHY_COLOR; cvX.fill();
+        cvX.strokeStyle = 'rgba(34,211,238,.4)'; cvX.lineWidth = 6;
+        cvX.beginPath(); cvX.arc(hpx, hpy, 7, 0, Math.PI * 2); cvX.stroke();
+
+        cvX.beginPath(); cvX.arc(ppx, ppy, 4, 0, Math.PI * 2); cvX.fillStyle = PD_COLOR; cvX.fill();
+        cvX.strokeStyle = 'rgba(244,114,182,.4)'; cvX.lineWidth = 6;
+        cvX.beginPath(); cvX.arc(ppx, ppy, 7, 0, Math.PI * 2); cvX.stroke();
+        cvX.lineWidth = 1;
+
+        // Metrics
+        if (pdPath.length > 3) {
+          const last = pdPath[pdPath.length - 1], prev = pdPath[pdPath.length - 2], pprev = pdPath[pdPath.length - 3];
+          const ax = last.x - 2 * prev.x + pprev.x, ay = last.y - 2 * prev.y + pprev.y;
+          jerk = Math.sqrt(ax * ax + ay * ay); sparc = Math.max(0, 1 - jerk * 0.08);
+        }
+
+        cvX.fillStyle = 'rgba(6,8,26,.85)'; cvX.fillRect(0, H - 52, W, 52);
+        cvX.font = '7px JetBrains Mono,monospace';
+        cvX.fillStyle = '#8892b0'; cvX.fillText('SPARC smoothness', 10, H - 37);
+        cvX.fillStyle = HEALTHY_COLOR; cvX.fillText('0.94 (healthy)', 10, H - 26);
+        cvX.fillStyle = PD_COLOR; cvX.fillText(sparc.toFixed(2) + ' (PD)', 110, H - 26);
+
+        cvX.fillStyle = '#8892b0'; cvX.fillText('Norm. jerk ×10³', W / 2 + 10, H - 37);
+        cvX.fillStyle = HEALTHY_COLOR; cvX.fillText('0.08 (healthy)', W / 2 + 10, H - 26);
+        cvX.fillStyle = PD_COLOR; cvX.fillText((jerk * 0.3).toFixed(2) + ' (PD)', W / 2 + 100, H - 26);
+
+        cvX.fillStyle = 'rgba(251,191,36,.15)';
+        cvX.beginPath(); cvX.roundRect(W - 90, H - 48, 82, 18, 3); cvX.fill();
+        cvX.fillStyle = '#fbbf24'; cvX.fillText('p=0.019 · d=3.2', W - 87, H - 36);
+
+        cvX.fillStyle = 'rgba(79,127,255,.5)'; cvX.fillText('frame ' + frameN, 10, H - 12);
+        cvX.fillStyle = '#8892b0'; cvX.fillText('MediaPipe 3D · SPARC · FFT', 60, H - 12);
+
+        requestAnimationFrame(drawFrame);
+      }
+      drawFrame();
     })();
 
-    // ════════════════════════════════════════════
-    //  CARD GLOW
-    // ════════════════════════════════════════════
-    function cardGlow(e, card) { const r = card.getBoundingClientRect(); card.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100).toFixed(1) + '%'); card.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100).toFixed(1) + '%'); }
+    // ══ CV PLATELET MINI DEMO (About section) ══
+    (function () {
+      const cvPC = document.getElementById('cv-platelet-demo');
+      if (!cvPC) return;
+      const cvPX = cvPC.getContext('2d');
+      cvPC.width = cvPC.offsetWidth || 360;
+      const W = cvPC.width, H = 220;
+      let scanX = 0;
+      const cells = [];
+      for (let i = 0; i < 28; i++) {
+        const roll = Math.random();
+        let type, r;
+        if (roll < .1) { type = 'giant'; r = 12 + Math.random() * 5; }
+        else if (roll < .28) { type = 'platelet'; r = 3.5 + Math.random() * 3.5; }
+        else { type = 'rbc'; r = 8 + Math.random() * 3; }
+        cells.push({
+          x: 20 + Math.random() * (W - 40), y: 15 + Math.random() * (H - 70),
+          r: r, type: type,
+          vx: (Math.random() - .5) * .22, vy: (Math.random() - .5) * .22,
+          conf: .78 + Math.random() * .21, da: 0, phase: Math.random() * Math.PI * 2
+        });
+      }
+      const colors = { rbc: '#f472b6', platelet: '#4f7fff', giant: '#22d3ee' };
 
-    // ════════════════════════════════════════════
-    //  DEMO TABS
-    // ════════════════════════════════════════════
-    let activeTab = 'edge';
-    function switchTab(name) {
-      document.querySelectorAll('.dtab').forEach((t, i) => t.classList.toggle('active', ['edge', 'segment', 'cluster', 'yolo'][i] === name));
-      document.querySelectorAll('.dpanel').forEach(p => p.classList.remove('active'));
-      document.getElementById('panel-' + name).classList.add('active');
-      activeTab = name; if (name === 'segment') initSeg(); if (name === 'cluster') initK(); if (name === 'yolo') initY();
+      function frame() {
+        cvPX.fillStyle = 'rgba(12,6,16,.5)'; cvPX.fillRect(0, 0, W, H);
+        scanX = (scanX + 1.5) % W;
+        const sg = cvPX.createLinearGradient(scanX - 22, 0, scanX + 6, 0);
+        sg.addColorStop(0, 'transparent'); sg.addColorStop(.8, 'rgba(34,211,238,.04)'); sg.addColorStop(1, 'rgba(34,211,238,.2)');
+        cvPX.fillStyle = sg; cvPX.fillRect(scanX - 22, 0, 30, H);
+
+        cells.forEach(c => {
+          c.x += c.vx; c.y += c.vy; c.phase += .012;
+          if (c.x < c.r || c.x > W - c.r) c.vx *= -1;
+          if (c.y < c.r || c.y > H - 50 - c.r) c.vy *= -1;
+          c.da = Math.abs(c.x - scanX) < 28 ? Math.min(1, c.da + .06) : Math.max(0, c.da - .025);
+          const col = colors[c.type];
+
+          cvPX.beginPath();
+          if (c.type === 'rbc') {
+            cvPX.ellipse(c.x, c.y, c.r * 1.2, c.r * .82, 0, 0, Math.PI * 2);
+            cvPX.fillStyle = col + '44'; cvPX.fill();
+            cvPX.beginPath(); cvPX.arc(c.x, c.y, c.r * .35, 0, Math.PI * 2);
+            cvPX.fillStyle = col + '18'; cvPX.fill();
+          } else {
+            cvPX.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+            cvPX.fillStyle = c.type === 'giant' ? col + 'aa' : col + '77'; cvPX.fill();
+            for (let g = 0; g < 2; g++) {
+              const gx = c.x + Math.cos(c.phase + g * 2.5) * c.r * .35;
+              const gy = c.y + Math.sin(c.phase + g * 2.5) * c.r * .35;
+              cvPX.beginPath(); cvPX.arc(gx, gy, 1, 0, Math.PI * 2);
+              cvPX.fillStyle = 'rgba(255,255,255,.3)'; cvPX.fill();
+            }
+          }
+          cvPX.strokeStyle = col + '88'; cvPX.lineWidth = .7; cvPX.beginPath();
+          if (c.type === 'rbc') cvPX.ellipse(c.x, c.y, c.r * 1.2, c.r * .82, 0, 0, Math.PI * 2);
+          else cvPX.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+          cvPX.stroke();
+
+          if (c.da > .06) {
+            const pd = 4;
+            const bw = (c.type === 'rbc' ? c.r * 1.2 : c.r) + pd;
+            const bh = (c.type === 'rbc' ? c.r * .82 : c.r) + pd;
+            cvPX.strokeStyle = 'rgba(34,211,238,' + c.da + ')'; cvPX.lineWidth = 1.3;
+            cvPX.strokeRect(c.x - bw, c.y - bh, bw * 2, bh * 2);
+            cvPX.fillStyle = 'rgba(34,211,238,' + c.da + ')';
+            cvPX.font = '7px JetBrains Mono,monospace';
+            cvPX.fillText(c.type + ' ' + (c.conf * 100).toFixed(0) + '%', c.x - bw, c.y - bh - 2);
+          }
+        });
+
+        const rbcN = cells.filter(c => c.type === 'rbc').length;
+        const platN = cells.filter(c => c.type === 'platelet').length;
+        const gpN = cells.filter(c => c.type === 'giant').length;
+
+        cvPX.fillStyle = 'rgba(6,8,26,.88)'; cvPX.fillRect(0, H - 42, W, 42);
+        cvPX.font = '7px JetBrains Mono,monospace';
+        cvPX.fillStyle = '#f472b6'; cvPX.fillText('RBC: ' + rbcN, 10, H - 27);
+        cvPX.fillStyle = '#4f7fff'; cvPX.fillText('Platelet: ' + platN, 70, H - 27);
+        cvPX.fillStyle = '#22d3ee'; cvPX.fillText('Giant: ' + gpN, 145, H - 27);
+        cvPX.fillStyle = '#fbbf24'; cvPX.fillText('mAP@50: 96.56%', 205, H - 27);
+        cvPX.fillStyle = '#8892b0'; cvPX.fillText('YOLOv8-Nano · Otsu · RBC anchor: 7.5µm · MPV: 8.61 fL', 10, H - 12);
+
+        cvPX.strokeStyle = 'rgba(244,114,182,.5)'; cvPX.lineWidth = 1; cvPX.setLineDash([2, 2]);
+        cvPX.beginPath(); cvPX.moveTo(W - 65, H - 52); cvPX.lineTo(W - 20, H - 52); cvPX.stroke();
+        cvPX.setLineDash([]);
+        cvPX.fillStyle = '#f472b6'; cvPX.fillText('7.5µm', W - 58, H - 55);
+
+        requestAnimationFrame(frame);
+      }
+      frame();
+    })();
+
+    // ══ CARD GLOW ══
+    function cardGlow(e, card) {
+      const r = card.getBoundingClientRect();
+      card.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100).toFixed(1) + '%');
+      card.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100).toFixed(1) + '%');
     }
 
-    // Edge Detection
-    const eC = document.getElementById('edgeCanvas'); const eX = eC.getContext('2d'); let eBrush = 8, eDrawing = false;
+    // ══ DEMO TABS ══
+    let activeTab = 'edge';
+    function switchTab(name) {
+      document.querySelectorAll('.dtab').forEach((t, i) => t.classList.toggle('active', ['edge', 'segment', 'cluster', 'yolo', 'platelet'][i] === name));
+      document.querySelectorAll('.dpanel').forEach(p => p.classList.remove('active'));
+      document.getElementById('panel-' + name).classList.add('active');
+      activeTab = name;
+      if (name === 'segment') initSeg();
+      if (name === 'cluster') initK();
+      if (name === 'yolo') initY();
+      if (name === 'platelet') initPlatelet();
+    }
+
+    // ══ Edge Detection ══
+    const eC = document.getElementById('edgeCanvas'), eX = eC.getContext('2d');
+    let eBrush = 8, eDrawing = false;
     eX.fillStyle = '#06081a'; eX.fillRect(0, 0, 400, 300); drawGrid(eX, 400, 300);
-    function drawGrid(ctx, w, h) { ctx.strokeStyle = 'rgba(79,127,255,.08)'; ctx.lineWidth = .5; for (let x = 0; x < w; x += 20) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); } for (let y = 0; y < h; y += 20) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); } }
-    function setBrush(s) { eBrush = s; document.querySelectorAll('#panel-edge .cbtn').forEach(b => b.classList.remove('active')); event.target.classList.add('active'); }
+    function drawGrid(ctx, w, h) {
+      ctx.strokeStyle = 'rgba(79,127,255,.08)'; ctx.lineWidth = .5;
+      for (let x = 0; x < w; x += 20) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+      for (let y = 0; y < h; y += 20) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+    }
+    function setBrush(s, btn) { eBrush = s; document.querySelectorAll('#panel-edge .cbtn').forEach(b => b.classList.remove('active')); if (btn) btn.classList.add('active'); }
     function clearEdge() { eX.fillStyle = '#06081a'; eX.fillRect(0, 0, 400, 300); drawGrid(eX, 400, 300); }
     eC.addEventListener('mousedown', () => eDrawing = true);
     eC.addEventListener('mouseup', () => { eDrawing = false; applyEdge(); });
     eC.addEventListener('mousemove', e => { if (!eDrawing) return; const r = eC.getBoundingClientRect(); eX.beginPath(); eX.arc(e.clientX - r.left, e.clientY - r.top, eBrush, 0, Math.PI * 2); eX.fillStyle = 'rgba(160,190,255,.92)'; eX.fill(); });
+    eC.addEventListener('touchstart', e => { e.preventDefault(); eDrawing = true; }, { passive: false });
+    eC.addEventListener('touchend', e => { e.preventDefault(); eDrawing = false; applyEdge(); }, { passive: false });
+    eC.addEventListener('touchmove', e => { e.preventDefault(); if (!eDrawing) return; const r = eC.getBoundingClientRect(), t2 = e.touches[0]; eX.beginPath(); eX.arc(t2.clientX - r.left, t2.clientY - r.top, eBrush, 0, Math.PI * 2); eX.fillStyle = 'rgba(160,190,255,.92)'; eX.fill(); }, { passive: false });
     function applyEdge() {
-      const thresh = +document.getElementById('edgeThresh').value; const id = eX.getImageData(0, 0, 400, 300), d = id.data, W = 400, H = 300; const out = new Uint8ClampedArray(d.length); let edges = 0;
-      for (let y = 1; y < H - 1; y++)for (let x = 1; x < W - 1; x++) { const i = (y * W + x) * 4; const gx = -d[((y - 1) * W + (x - 1)) * 4] + d[((y - 1) * W + (x + 1)) * 4] - 2 * d[(y * W + (x - 1)) * 4] + 2 * d[(y * W + (x + 1)) * 4] - d[((y + 1) * W + (x - 1)) * 4] + d[((y + 1) * W + (x + 1)) * 4]; const gy = -d[((y - 1) * W + (x - 1)) * 4] - 2 * d[((y - 1) * W + x) * 4] - d[((y - 1) * W + (x + 1)) * 4] + d[((y + 1) * W + (x - 1)) * 4] + 2 * d[((y + 1) * W + x) * 4] + d[((y + 1) * W + (x + 1)) * 4]; const mag = Math.sqrt(gx * gx + gy * gy); if (mag > thresh) { out[i] = 0; out[i + 1] = 212; out[i + 2] = 238; out[i + 3] = 210; edges++; } else { out[i] = d[i] * .08; out[i + 1] = d[i + 1] * .08; out[i + 2] = d[i + 2] * .08; out[i + 3] = d[i + 3]; } }
-      eX.putImageData(new ImageData(out, W, H), 0, 0); document.getElementById('edge-log').innerHTML = `&gt; Sobel applied · Threshold: ${thresh} · Edges: ${edges} <span style="color:#22d3ee">✓</span>`;
+      const thresh = +document.getElementById('edgeThresh').value;
+      const id = eX.getImageData(0, 0, 400, 300), d = id.data, W2 = 400, H2 = 300;
+      const out = new Uint8ClampedArray(d.length); let edges = 0;
+      for (let y = 1; y < H2 - 1; y++) for (let x = 1; x < W2 - 1; x++) {
+        const i = (y * W2 + x) * 4;
+        const gx = -d[((y - 1) * W2 + (x - 1)) * 4] + d[((y - 1) * W2 + (x + 1)) * 4] - 2 * d[(y * W2 + (x - 1)) * 4] + 2 * d[(y * W2 + (x + 1)) * 4] - d[((y + 1) * W2 + (x - 1)) * 4] + d[((y + 1) * W2 + (x + 1)) * 4];
+        const gy = -d[((y - 1) * W2 + (x - 1)) * 4] - 2 * d[((y - 1) * W2 + x) * 4] - d[((y - 1) * W2 + (x + 1)) * 4] + d[((y + 1) * W2 + (x - 1)) * 4] + 2 * d[((y + 1) * W2 + x) * 4] + d[((y + 1) * W2 + (x + 1)) * 4];
+        const mag = Math.sqrt(gx * gx + gy * gy);
+        if (mag > thresh) { out[i] = 0; out[i + 1] = 212; out[i + 2] = 238; out[i + 3] = 210; edges++; }
+        else { out[i] = d[i] * .08; out[i + 1] = d[i + 1] * .08; out[i + 2] = d[i + 2] * .08; out[i + 3] = d[i + 3]; }
+      }
+      eX.putImageData(new ImageData(out, W2, H2), 0, 0);
+      document.getElementById('edge-log').innerHTML = '&gt; Sobel applied · Threshold: ' + thresh + ' · Edges: ' + edges + ' <span style="color:#22d3ee">✓</span>';
     }
     document.getElementById('edgeThresh').addEventListener('input', () => { if (!eDrawing) applyEdge(); });
 
-    // Segmentation
-    const sC = document.getElementById('segCanvas'); const sX = sC ? sC.getContext('2d') : null; let segSeeds = 0;
+    // ══ Segmentation ══
+    const sC = document.getElementById('segCanvas'), sX = sC ? sC.getContext('2d') : null; let segSeeds = 0;
     function initSeg() {
       if (!sX) return; segSeeds = 0; sX.fillStyle = '#06081a'; sX.fillRect(0, 0, 400, 300);
       [{ x: 80, y: 80, rx: 65, ry: 55, c: 'rgba(244,114,182,.8)' }, { x: 230, y: 95, rx: 80, ry: 70, c: 'rgba(79,127,255,.75)' }, { x: 330, y: 200, rx: 55, ry: 48, c: 'rgba(34,211,238,.8)' }, { x: 145, y: 220, rx: 75, ry: 65, c: 'rgba(251,191,36,.75)' }, { x: 295, y: 75, rx: 48, ry: 52, c: 'rgba(167,139,250,.8)' }].forEach(b => { sX.beginPath(); sX.ellipse(b.x, b.y, b.rx, b.ry, Math.random() * .5, 0, Math.PI * 2); sX.fillStyle = b.c; sX.fill(); });
-      document.getElementById('seg-log').innerHTML = `&gt; 5 color regions generated<br>&gt; Click to flood-fill seed`;
+      document.getElementById('seg-log').innerHTML = '&gt; 5 color regions generated<br>&gt; Click/tap to flood-fill seed';
     }
-    if (sC) sC.addEventListener('click', e => { const r = sC.getBoundingClientRect(); floodFill(Math.round(e.clientX - r.left), Math.round(e.clientY - r.top), +document.getElementById('segTol').value); });
-    function floodFill(sx, sy, tol) { if (!sX) return; const id = sX.getImageData(0, 0, 400, 300), d = id.data, W = 400, H = 300, idx = (sx + sy * W) * 4, sr = d[idx], sg2 = d[idx + 1], sb = d[idx + 2], pal = [[79, 127, 255], [34, 211, 238], [244, 114, 182], [251, 191, 36], [167, 139, 250]], c = pal[segSeeds % pal.length]; segSeeds++; const vis = new Uint8Array(W * H), q = [[sx, sy]]; vis[sx + sy * W] = 1; let filled = 0; while (q.length && filled < 28000) { const [x, y] = q.shift(); const i = (x + y * W) * 4; d[i] = c[0]; d[i + 1] = c[1]; d[i + 2] = c[2]; d[i + 3] = 175; filled++;[[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]].forEach(([nx, ny]) => { if (nx < 0 || nx >= W || ny < 0 || ny >= H || vis[nx + ny * W]) return; const ni = (nx + ny * W) * 4; if (Math.abs(d[ni] - sr) + Math.abs(d[ni + 1] - sg2) + Math.abs(d[ni + 2] - sb) < tol * 3) { vis[nx + ny * W] = 1; q.push([nx, ny]); } }); } sX.putImageData(id, 0, 0); document.getElementById('seg-log').innerHTML = `&gt; Seed (${sx},${sy}) · ${filled}px · Regions: ${segSeeds} <span style="color:#22d3ee">✓</span>`; }
+    function seedAt(ex, ey) { floodFill(Math.round(ex), Math.round(ey), +document.getElementById('segTol').value); }
+    if (sC) {
+      sC.addEventListener('click', e => { const r = sC.getBoundingClientRect(); seedAt(e.clientX - r.left, e.clientY - r.top); });
+      sC.addEventListener('touchend', e => { e.preventDefault(); const r = sC.getBoundingClientRect(), t2 = e.changedTouches[0]; seedAt(t2.clientX - r.left, t2.clientY - r.top); }, { passive: false });
+    }
+    function floodFill(sx, sy, tol) {
+      if (!sX) return; const id = sX.getImageData(0, 0, 400, 300), d = id.data, W2 = 400, H2 = 300;
+      const idx = (sx + sy * W2) * 4, sr = d[idx], sg2 = d[idx + 1], sb = d[idx + 2];
+      const pal = [[79, 127, 255], [34, 211, 238], [244, 114, 182], [251, 191, 36], [167, 139, 250]];
+      const c = pal[segSeeds % pal.length]; segSeeds++;
+      const vis = new Uint8Array(W2 * H2), q = [[sx, sy]]; vis[sx + sy * W2] = 1; let filled = 0;
+      while (q.length && filled < 28000) {
+        const p = q.shift(), px = p[0], py = p[1];
+        const i = (px + py * W2) * 4;
+        d[i] = c[0]; d[i + 1] = c[1]; d[i + 2] = c[2]; d[i + 3] = 175; filled++;
+        [[px + 1, py], [px - 1, py], [px, py + 1], [px, py - 1]].forEach(n => {
+          const nx = n[0], ny = n[1];
+          if (nx < 0 || nx >= W2 || ny < 0 || ny >= H2 || vis[nx + ny * W2]) return;
+          const ni = (nx + ny * W2) * 4;
+          if (Math.abs(d[ni] - sr) + Math.abs(d[ni + 1] - sg2) + Math.abs(d[ni + 2] - sb) < tol * 3) { vis[nx + ny * W2] = 1; q.push([nx, ny]); }
+        });
+      }
+      sX.putImageData(id, 0, 0);
+      document.getElementById('seg-log').innerHTML = '&gt; Seed (' + sx + ',' + sy + ') · ' + filled + 'px · Regions: ' + segSeeds + ' <span style="color:#22d3ee">✓</span>';
+    }
 
-    // K-Means
-    const kC = document.getElementById('kCanvas'); const kX = kC ? kC.getContext('2d') : null; let kPts = [], kCen = [], kK = 3, kAuto = null; const kCol = ['#4f7fff', '#22d3ee', '#f472b6', '#fbbf24', '#a78bfa'];
+    // ══ K-Means ══
+    const kC = document.getElementById('kCanvas'), kX = kC ? kC.getContext('2d') : null;
+    let kPts = [], kCen = [], kK = 3, kAuto = null;
+    const kCol = ['#4f7fff', '#22d3ee', '#f472b6', '#fbbf24', '#a78bfa'];
     function initK() { if (!kX) return; kX.fillStyle = '#06081a'; kX.fillRect(0, 0, 400, 300); drawGrid(kX, 400, 300); }
-    function setK(k) { kK = k; kCen = []; document.querySelectorAll('#panel-cluster .cbtn').slice(0, 4).forEach((b, i) => b.classList.toggle('active', i === k - 2)); document.getElementById('k-log').innerHTML = `&gt; K=${k} · centroids reset`; }
-    if (kC) kC.addEventListener('click', e => { const r = kC.getBoundingClientRect(); kPts.push({ x: e.clientX - r.left, y: e.clientY - r.top, c: -1 }); drawK(); document.getElementById('k-log').innerHTML = `&gt; ${kPts.length} points`; });
-    function drawK() { if (!kX) return; kX.fillStyle = 'rgba(6,8,26,.88)'; kX.fillRect(0, 0, 400, 300); drawGrid(kX, 400, 300); if (kCen.length) for (let py = 0; py < 300; py += 4)for (let px = 0; px < 400; px += 4) { let md = Infinity, mc = 0; kCen.forEach((c, i) => { const d2 = (px - c.x) ** 2 + (py - c.y) ** 2; if (d2 < md) { md = d2; mc = i; } }); kX.fillStyle = kCol[mc] + '12'; kX.fillRect(px, py, 4, 4); } kPts.forEach(p => { kX.beginPath(); kX.arc(p.x, p.y, 5, 0, Math.PI * 2); kX.fillStyle = p.c >= 0 ? kCol[p.c] + 'cc' : 'rgba(130,150,190,.7)'; kX.fill(); kX.strokeStyle = 'rgba(255,255,255,.25)'; kX.lineWidth = 1; kX.stroke(); }); kCen.forEach((c, i) => { kX.beginPath(); kX.arc(c.x, c.y, 10, 0, Math.PI * 2); kX.fillStyle = kCol[i]; kX.fill(); kX.strokeStyle = '#fff'; kX.lineWidth = 2; kX.stroke(); kX.beginPath(); kX.moveTo(c.x - 5, c.y); kX.lineTo(c.x + 5, c.y); kX.moveTo(c.x, c.y - 5); kX.lineTo(c.x, c.y + 5); kX.strokeStyle = '#fff'; kX.lineWidth = 2; kX.stroke(); }); }
-    function runKStep() { if (kPts.length < kK) { document.getElementById('k-log').innerHTML = `&gt; Need ${kK}+ points`; return; } if (!kCen.length) kCen = [...kPts].sort(() => Math.random() - .5).slice(0, kK).map(p => ({ x: p.x, y: p.y })); kPts.forEach(p => { let md = Infinity; kCen.forEach((c, i) => { const d2 = (p.x - c.x) ** 2 + (p.y - c.y) ** 2; if (d2 < md) { md = d2; p.c = i; } }); }); kCen.forEach((c, i) => { const ps = kPts.filter(p => p.c === i); if (ps.length) { c.x = ps.reduce((s, p) => s + p.x, 0) / ps.length; c.y = ps.reduce((s, p) => s + p.y, 0) / ps.length; } }); drawK(); document.getElementById('k-log').innerHTML = `&gt; Step done · [${kCen.map((_, i) => kPts.filter(p => p.c === i).length).join(',')}]`; }
-    function autoK() { if (kAuto) { clearInterval(kAuto); kAuto = null; return; } kAuto = setInterval(runKStep, 380); }
-    function clearK() { kPts = []; kCen = []; if (kAuto) { clearInterval(kAuto); kAuto = null; } initK(); document.getElementById('k-log').innerHTML = `&gt; Cleared · K=${kK}`; }
-
-    // YOLO Sim
-    const yC = document.getElementById('yCanvas'); const yX = yC ? yC.getContext('2d') : null; let yCells = [], yMode = 'platelet', yRunning = false, yFrame = 0;
-    class YCell { constructor(m) { this.x = 30 + Math.random() * 340; this.y = 30 + Math.random() * 240; this.type = m === 'mixed' ? Math.random() > .5 ? 'platelet' : 'rbc' : m; this.r = this.type === 'rbc' ? 11 + Math.random() * 5 : 5 + Math.random() * 8; this.vx = (Math.random() - .5) * .9; this.vy = (Math.random() - .5) * .9; this.conf = .72 + Math.random() * .27; this.da = 0; } update() { this.x += this.vx; this.y += this.vy; if (this.x < this.r || this.x > 400 - this.r) this.vx *= -1; if (this.y < this.r || this.y > 300 - this.r) this.vy *= -1; this.da = this.conf > parseFloat(document.getElementById('confThresh')?.value || .5) ? Math.min(1, this.da + .05) : Math.max(0, this.da - .05); } draw() { const col = { platelet: '#4f7fff', rbc: '#f472b6' }; yX.beginPath(); if (this.type === 'rbc') yX.ellipse(this.x, this.y, this.r * 1.3, this.r * .85, 0, 0, Math.PI * 2); else yX.arc(this.x, this.y, this.r, 0, Math.PI * 2); yX.fillStyle = col[this.type] + '99'; yX.fill(); yX.strokeStyle = col[this.type]; yX.lineWidth = 1; yX.stroke(); if (this.da > .08) { const pd = 5; yX.strokeStyle = `rgba(34,211,238,${this.da})`; yX.lineWidth = 1.5; yX.strokeRect(this.x - this.r - pd, this.y - this.r - pd, (this.r + pd) * 2, (this.r + pd) * 2); yX.fillStyle = `rgba(34,211,238,${this.da})`; yX.font = '7px JetBrains Mono,monospace'; yX.fillText(`${this.type} ${(this.conf * 100).toFixed(0)}%`, this.x - this.r - pd, this.y - this.r - pd - 2); } } }
-    function initY() { if (!yX) return; yCells = []; for (let i = 0; i < 18; i++)yCells.push(new YCell(yMode)); if (!yRunning) { yRunning = true; drawY(); } }
-    function setYMode(m) { yMode = m; yCells = []; for (let i = 0; i < 18; i++)yCells.push(new YCell(m)); document.querySelectorAll('#panel-yolo .cbtn').forEach((b, i) => b.classList.toggle('active', ['platelet', 'rbc', 'mixed'][i] === m)); }
-    function drawY() { if (activeTab !== 'yolo') { yRunning = false; return; } yX.fillStyle = 'rgba(6,8,26,.55)'; yX.fillRect(0, 0, 400, 300); yFrame++; yCells.forEach(c => { c.update(); c.draw(); }); const det = yCells.filter(c => c.da > .5).length; yX.fillStyle = 'rgba(6,8,26,.82)'; yX.fillRect(6, 6, 195, 68); yX.font = '8px JetBrains Mono,monospace'; yX.fillStyle = '#22d3ee'; yX.fillText('YOLOv8-Nano · inference', 14, 22); yX.fillStyle = '#4f7fff'; yX.fillText(`Detected: ${det}/${yCells.length}`, 14, 36); yX.fillStyle = '#8892b0'; yX.fillText('mAP@50: 96.56%', 14, 50); document.getElementById('yolo-log').innerHTML = `&gt; Frame ${yFrame} · detected: ${det}/${yCells.length}`; requestAnimationFrame(drawY); }
-
-    // ════════════════════════════════════════════
-    //  NEURAL NETWORK VIZ
-    // ════════════════════════════════════════════
-    const nnC = document.getElementById('nn-canvas'); const nnX = nnC.getContext('2d'); nnC.width = nnC.offsetWidth || 480;
-    const LAYERS = [4, 6, 8, 6, 3], LCOL = ['#4f7fff', '#6b8fff', '#22d3ee', '#1ac4de', '#f472b6']; let nnNodes = [], nnEdges = [], nnPh = 0;
-    function buildNN() { nnNodes = []; nnEdges = []; const W = nnC.width, H = 420; LAYERS.forEach((n, li) => { const x = W * (li + 1) / (LAYERS.length + 1); for (let j = 0; j < n; j++)nnNodes.push({ x, y: H * (j + 1) / (n + 1), l: li, v: Math.random() }); }); for (let li = 0; li < LAYERS.length - 1; li++) { const a = nnNodes.filter(n => n.l === li), b = nnNodes.filter(n => n.l === li + 1); a.forEach(na => b.forEach(nb => nnEdges.push({ x1: na.x, y1: na.y, x2: nb.x, y2: nb.y, w: Math.random() * 2 - 1, p: Math.random() }))); } }
-    buildNN();
-    (function nnLoop() { nnX.clearRect(0, 0, nnC.width, 420); nnPh += .018; nnEdges.forEach(e => { e.p = (e.p + .014) % 1; const a = Math.abs(e.w) * .12 + .04; nnX.beginPath(); nnX.moveTo(e.x1, e.y1); nnX.lineTo(e.x2, e.y2); nnX.strokeStyle = e.w > 0 ? `rgba(79,127,255,${a})` : `rgba(244,114,182,${a})`; nnX.lineWidth = .8; nnX.stroke(); const pa = Math.abs(Math.sin(e.p * Math.PI)); if (pa > .5) { const px2 = e.x1 + (e.x2 - e.x1) * e.p, py2 = e.y1 + (e.y2 - e.y1) * e.p; nnX.beginPath(); nnX.arc(px2, py2, 2, 0, Math.PI * 2); nnX.fillStyle = e.w > 0 ? `rgba(34,211,238,${pa * .8})` : `rgba(244,114,182,${pa * .5})`; nnX.fill(); } }); nnNodes.forEach((n, i) => { n.v = .5 + .5 * Math.sin(nnPh * 1.2 + i * .65); const r = 7 + n.v * 4, a = .4 + n.v * .6; nnX.beginPath(); nnX.arc(n.x, n.y, r, 0, Math.PI * 2); nnX.fillStyle = LCOL[n.l] + (Math.round(a * 99).toString(16).padStart(2, '0')); nnX.fill(); nnX.strokeStyle = LCOL[n.l]; nnX.lineWidth = 1.5; nnX.stroke(); }); const lbl = ['Input', 'Conv', 'Hidden', 'Features', 'Output']; nnX.font = '8px JetBrains Mono,monospace'; nnX.textAlign = 'center'; nnX.fillStyle = 'rgba(136,146,176,.6)'; LAYERS.forEach((_, li) => nnX.fillText(lbl[li], nnC.width * (li + 1) / (LAYERS.length + 1), 412)); nnX.textAlign = 'start'; requestAnimationFrame(nnLoop); })();
-
-    // ════════════════════════════════════════════
-    //  3D AVATAR
-    // ════════════════════════════════════════════
-    const avC = document.getElementById('avatarCanvas'); const avX = avC.getContext('2d'); let avState = 'idle', avAnim = 0, avBlink = 0, avTypingTimer = null;
-    function drawAvatar(state, anim, blink) {
-      const W = 320, H = 220; avX.clearRect(0, 0, W, H); const bg = avX.createRadialGradient(W / 2, H * .6, 20, W / 2, H / 2, 140); bg.addColorStop(0, 'rgba(17,24,64,.6)'); bg.addColorStop(1, 'rgba(6,8,26,.9)'); avX.fillStyle = bg; avX.fillRect(0, 0, W, H); const cx = W / 2, bodyBob = state === 'typing' ? Math.sin(anim * .18) * 3 : Math.sin(anim * .04) * 1.5, by = H * .78 + bodyBob;
-      avX.beginPath(); avX.ellipse(cx, H * .9, 42, 10, 0, 0, Math.PI * 2); avX.fillStyle = 'rgba(0,0,0,.35)'; avX.fill();
-      const bodyGrad = avX.createLinearGradient(cx - 38, by - 55, cx + 38, by + 10); bodyGrad.addColorStop(0, '#1e2a5e'); bodyGrad.addColorStop(1, '#0d1230'); avX.fillStyle = bodyGrad; avX.beginPath(); avX.moveTo(cx - 40, by + 18); avX.quadraticCurveTo(cx - 45, by - 40, cx - 22, by - 52); avX.lineTo(cx + 22, by - 52); avX.quadraticCurveTo(cx + 45, by - 40, cx + 40, by + 18); avX.closePath(); avX.fill(); avX.strokeStyle = 'rgba(79,127,255,.3)'; avX.lineWidth = 1.5; avX.stroke();
-      avX.beginPath(); avX.moveTo(cx - 15, by - 52); avX.lineTo(cx, by - 42); avX.lineTo(cx + 15, by - 52); avX.strokeStyle = '#4f7fff'; avX.lineWidth = 2; avX.stroke();
-      const armSwing = state === 'typing' ? Math.sin(anim * .22) * 12 : 0; avX.beginPath(); avX.moveTo(cx - 25, by - 45); if (state === 'thumbsup') avX.lineTo(cx - 55, by - 65); else avX.quadraticCurveTo(cx - 55, by - 30 + armSwing, cx - 50, by + 5); avX.strokeStyle = '#1e2a5e'; avX.lineWidth = 14; avX.lineCap = 'round'; avX.stroke();
-      avX.beginPath(); avX.moveTo(cx + 25, by - 45); avX.quadraticCurveTo(cx + 55, by - 30 - armSwing, cx + 50, by + 5); avX.strokeStyle = '#1e2a5e'; avX.lineWidth = 14; avX.lineCap = 'round'; avX.stroke();
-      if (state === 'thumbsup') { avX.font = '22px serif'; avX.fillText('👍', cx - 68, by - 68); }
-      avX.beginPath(); avX.moveTo(cx - 10, by - 52); avX.lineTo(cx + 10, by - 52); avX.lineTo(cx + 8, by - 65); avX.lineTo(cx - 8, by - 65); avX.closePath(); avX.fillStyle = '#c68642'; avX.fill();
-      const headTilt = state === 'typing' ? Math.sin(anim * .1) * 4 : 0, headY = by - 95; avX.save(); avX.translate(cx, headY + 16); avX.rotate(headTilt * Math.PI / 180); avX.translate(-cx, -(headY + 16));
-      const headGrad = avX.createRadialGradient(cx - 8, headY, 2, cx, headY + 8, 30); headGrad.addColorStop(0, '#d4956a'); headGrad.addColorStop(1, '#b87740'); avX.beginPath(); avX.ellipse(cx, headY + 8, 26, 30, 0, 0, Math.PI * 2); avX.fillStyle = headGrad; avX.fill();
-      avX.beginPath(); avX.ellipse(cx, headY - 10, 26, 14, 0, Math.PI, Math.PI * 2); avX.fillStyle = '#1a1a2e'; avX.fill(); avX.beginPath(); avX.moveTo(cx - 12, headY - 18); avX.quadraticCurveTo(cx, headY - 30, cx + 12, headY - 18); avX.fillStyle = '#1a1a2e'; avX.fill();
-      avX.beginPath(); avX.ellipse(cx - 26, headY + 10, 7, 9, 0, 0, Math.PI * 2); avX.fillStyle = '#c68642'; avX.fill(); avX.beginPath(); avX.ellipse(cx + 26, headY + 10, 7, 9, 0, 0, Math.PI * 2); avX.fillStyle = '#c68642'; avX.fill();
-      const eyeH = blink ? 0 : 7; avX.beginPath(); avX.ellipse(cx - 10, headY + 5, 7, eyeH, 0, 0, Math.PI * 2); avX.fillStyle = '#fff'; avX.fill(); avX.beginPath(); avX.ellipse(cx + 10, headY + 5, 7, eyeH, 0, 0, Math.PI * 2); avX.fillStyle = '#fff'; avX.fill();
-      if (!blink) { avX.beginPath(); avX.arc(cx - 10, headY + 6, 4, 0, Math.PI * 2); avX.fillStyle = '#3d2b1a'; avX.fill(); avX.beginPath(); avX.arc(cx + 10, headY + 6, 4, 0, Math.PI * 2); avX.fillStyle = '#3d2b1a'; avX.fill(); avX.beginPath(); avX.arc(cx - 10, headY + 6, 2, 0, Math.PI * 2); avX.fillStyle = '#0d0a07'; avX.fill(); avX.beginPath(); avX.arc(cx + 10, headY + 6, 2, 0, Math.PI * 2); avX.fillStyle = '#0d0a07'; avX.fill(); avX.beginPath(); avX.arc(cx - 8, headY + 4, 1, 0, Math.PI * 2); avX.fillStyle = 'rgba(255,255,255,.8)'; avX.fill(); avX.beginPath(); avX.arc(cx + 12, headY + 4, 1, 0, Math.PI * 2); avX.fillStyle = 'rgba(255,255,255,.8)'; avX.fill(); }
-      avX.strokeStyle = '#2a2a3e'; avX.lineWidth = 2.5; avX.beginPath(); avX.rect(cx - 20, headY - 1, 20, 14); avX.stroke(); avX.beginPath(); avX.rect(cx, headY - 1, 20, 14); avX.stroke(); avX.beginPath(); avX.moveTo(cx - 1, headY + 5); avX.lineTo(cx + 1, headY + 5); avX.stroke(); avX.beginPath(); avX.moveTo(cx - 20, headY + 5); avX.lineTo(cx - 28, headY + 5); avX.stroke(); avX.beginPath(); avX.moveTo(cx + 20, headY + 5); avX.lineTo(cx + 28, headY + 5); avX.stroke(); avX.fillStyle = 'rgba(79,127,255,.12)'; avX.fillRect(cx - 20, headY - 1, 20, 14); avX.fillRect(cx, headY - 1, 20, 14);
-      avX.beginPath(); avX.moveTo(cx, headY + 10); avX.lineTo(cx - 4, headY + 18); avX.lineTo(cx + 4, headY + 18); avX.strokeStyle = 'rgba(0,0,0,.2)'; avX.lineWidth = 1.5; avX.lineCap = 'round'; avX.stroke();
-      if (state === 'thumbsup') { avX.beginPath(); avX.arc(cx, headY + 22, 10, 0.1, Math.PI - .1); avX.strokeStyle = 'rgba(0,0,0,.4)'; avX.lineWidth = 2; avX.stroke(); } else if (state === 'typing') { avX.beginPath(); avX.moveTo(cx - 7, headY + 23); avX.lineTo(cx + 7, headY + 23); avX.strokeStyle = 'rgba(0,0,0,.3)'; avX.lineWidth = 1.8; avX.stroke(); } else { avX.beginPath(); avX.arc(cx, headY + 20, 7, .1, Math.PI - .1); avX.strokeStyle = 'rgba(0,0,0,.3)'; avX.lineWidth = 1.8; avX.stroke(); }
-      avX.restore();
-      const lapY = by + 5; avX.fillStyle = '#111840'; avX.fillRect(cx - 38, lapY, 76, 8); avX.fillStyle = '#0d1230'; avX.fillRect(cx - 32, lapY - 24, 64, 24); avX.strokeStyle = 'rgba(79,127,255,.4)'; avX.lineWidth = 1; avX.strokeRect(cx - 32, lapY - 24, 64, 24); avX.fillStyle = state === 'typing' ? 'rgba(79,127,255,.25)' : 'rgba(34,211,238,.12)'; avX.fillRect(cx - 30, lapY - 22, 60, 20); if (state === 'typing' && Math.floor(anim * .1) % 2 === 0) { avX.fillStyle = '#22d3ee'; avX.fillRect(cx - 5, lapY - 14, 2, 10); }
-      for (let i = 0; i < 5; i++) { const a2 = anim * .02 + i * 1.25, pr = 55 + i * 8, px3 = cx + Math.cos(a2) * pr, py3 = headY + Math.sin(a2 * 1.3) * 20; avX.beginPath(); avX.arc(px3, py3, 1.5, 0, Math.PI * 2); avX.fillStyle = `rgba(79,127,255,${.2 + .15 * Math.sin(a2 + i)})`; avX.fill(); }
+    function setK(k) { kK = k; kCen = []; document.querySelectorAll('#panel-cluster .cbtn').slice(0, 4).forEach((b, i) => b.classList.toggle('active', i === k - 2)); document.getElementById('k-log').innerHTML = '&gt; K=' + k + ' · centroids reset'; }
+    function addKPoint(ex, ey) { kPts.push({ x: ex, y: ey, c: -1 }); drawK(); document.getElementById('k-log').innerHTML = '&gt; ' + kPts.length + ' points'; }
+    if (kC) {
+      kC.addEventListener('click', e => { const r = kC.getBoundingClientRect(); addKPoint(e.clientX - r.left, e.clientY - r.top); });
+      kC.addEventListener('touchend', e => { e.preventDefault(); const r = kC.getBoundingClientRect(), t2 = e.changedTouches[0]; addKPoint(t2.clientX - r.left, t2.clientY - r.top); }, { passive: false });
     }
-    let avAnimId = null;
-    function startAvatar(state) { avState = state; if (avAnimId) cancelAnimationFrame(avAnimId); let frame = 0; (function loop() { frame++; avBlink = (frame % 150 < 5); drawAvatar(avState, frame, avBlink); avAnimId = requestAnimationFrame(loop); })(); }
-    startAvatar('idle');
-    function avatarTyping() { avState = 'typing'; clearTimeout(avTypingTimer); const phrases = ["I'm listening... 🤔", "Tell me more! 💡", "This sounds interesting..", "Composing a response..."]; document.getElementById('avatarSpeech').textContent = phrases[Math.floor(Math.random() * phrases.length)]; avTypingTimer = setTimeout(avatarIdle, 2000); }
-    function avatarIdle() { avState = 'idle'; document.getElementById('avatarSpeech').textContent = "I'm here whenever you're ready. 💬"; }
-    function submitContact() { const msg = document.getElementById('cMsg').value.trim(); if (!msg) { document.getElementById('avatarSpeech').textContent = 'Write a message first! 😄'; return; } avState = 'thumbsup'; document.getElementById('avatarSpeech').textContent = "Thanks! I'll reply at fmubarrat@gmail.com 🚀"; setTimeout(() => { avState = 'idle'; document.getElementById('avatarSpeech').textContent = 'Looking forward to connecting! 🎓'; }, 4000); }
+    function drawK() {
+      if (!kX) return; kX.fillStyle = 'rgba(6,8,26,.88)'; kX.fillRect(0, 0, 400, 300); drawGrid(kX, 400, 300);
+      if (kCen.length) for (let py = 0; py < 300; py += 4) for (let px = 0; px < 400; px += 4) {
+        let md = Infinity, mc = 0;
+        kCen.forEach((c, i) => { const d2 = (px - c.x) ** 2 + (py - c.y) ** 2; if (d2 < md) { md = d2; mc = i; } });
+        kX.fillStyle = kCol[mc] + '12'; kX.fillRect(px, py, 4, 4);
+      }
+      kPts.forEach(p => { kX.beginPath(); kX.arc(p.x, p.y, 5, 0, Math.PI * 2); kX.fillStyle = p.c >= 0 ? kCol[p.c] + 'cc' : 'rgba(130,150,190,.7)'; kX.fill(); kX.strokeStyle = 'rgba(255,255,255,.25)'; kX.lineWidth = 1; kX.stroke(); });
+      kCen.forEach((c, i) => { kX.beginPath(); kX.arc(c.x, c.y, 10, 0, Math.PI * 2); kX.fillStyle = kCol[i]; kX.fill(); kX.strokeStyle = '#fff'; kX.lineWidth = 2; kX.stroke(); kX.beginPath(); kX.moveTo(c.x - 5, c.y); kX.lineTo(c.x + 5, c.y); kX.moveTo(c.x, c.y - 5); kX.lineTo(c.x, c.y + 5); kX.strokeStyle = '#fff'; kX.lineWidth = 2; kX.stroke(); });
+    }
+    function runKStep() {
+      if (kPts.length < kK) { document.getElementById('k-log').innerHTML = '&gt; Need ' + kK + '+ points'; return; }
+      if (!kCen.length) kCen = [...kPts].sort(() => Math.random() - .5).slice(0, kK).map(p => ({ x: p.x, y: p.y }));
+      kPts.forEach(p => { let md = Infinity; kCen.forEach((c, i) => { const d2 = (p.x - c.x) ** 2 + (p.y - c.y) ** 2; if (d2 < md) { md = d2; p.c = i; } }); });
+      kCen.forEach((c, i) => { const ps = kPts.filter(p => p.c === i); if (ps.length) { c.x = ps.reduce((s, p) => s + p.x, 0) / ps.length; c.y = ps.reduce((s, p) => s + p.y, 0) / ps.length; } });
+      drawK(); document.getElementById('k-log').innerHTML = '&gt; Step done · [' + kCen.map((_, i) => kPts.filter(p => p.c === i).length).join(',') + ']';
+    }
+    function autoK() { if (kAuto) { clearInterval(kAuto); kAuto = null; return; } kAuto = setInterval(runKStep, 380); }
+    function clearK() { kPts = []; kCen = []; if (kAuto) { clearInterval(kAuto); kAuto = null; } initK(); document.getElementById('k-log').innerHTML = '&gt; Cleared · K=' + kK; }
 
-    // ════════════════════════════════════════════
-    //  SCROLL REVEAL + OBSERVERS
-    // ════════════════════════════════════════════
+    // ══ YOLO Sim ══
+    const yC = document.getElementById('yCanvas'), yX = yC ? yC.getContext('2d') : null;
+    let yCells = [], yMode = 'platelet', yRunning = false, yFrame = 0;
+    class YCell {
+      constructor(m) {
+        this.x = 30 + Math.random() * 340; this.y = 30 + Math.random() * 240;
+        this.type = m === 'mixed' ? (Math.random() > .5 ? 'platelet' : 'rbc') : m;
+        this.r = this.type === 'rbc' ? 11 + Math.random() * 5 : 5 + Math.random() * 8;
+        this.vx = (Math.random() - .5) * .9; this.vy = (Math.random() - .5) * .9;
+        this.conf = .72 + Math.random() * .27; this.da = 0;
+      }
+      update() { this.x += this.vx; this.y += this.vy; if (this.x < this.r || this.x > 400 - this.r) this.vx *= -1; if (this.y < this.r || this.y > 300 - this.r) this.vy *= -1; this.da = this.conf > parseFloat(document.getElementById('confThresh').value || .5) ? Math.min(1, this.da + .05) : Math.max(0, this.da - .05); }
+      draw() {
+        const col = { platelet: '#4f7fff', rbc: '#f472b6' };
+        yX.beginPath();
+        if (this.type === 'rbc') yX.ellipse(this.x, this.y, this.r * 1.3, this.r * .85, 0, 0, Math.PI * 2);
+        else yX.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+        yX.fillStyle = col[this.type] + '99'; yX.fill();
+        yX.strokeStyle = col[this.type]; yX.lineWidth = 1; yX.stroke();
+        if (this.da > .08) {
+          const pd = 5;
+          yX.strokeStyle = 'rgba(34,211,238,' + this.da + ')'; yX.lineWidth = 1.5;
+          yX.strokeRect(this.x - this.r - pd, this.y - this.r - pd, (this.r + pd) * 2, (this.r + pd) * 2);
+          yX.fillStyle = 'rgba(34,211,238,' + this.da + ')'; yX.font = '7px JetBrains Mono,monospace';
+          yX.fillText(this.type + ' ' + (this.conf * 100).toFixed(0) + '%', this.x - this.r - pd, this.y - this.r - pd - 2);
+        }
+      }
+    }
+    function initY() { if (!yX) return; yCells = []; for (let i = 0; i < 18; i++) yCells.push(new YCell(yMode)); if (!yRunning) { yRunning = true; drawY(); } }
+    function setYMode(m) { yMode = m; yCells = []; for (let i = 0; i < 18; i++) yCells.push(new YCell(m)); document.querySelectorAll('#panel-yolo .cbtn').forEach((b, i) => b.classList.toggle('active', ['platelet', 'rbc', 'mixed'][i] === m)); }
+    function drawY() {
+      if (activeTab !== 'yolo') { yRunning = false; return; }
+      yX.fillStyle = 'rgba(6,8,26,.55)'; yX.fillRect(0, 0, 400, 300); yFrame++;
+      yCells.forEach(c => { c.update(); c.draw(); });
+      const det = yCells.filter(c => c.da > .5).length;
+      yX.fillStyle = 'rgba(6,8,26,.82)'; yX.fillRect(6, 6, 195, 68);
+      yX.font = '8px JetBrains Mono,monospace';
+      yX.fillStyle = '#22d3ee'; yX.fillText('YOLOv8-Nano · inference', 14, 22);
+      yX.fillStyle = '#4f7fff'; yX.fillText('Detected: ' + det + '/' + yCells.length, 14, 36);
+      yX.fillStyle = '#8892b0'; yX.fillText('mAP@50: 96.56%', 14, 50);
+      document.getElementById('yolo-log').innerHTML = '&gt; Frame ' + yFrame + ' · detected: ' + det + '/' + yCells.length;
+      requestAnimationFrame(drawY);
+    }
+
+    // ══ Platelet Sim ══
+    const plC = document.getElementById('plateletCanvas');
+    const plX = plC ? plC.getContext('2d') : null;
+    let plCells = [], plView = 'detect', plScanX = 0, plRunning = false;
+
+    class BloodCell {
+      constructor() {
+        this.x = 20 + Math.random() * 360; this.y = 20 + Math.random() * 260;
+        this.vx = (Math.random() - .5) * .25; this.vy = (Math.random() - .5) * .25;
+        const roll = Math.random();
+        if (roll < .12) { this.type = 'giant'; this.r = 14 + Math.random() * 6; this.conf = .88 + Math.random() * .11; }
+        else if (roll < .3) { this.type = 'platelet'; this.r = 4 + Math.random() * 4; this.conf = .75 + Math.random() * .2; }
+        else { this.type = 'rbc'; this.r = 10 + Math.random() * 3; this.conf = .9 + Math.random() * .09; }
+        this.da = 0; this.phase = Math.random() * Math.PI * 2;
+        this.diameter_um = this.type === 'rbc' ? 7.5 : (this.r / 11.5 * 7.5).toFixed(1);
+      }
+      update() {
+        this.x += this.vx; this.y += this.vy; this.phase += .015;
+        if (this.x < this.r || this.x > 400 - this.r) this.vx *= -1;
+        if (this.y < this.r || this.y > 300 - this.r) this.vy *= -1;
+        const thresh = +document.getElementById('giantThresh').value;
+        const detected = (this.type === 'giant' && this.r >= thresh) || (this.type !== 'giant' && plView === 'detect');
+        this.da = detected ? Math.min(1, this.da + .04) : Math.max(0, this.da - .03);
+      }
+      draw() {
+        const colors2 = { rbc: '#f472b6', platelet: '#4f7fff', giant: '#22d3ee' };
+        const col = colors2[this.type];
+        plX.beginPath();
+        if (this.type === 'rbc') {
+          plX.ellipse(this.x, this.y, this.r * 1.25, this.r * .85, 0, 0, Math.PI * 2);
+          plX.fillStyle = col + '55'; plX.fill();
+          plX.beginPath(); plX.arc(this.x, this.y, this.r * .4, 0, Math.PI * 2);
+          plX.fillStyle = col + '22'; plX.fill();
+        } else {
+          plX.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+          plX.fillStyle = this.type === 'giant' ? col + 'bb' : col + '88'; plX.fill();
+          for (let g = 0; g < 3; g++) {
+            const gx = this.x + Math.cos(this.phase + g * 2.1) * this.r * .4;
+            const gy = this.y + Math.sin(this.phase + g * 2.1) * this.r * .4;
+            plX.beginPath(); plX.arc(gx, gy, 1.2, 0, Math.PI * 2);
+            plX.fillStyle = 'rgba(255,255,255,.35)'; plX.fill();
+          }
+        }
+        plX.strokeStyle = col; plX.lineWidth = .8; plX.beginPath();
+        if (this.type === 'rbc') plX.ellipse(this.x, this.y, this.r * 1.25, this.r * .85, 0, 0, Math.PI * 2);
+        else plX.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+        plX.stroke();
+
+        if (this.da > .08) {
+          const pd = 5;
+          const boxCol = this.type === 'giant' ? '34,211,238' : this.type === 'platelet' ? '79,127,255' : '244,114,182';
+          plX.strokeStyle = 'rgba(' + boxCol + ',' + this.da + ')'; plX.lineWidth = 1.5;
+          const bw = (this.type === 'rbc' ? this.r * 1.25 : this.r) + pd;
+          const bh = (this.type === 'rbc' ? this.r * .85 : this.r) + pd;
+          plX.strokeRect(this.x - bw, this.y - bh, bw * 2, bh * 2);
+          plX.fillStyle = 'rgba(' + boxCol + ',' + this.da + ')';
+          plX.font = '7px JetBrains Mono,monospace';
+          let label = this.type + ' ' + (this.conf * 100).toFixed(0) + '%';
+          if (plView === 'measure') label += ' · ' + this.diameter_um + 'µm';
+          plX.fillText(label, this.x - bw, this.y - bh - 3);
+          if (plView === 'measure' && this.type !== 'rbc') {
+            plX.setLineDash([3, 3]);
+            plX.beginPath(); plX.moveTo(this.x - bw, this.y); plX.lineTo(this.x + bw, this.y);
+            plX.strokeStyle = 'rgba(' + boxCol + ',' + (this.da * .6) + ')'; plX.lineWidth = 1; plX.stroke();
+            plX.setLineDash([]);
+          }
+        }
+      }
+    }
+
+    function initPlatelet() {
+      if (!plX) return; plCells = [];
+      for (let i = 0; i < 32; i++) plCells.push(new BloodCell());
+      if (!plRunning) { plRunning = true; drawPlatelet(); }
+    }
+    function drawPlatelet() {
+      if (activeTab !== 'platelet') { plRunning = false; return; }
+      plX.fillStyle = 'rgba(15,8,18,.45)'; plX.fillRect(0, 0, 400, 300);
+      plScanX = (plScanX + 1.4) % 400;
+      const sg = plX.createLinearGradient(plScanX - 25, 0, plScanX + 8, 0);
+      sg.addColorStop(0, 'transparent'); sg.addColorStop(.8, 'rgba(34,211,238,.04)'); sg.addColorStop(1, 'rgba(34,211,238,.18)');
+      plX.fillStyle = sg; plX.fillRect(plScanX - 25, 0, 35, 300);
+      plCells.forEach(c => { c.update(); c.draw(); });
+
+      const rbcCount = plCells.filter(c => c.type === 'rbc').length;
+      const platCount = plCells.filter(c => c.type === 'platelet').length;
+      const giantCount = plCells.filter(c => c.type === 'giant').length;
+      const thresh = +document.getElementById('giantThresh').value;
+      const detGiant = plCells.filter(c => c.type === 'giant' && c.r >= thresh).length;
+
+      plX.fillStyle = 'rgba(6,8,26,.85)'; plX.fillRect(6, 6, 195, 82);
+      plX.font = '8px JetBrains Mono,monospace';
+      plX.fillStyle = '#22d3ee'; plX.fillText('PlateletVision · YOLOv8-Nano', 14, 20);
+      plX.fillStyle = '#f472b6'; plX.fillText('RBC: ' + rbcCount + ' · anchor: 7.5µm', 14, 34);
+      plX.fillStyle = '#4f7fff'; plX.fillText('Platelet: ' + platCount, 14, 48);
+      plX.fillStyle = '#22d3ee'; plX.fillText('Giant (GP): ' + detGiant + '/' + giantCount + ' detected', 14, 62);
+      plX.fillStyle = '#fbbf24'; plX.fillText('mAP@50: 96.56% · MPV: 8.61fL', 14, 76);
+
+      plX.strokeStyle = 'rgba(244,114,182,.4)'; plX.lineWidth = 1; plX.setLineDash([2, 2]);
+      plX.beginPath(); plX.moveTo(330, 280); plX.lineTo(380, 280); plX.stroke(); plX.setLineDash([]);
+      plX.fillStyle = '#f472b6'; plX.font = '7px JetBrains Mono,monospace'; plX.fillText('7.5µm', 340, 276);
+
+      document.getElementById('platelet-log').innerHTML = '&gt; Scan frame · GP detected: ' + detGiant + '/' + giantCount + ' · thresh: r≥' + thresh + 'px<br>&gt; Auto-cal: RBC→7.5µm · mode: ' + plView;
+      requestAnimationFrame(drawPlatelet);
+    }
+    function setPlateletView(v) { plView = v; document.querySelectorAll('#panel-platelet .cbtn').forEach((b, i) => b.classList.toggle('active', ['detect', 'measure'][i] === v)); }
+    function resetPlatelet() { plCells = []; for (let i = 0; i < 32; i++) plCells.push(new BloodCell()); }
+
+    // ══ NEURAL NETWORK VIZ ══
+    const nnC = document.getElementById('nn-canvas'), nnX = nnC.getContext('2d');
+    nnC.width = nnC.offsetWidth || 480;
+    const LAYERS = [4, 6, 8, 6, 3], LCOL = ['#4f7fff', '#6b8fff', '#22d3ee', '#1ac4de', '#f472b6'];
+    let nnNodes = [], nnEdges = [], nnPh = 0;
+    function buildNN() {
+      nnNodes = []; nnEdges = []; const W2 = nnC.width, H2 = 420;
+      LAYERS.forEach((n, li) => { const x = W2 * (li + 1) / (LAYERS.length + 1); for (let j = 0; j < n; j++) nnNodes.push({ x: x, y: H2 * (j + 1) / (n + 1), l: li, v: Math.random() }); });
+      for (let li = 0; li < LAYERS.length - 1; li++) { const a = nnNodes.filter(n => n.l === li), b = nnNodes.filter(n => n.l === li + 1); a.forEach(na => b.forEach(nb => nnEdges.push({ x1: na.x, y1: na.y, x2: nb.x, y2: nb.y, w: Math.random() * 2 - 1, p: Math.random() }))); }
+    }
+    buildNN();
+    window.addEventListener('resize', () => { nnC.width = nnC.offsetWidth || 480; buildNN(); }, { passive: true });
+    (function nnLoop() {
+      nnX.clearRect(0, 0, nnC.width, 420); nnPh += .018;
+      nnEdges.forEach(e => {
+        e.p = (e.p + .014) % 1; const a = Math.abs(e.w) * .12 + .04;
+        nnX.beginPath(); nnX.moveTo(e.x1, e.y1); nnX.lineTo(e.x2, e.y2);
+        nnX.strokeStyle = e.w > 0 ? 'rgba(79,127,255,' + a + ')' : 'rgba(244,114,182,' + a + ')'; nnX.lineWidth = .8; nnX.stroke();
+        const pa = Math.abs(Math.sin(e.p * Math.PI));
+        if (pa > .5) { const epx = e.x1 + (e.x2 - e.x1) * e.p, epy = e.y1 + (e.y2 - e.y1) * e.p; nnX.beginPath(); nnX.arc(epx, epy, 2, 0, Math.PI * 2); nnX.fillStyle = e.w > 0 ? 'rgba(34,211,238,' + (pa * .8) + ')' : 'rgba(244,114,182,' + (pa * .5) + ')'; nnX.fill(); }
+      });
+      nnNodes.forEach((n, i) => { n.v = .5 + .5 * Math.sin(nnPh * 1.2 + i * .65); const r = 7 + n.v * 4, a = .4 + n.v * .6; nnX.beginPath(); nnX.arc(n.x, n.y, r, 0, Math.PI * 2); nnX.fillStyle = LCOL[n.l] + (Math.round(a * 99).toString(16).padStart(2, '0')); nnX.fill(); nnX.strokeStyle = LCOL[n.l]; nnX.lineWidth = 1.5; nnX.stroke(); });
+      const lbl = ['Input', 'Conv', 'Hidden', 'Features', 'Output'];
+      nnX.font = '8px JetBrains Mono,monospace'; nnX.textAlign = 'center'; nnX.fillStyle = 'rgba(136,146,176,.6)';
+      LAYERS.forEach((_, li) => nnX.fillText(lbl[li], nnC.width * (li + 1) / (LAYERS.length + 1), 412));
+      nnX.textAlign = 'start';
+      requestAnimationFrame(nnLoop);
+    })();
+
+    // ══ 3D AVATAR ══
+    const avC = document.getElementById('avatarCanvas'), avX = avC.getContext('2d');
+    let avState = 'idle', avAnim = 0, avBlink = 0, avTypingTimer = null;
+    function drawAvatar(state, anim, blink) {
+      const W2 = 320, H2 = 220; avX.clearRect(0, 0, W2, H2);
+      const bg = avX.createRadialGradient(W2 / 2, H2 * .6, 20, W2 / 2, H2 / 2, 140);
+      bg.addColorStop(0, 'rgba(17,24,64,.6)'); bg.addColorStop(1, 'rgba(6,8,26,.9)'); avX.fillStyle = bg; avX.fillRect(0, 0, W2, H2);
+      const cx = W2 / 2, bodyBob = state === 'typing' ? Math.sin(anim * .18) * 3 : Math.sin(anim * .04) * 1.5, by = H2 * .78 + bodyBob;
+
+      avX.beginPath(); avX.ellipse(cx, H2 * .9, 42, 10, 0, 0, Math.PI * 2); avX.fillStyle = 'rgba(0,0,0,.35)'; avX.fill();
+      const bodyGrad = avX.createLinearGradient(cx - 38, by - 55, cx + 38, by + 10); bodyGrad.addColorStop(0, '#1e2a5e'); bodyGrad.addColorStop(1, '#0d1230');
+      avX.fillStyle = bodyGrad; avX.beginPath(); avX.moveTo(cx - 40, by + 18); avX.quadraticCurveTo(cx - 45, by - 40, cx - 22, by - 52); avX.lineTo(cx + 22, by - 52); avX.quadraticCurveTo(cx + 45, by - 40, cx + 40, by + 18); avX.closePath(); avX.fill();
+      avX.strokeStyle = 'rgba(79,127,255,.3)'; avX.lineWidth = 1.5; avX.stroke();
+      avX.beginPath(); avX.moveTo(cx - 15, by - 52); avX.lineTo(cx, by - 42); avX.lineTo(cx + 15, by - 52); avX.strokeStyle = '#4f7fff'; avX.lineWidth = 2; avX.stroke();
+
+      const armSwing = state === 'typing' ? Math.sin(anim * .22) * 12 : 0;
+      avX.beginPath(); avX.moveTo(cx - 25, by - 45);
+      if (state === 'thumbsup') avX.lineTo(cx - 55, by - 65);
+      else avX.quadraticCurveTo(cx - 55, by - 30 + armSwing, cx - 50, by + 5);
+      avX.strokeStyle = '#1e2a5e'; avX.lineWidth = 14; avX.lineCap = 'round'; avX.stroke();
+      avX.beginPath(); avX.moveTo(cx + 25, by - 45); avX.quadraticCurveTo(cx + 55, by - 30 - armSwing, cx + 50, by + 5);
+      avX.strokeStyle = '#1e2a5e'; avX.lineWidth = 14; avX.lineCap = 'round'; avX.stroke();
+      if (state === 'thumbsup') { avX.font = '22px serif'; avX.fillText('👍', cx - 68, by - 68); }
+
+      avX.beginPath(); avX.moveTo(cx - 10, by - 52); avX.lineTo(cx + 10, by - 52); avX.lineTo(cx + 8, by - 65); avX.lineTo(cx - 8, by - 65); avX.closePath(); avX.fillStyle = '#c68642'; avX.fill();
+      const headTilt = state === 'typing' ? Math.sin(anim * .1) * 4 : 0, headY = by - 95;
+      avX.save(); avX.translate(cx, headY + 16); avX.rotate(headTilt * Math.PI / 180); avX.translate(-cx, -(headY + 16));
+
+      const headGrad = avX.createRadialGradient(cx - 8, headY, 2, cx, headY + 8, 30); headGrad.addColorStop(0, '#d4956a'); headGrad.addColorStop(1, '#b87740');
+      avX.beginPath(); avX.ellipse(cx, headY + 8, 26, 30, 0, 0, Math.PI * 2); avX.fillStyle = headGrad; avX.fill();
+      avX.beginPath(); avX.ellipse(cx, headY - 10, 26, 14, 0, Math.PI, Math.PI * 2); avX.fillStyle = '#1a1a2e'; avX.fill();
+      avX.beginPath(); avX.moveTo(cx - 12, headY - 18); avX.quadraticCurveTo(cx, headY - 30, cx + 12, headY - 18); avX.fillStyle = '#1a1a2e'; avX.fill();
+
+      avX.beginPath(); avX.ellipse(cx - 26, headY + 10, 7, 9, 0, 0, Math.PI * 2); avX.fillStyle = '#c68642'; avX.fill();
+      avX.beginPath(); avX.ellipse(cx + 26, headY + 10, 7, 9, 0, 0, Math.PI * 2); avX.fillStyle = '#c68642'; avX.fill();
+
+      const eyeH = blink ? 0 : 7;
+      avX.beginPath(); avX.ellipse(cx - 10, headY + 5, 7, eyeH, 0, 0, Math.PI * 2); avX.fillStyle = '#fff'; avX.fill();
+      avX.beginPath(); avX.ellipse(cx + 10, headY + 5, 7, eyeH, 0, 0, Math.PI * 2); avX.fillStyle = '#fff'; avX.fill();
+      if (!blink) {
+        avX.beginPath(); avX.arc(cx - 10, headY + 6, 4, 0, Math.PI * 2); avX.fillStyle = '#3d2b1a'; avX.fill();
+        avX.beginPath(); avX.arc(cx + 10, headY + 6, 4, 0, Math.PI * 2); avX.fillStyle = '#3d2b1a'; avX.fill();
+        avX.beginPath(); avX.arc(cx - 10, headY + 6, 2, 0, Math.PI * 2); avX.fillStyle = '#0d0a07'; avX.fill();
+        avX.beginPath(); avX.arc(cx + 10, headY + 6, 2, 0, Math.PI * 2); avX.fillStyle = '#0d0a07'; avX.fill();
+        avX.beginPath(); avX.arc(cx - 8, headY + 4, 1, 0, Math.PI * 2); avX.fillStyle = 'rgba(255,255,255,.8)'; avX.fill();
+        avX.beginPath(); avX.arc(cx + 12, headY + 4, 1, 0, Math.PI * 2); avX.fillStyle = 'rgba(255,255,255,.8)'; avX.fill();
+      }
+
+      avX.strokeStyle = '#2a2a3e'; avX.lineWidth = 2.5;
+      avX.beginPath(); avX.rect(cx - 20, headY - 1, 20, 14); avX.stroke();
+      avX.beginPath(); avX.rect(cx, headY - 1, 20, 14); avX.stroke();
+      avX.beginPath(); avX.moveTo(cx - 1, headY + 5); avX.lineTo(cx + 1, headY + 5); avX.stroke();
+      avX.beginPath(); avX.moveTo(cx - 20, headY + 5); avX.lineTo(cx - 28, headY + 5); avX.stroke();
+      avX.beginPath(); avX.moveTo(cx + 20, headY + 5); avX.lineTo(cx + 28, headY + 5); avX.stroke();
+      avX.fillStyle = 'rgba(79,127,255,.12)'; avX.fillRect(cx - 20, headY - 1, 20, 14); avX.fillRect(cx, headY - 1, 20, 14);
+
+      avX.beginPath(); avX.moveTo(cx, headY + 10); avX.lineTo(cx - 4, headY + 18); avX.lineTo(cx + 4, headY + 18);
+      avX.strokeStyle = 'rgba(0,0,0,.2)'; avX.lineWidth = 1.5; avX.lineCap = 'round'; avX.stroke();
+
+      if (state === 'thumbsup') { avX.beginPath(); avX.arc(cx, headY + 22, 10, 0.1, Math.PI - .1); avX.strokeStyle = 'rgba(0,0,0,.4)'; avX.lineWidth = 2; avX.stroke(); }
+      else if (state === 'typing') { avX.beginPath(); avX.moveTo(cx - 7, headY + 23); avX.lineTo(cx + 7, headY + 23); avX.strokeStyle = 'rgba(0,0,0,.3)'; avX.lineWidth = 1.8; avX.stroke(); }
+      else { avX.beginPath(); avX.arc(cx, headY + 20, 7, .1, Math.PI - .1); avX.strokeStyle = 'rgba(0,0,0,.3)'; avX.lineWidth = 1.8; avX.stroke(); }
+      avX.restore();
+
+      const lapY = by + 5;
+      avX.fillStyle = '#111840'; avX.fillRect(cx - 38, lapY, 76, 8);
+      avX.fillStyle = '#0d1230'; avX.fillRect(cx - 32, lapY - 24, 64, 24);
+      avX.strokeStyle = 'rgba(79,127,255,.4)'; avX.lineWidth = 1; avX.strokeRect(cx - 32, lapY - 24, 64, 24);
+      avX.fillStyle = state === 'typing' ? 'rgba(79,127,255,.25)' : 'rgba(34,211,238,.12)'; avX.fillRect(cx - 30, lapY - 22, 60, 20);
+      if (state === 'typing' && Math.floor(anim * .1) % 2 === 0) { avX.fillStyle = '#22d3ee'; avX.fillRect(cx - 5, lapY - 14, 2, 10); }
+
+      for (let i = 0; i < 5; i++) { const a2 = anim * .02 + i * 1.25, pr = 55 + i * 8, fpx = cx + Math.cos(a2) * pr, fpy = headY + Math.sin(a2 * 1.3) * 20; avX.beginPath(); avX.arc(fpx, fpy, 1.5, 0, Math.PI * 2); avX.fillStyle = 'rgba(79,127,255,' + (.2 + .15 * Math.sin(a2 + i)) + ')'; avX.fill(); }
+    }
+
+    let avAnimId = null;
+    function startAvatar(state) {
+      avState = state; if (avAnimId) cancelAnimationFrame(avAnimId);
+      let frame = 0;
+      (function loop() { frame++; avBlink = (frame % 150 < 5); drawAvatar(avState, frame, avBlink); avAnimId = requestAnimationFrame(loop); })();
+    }
+    startAvatar('idle');
+    function avatarTyping() {
+      avState = 'typing'; clearTimeout(avTypingTimer);
+      const avPhrases = ["I'm listening... 🤔", "Tell me more! 💡", "This sounds interesting..", "Composing a response..."];
+      document.getElementById('avatarSpeech').textContent = avPhrases[Math.floor(Math.random() * avPhrases.length)];
+      avTypingTimer = setTimeout(avatarIdle, 2000);
+    }
+    function avatarIdle() { avState = 'idle'; document.getElementById('avatarSpeech').textContent = "I'm here whenever you're ready. 💬"; }
+
+    // ══ FORM SUBMISSION ══
+    const contactForm = document.querySelector('.contact-form-wrap');
+    const successPanel = document.getElementById('contact-success');
+    if (contactForm) {
+      contactForm.addEventListener('submit', async (e) => {
+        e.preventDefault(); avatarTyping();
+        document.getElementById('avatarSpeech').textContent = "Optimizing transmission... 📡";
+        const data = new FormData(contactForm);
+        try {
+          const response = await fetch(contactForm.action, { method: 'POST', body: data, headers: { 'Accept': 'application/json' } });
+          if (response.ok) {
+            contactForm.style.display = 'none'; successPanel.style.display = 'block'; successPanel.classList.add('in');
+            startAvatar('thumbsup');
+            document.getElementById('avatarSpeech').textContent = "Message received! I'll ping you back soon. 🚀";
+          } else throw new Error('Failed');
+        } catch (error) { document.getElementById('avatarSpeech').textContent = "Connection Error. Please check your network. ⚠️"; }
+      });
+    }
+    function resetForm() { contactForm.reset(); contactForm.style.display = 'flex'; successPanel.style.display = 'none'; startAvatar('idle'); avatarIdle(); }
+
+    // ══ SCROLL OBSERVERS ══
     const revObs = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); }); }, { threshold: .1, rootMargin: '0px 0px -40px 0px' });
     document.querySelectorAll('.reveal,.tl-item').forEach(el => revObs.observe(el));
-    const staggerObs = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) e.target.querySelectorAll('.stat-card,.award-card,.proj-card,.pub-card').forEach((child, i) => { setTimeout(() => child.classList.add('in'), i * 100); }); }); }, { threshold: .05 });
-    document.querySelectorAll('.stat-grid,.awards-scene,.proj-grid').forEach(el => staggerObs.observe(el));
     const skillObs = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) e.target.querySelectorAll('.skill-bar').forEach(b => { b.style.width = (b.dataset.w || 80) + '%'; }); }); }, { threshold: .3 });
     document.querySelectorAll('.skill-cat').forEach(el => skillObs.observe(el));
 
+    // ══ PARALLAX ══
     let ticking = false;
-    window.addEventListener('scroll', () => { if (!ticking) { requestAnimationFrame(() => { const heroContent = document.querySelector('.hero-content'); if (heroContent) heroContent.style.transform = `translateY(${window.scrollY * .25}px)`; ticking = false; }); ticking = true; } });
-
-    // Handle the Formspree submission via AJAX to keep the user on the page
-    const contactForm = document.querySelector('.contact-form-wrap');
-    const successPanel = document.getElementById('contact-success');
-
-    if (contactForm) {
-      contactForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        // 1. Trigger Avatar "Processing"
-        avatarTyping();
-        document.getElementById('avatarSpeech').textContent = "Optimizing transmission... 📡";
-
-        // 2. Prepare Form Data
-        const data = new FormData(contactForm);
-
-        try {
-          const response = await fetch(contactForm.action, {
-            method: 'POST',
-            body: data,
-            headers: { 'Accept': 'application/json' }
-          });
-
-          if (response.ok) {
-            // 3. Success Transition
-            contactForm.style.display = 'none';
-            successPanel.style.display = 'block';
-            successPanel.classList.add('in');
-
-            // 4. Update Avatar to Thumbs Up (matching your existing function)
-            startAvatar('thumbsup');
-            document.getElementById('avatarSpeech').textContent = "Message received! I'll ping you back soon. 🚀";
-          } else {
-            throw new Error('Inference Failed');
-          }
-        } catch (error) {
-          document.getElementById('avatarSpeech').textContent = "Connection Error. Please check your network. ⚠️";
-        }
-      });
-    }
-
-    function resetForm() {
-      contactForm.reset();
-      contactForm.style.display = 'flex';
-      successPanel.style.display = 'none';
-      startAvatar('idle');
-      avatarIdle();
-    }
-
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const hc2 = document.querySelector('.hero-content');
+          if (hc2 && window.scrollY < window.innerHeight) hc2.style.transform = 'translateY(' + (window.scrollY * .25) + 'px)';
+          ticking = false;
+        }); ticking = true;
+      }
+    }, { passive: true });
   </script>
-
-
-</body>
-
-</html>
