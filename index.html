@@ -3701,4 +3701,113 @@
         }); ticking = true;
       }
     }, { passive: true });
+
+
+
+    // ════════════════════════════════════════════
+    //  MULTI-USER REAL-TIME CURSORS + NAME EDIT
+    // ════════════════════════════════════════════
+
+    const script = document.createElement('script');
+    script.src = "https://cdn.ably.com/lib/ably.min-1.js";
+    document.head.appendChild(script);
+
+    script.onload = () => {
+      const ably = new Ably.Realtime('3uxLpA');
+      const channel = ably.channels.get('live-cursors');
+      const myId = Math.random().toString(36).substring(7);
+
+      // 1. Get name from LocalStorage or assign a default
+      let myName = localStorage.getItem('researcher_alias');
+      if (!myName) {
+        const jobTitles = ["Neural Architect", "Researcher", "AI Scout"];
+        myName = jobTitles[Math.floor(Math.random() * jobTitles.length)] + " #" + Math.floor(Math.random() * 99);
+        localStorage.setItem('researcher_alias', myName);
+      }
+
+      const otherCursors = {};
+
+      function createCursorElement(id, name) {
+        const el = document.createElement('div');
+        el.className = 'remote-cursor';
+        el.id = `cursor-${id}`;
+        el.innerHTML = `
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5))">
+                <path d="M4 3l12 6-5 1.5-1.5 5-5.5-12.5z" fill="var(--cyan)" stroke="white" stroke-width="1.5"/>
+            </svg>
+            <div class="cursor-label">${name}</div>
+        `;
+        el.style.position = 'fixed';
+        el.style.pointerEvents = 'none';
+        el.style.zIndex = '9999';
+        document.body.appendChild(el);
+        return el;
+      }
+
+      // Presence Logic
+      channel.presence.subscribe('enter', (member) => {
+        if (member.clientId !== myId) otherCursors[member.clientId] = createCursorElement(member.clientId, member.data.name);
+      });
+
+      channel.presence.subscribe('update', (member) => {
+        if (member.clientId !== myId) {
+          if (!otherCursors[member.clientId]) {
+            otherCursors[member.clientId] = createCursorElement(member.clientId, member.data.name);
+          }
+          const { x, y, name } = member.data;
+          otherCursors[member.clientId].style.transform = `translate(${x}px, ${y}px)`;
+          otherCursors[member.clientId].querySelector('.cursor-label').textContent = name;
+        }
+      });
+
+      channel.presence.subscribe('leave', (member) => {
+        if (otherCursors[member.clientId]) {
+          otherCursors[member.clientId].remove();
+          delete otherCursors[member.clientId];
+        }
+      });
+
+      // Update movement
+      window.addEventListener('mousemove', (e) => {
+        channel.presence.update({ x: e.clientX, y: e.clientY, name: myName });
+      });
+
+      // Initial Join
+      channel.presence.enter({ name: myName });
+
+      // 2. Add UI to change name
+      const nameBtn = document.createElement('button');
+      nameBtn.innerHTML = `<span>ID:</span> ${myName}`;
+      nameBtn.className = 'alias-config-btn';
+      document.body.appendChild(nameBtn);
+
+      nameBtn.onclick = () => {
+        const newName = prompt("Enter your Researcher Alias / Institution:", myName);
+        if (newName && newName.length < 25) {
+          myName = newName;
+          localStorage.setItem('researcher_alias', myName);
+          nameBtn.innerHTML = `<span>ID:</span> ${myName}`;
+          channel.presence.update({ name: myName }); // Sync with others immediately
+        }
+      };
+    };
+
+    // CSS for the Alias Button
+    const style = document.createElement('style');
+    style.innerHTML = `
+    .alias-config-btn {
+        position: fixed; bottom: 20px; left: 20px;
+        background: rgba(13, 18, 48, 0.8);
+        border: 1px solid var(--border);
+        color: var(--text2);
+        font-family: var(--f-mono);
+        font-size: 10px; padding: 6px 12px;
+        border-radius: 4px; cursor: pointer;
+        z-index: 1001; backdrop-filter: blur(10px);
+        transition: 0.3s; text-transform: uppercase;
+    }
+    .alias-config-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+    .alias-config-btn span { color: var(--text3); margin-right: 4px; }
+`;
+    document.head.appendChild(style);
   </script>
