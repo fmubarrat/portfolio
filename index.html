@@ -15,23 +15,34 @@
 
   <style>
     :root {
+      /* DARK THEME (default) */
       --bg: #06081a;
-      --bg2: #090c20;
-      --surface: #0d1230;
-      --surface2: #111840;
-      --border: rgba(120, 100, 255, .15);
+      --bg2: #0b1022;
+
+      --surface: #111933;
+      --surface2: #182347;
+
+      --border: rgba(120, 100, 255, .18);
       --border2: rgba(120, 100, 255, .35);
-      --blue: #4f7fff;
-      --purple: #8b5cf6;
-      --cyan: #22d3ee;
-      --pink: #f472b6;
-      --gold: #fbbf24;
-      --text: #e2e8ff;
-      --text2: #8892b0;
-      --text3: #3d4a6b;
+
+      --blue: #5b8dff;
+      --purple: #9a6cff;
+      --cyan: #3de5ff;
+      --pink: #ff83c7;
+      --gold: #ffc94a;
+
+      /* HIGHER CONTRAST TEXT */
+      --text: #ffffff;
+      /* primary text */
+      --text2: #d8def0;
+      /* body text */
+      --text3: #aeb8d6;
+      /* labels / metadata */
+
       --f-display: 'Outfit', sans-serif;
       --f-mono: 'JetBrains Mono', monospace;
       --f-serif: 'Playfair Display', serif;
+
       --nav-h: 64px;
     }
 
@@ -41,6 +52,28 @@
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+    }
+
+    body.light-mode {
+      --bg: #f8fafc;
+      --bg2: #eef2ff;
+
+      --surface: #ffffff;
+      --surface2: #f4f7ff;
+
+      --border: rgba(79, 127, 255, .15);
+      --border2: rgba(79, 127, 255, .3);
+
+      --blue: #2563eb;
+      --purple: #7c3aed;
+      --cyan: #0891b2;
+      --pink: #db2777;
+      --gold: #ca8a04;
+
+      /* text */
+      --text: #111827;
+      --text2: #374151;
+      --text3: #64748b;
     }
 
     html {
@@ -510,7 +543,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: rgba(6, 8, 26, .85);
+      background: color-mix(in srgb, var(--bg) 85%, transparent);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
@@ -1949,9 +1982,18 @@
       content: '';
       position: fixed;
       inset: 0;
-      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, .025) 2px, rgba(0, 0, 0, .025) 4px);
+      background:
+        repeating-linear-gradient(0deg,
+          transparent,
+          transparent 2px,
+          rgba(0, 0, 0, .025) 2px,
+          rgba(0, 0, 0, .025) 4px);
       pointer-events: none;
       z-index: 9990;
+    }
+
+    body.light-mode::after {
+      display: none;
     }
 
     /* ── MOBILE DEMO CANVAS SIZING ── */
@@ -2051,6 +2093,11 @@
       <li><a href="#contact" data-sec="contact">Contact</a></li>
       <li><a href="Fayek_Jamee_CV.pdf" download class="nav-cv-btn">⬇ CV</a></li>
     </ul>
+
+    <button id="themeToggle" class="btn-outline" style="padding:.5rem .9rem;font-size:.7rem">
+      🌙
+    </button>
+
     <button class="hamburger" id="hamburger" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
@@ -3810,4 +3857,28 @@
     .alias-config-btn span { color: var(--text3); margin-right: 4px; }
 `;
     document.head.appendChild(style);
+
+    const themeBtn = document.getElementById("themeToggle");
+
+    function applyTheme(theme) {
+      if (theme === "light") {
+        document.body.classList.add("light-mode");
+        themeBtn.innerHTML = "☀️";
+      } else {
+        document.body.classList.remove("light-mode");
+        themeBtn.innerHTML = "🌙";
+      }
+
+      localStorage.setItem("theme", theme);
+    }
+
+    themeBtn.addEventListener("click", () => {
+      applyTheme(
+        document.body.classList.contains("light-mode")
+          ? "dark"
+          : "light"
+      );
+    });
+
+    applyTheme(localStorage.getItem("theme") || "dark");
   </script>
