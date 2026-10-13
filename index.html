@@ -1391,6 +1391,209 @@
       margin-top: .9rem;
     }
 
+    /* ── PROJECT FIGURES (real outputs) ── */
+    .proj-figure {
+      margin: 1.1rem 0 .3rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .proj-figure img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .proj-figure.thumb img {
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+    }
+
+    .proj-figure figcaption {
+      font-family: var(--f-mono);
+      font-size: .6rem;
+      line-height: 1.6;
+      color: var(--text3);
+      padding: .5rem .8rem;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+    }
+
+    .proj-split {
+      display: grid;
+      grid-template-columns: 1fr 230px;
+      gap: 1.8rem;
+      align-items: start;
+    }
+
+    .short-embed {
+      display: block;
+      width: 100%;
+      aspect-ratio: 9 / 16;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #000;
+    }
+
+    @media (max-width:768px) {
+      .proj-split {
+        grid-template-columns: 1fr;
+      }
+
+      .short-embed {
+        max-width: 260px;
+      }
+    }
+
+    /* ── RESEARCH ARC ── */
+    .arc {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.6rem;
+      margin: .5rem 0 2rem;
+      position: relative;
+    }
+
+    .arc-step {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+    }
+
+    .arc-step:not(:last-child)::after {
+      content: '→';
+      position: absolute;
+      right: -1.25rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--cyan);
+      font-family: var(--f-mono);
+      font-size: .9rem;
+    }
+
+    .arc-step.next {
+      border-style: dashed;
+      border-color: rgba(255, 201, 74, .4);
+    }
+
+    .arc-when {
+      font-family: var(--f-mono);
+      font-size: .58rem;
+      letter-spacing: .12em;
+      color: var(--cyan);
+      margin-bottom: .35rem;
+    }
+
+    .arc-step.next .arc-when {
+      color: var(--gold);
+    }
+
+    .arc-title {
+      font-weight: 700;
+      font-size: .85rem;
+      line-height: 1.35;
+      margin-bottom: .3rem;
+    }
+
+    .arc-desc {
+      font-size: .74rem;
+      color: var(--text2);
+      line-height: 1.55;
+    }
+
+    @media (max-width:768px) {
+      .arc {
+        grid-template-columns: 1fr;
+        gap: 1.2rem;
+      }
+
+      .arc-step:not(:last-child)::after {
+        content: '↓';
+        right: auto;
+        left: 50%;
+        top: auto;
+        bottom: -1.15rem;
+        transform: translateX(-50%);
+      }
+    }
+
+    /* ── SPIRAL TEST (live demo) ── */
+    #spiralCanvas {
+      touch-action: none;
+    }
+
+    .spiral-metrics {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: .25rem .8rem;
+      font-family: var(--f-mono);
+      font-size: .66rem;
+      color: var(--text2);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: .8rem .9rem;
+      margin-top: .9rem;
+    }
+
+    .spiral-metrics .h {
+      color: var(--text3);
+      font-size: .56rem;
+      letter-spacing: .1em;
+    }
+
+    .spiral-metrics .v {
+      color: var(--cyan);
+      text-align: right;
+    }
+
+    .spiral-metrics .d {
+      text-align: right;
+      min-width: 4.5em;
+    }
+
+    .spiral-metrics .up {
+      color: var(--pink);
+    }
+
+    .spiral-metrics .down {
+      color: #34d399;
+    }
+
+    #spiralSpec {
+      cursor: default !important;
+      margin-top: .7rem;
+      max-width: 100% !important;
+    }
+
+    .demo-note {
+      font-family: var(--f-mono);
+      font-size: .58rem;
+      color: var(--text3);
+      line-height: 1.6;
+      margin-top: .7rem;
+    }
+
+    /* ── SKILL CHIPS ── */
+    .skill-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .45rem;
+    }
+
+    .skill-chips span {
+      padding: .3rem .7rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+      font-size: .78rem;
+      color: var(--text2);
+    }
+
     /* ── SKILLS ── */
     #skills {
       background: var(--bg);
@@ -2160,7 +2363,7 @@
             </div>
             <div class="stat-card reveal">
               <div class="stat-num">p=.019</div>
-              <div class="stat-lbl">Micrographia Detection (PD Study)</div>
+              <div class="stat-lbl">Micrographia Signal (Pilot, Simulated)</div>
             </div>
             <div class="stat-card reveal">
               <div class="stat-num">3.31</div>
@@ -2175,7 +2378,7 @@
               <div class="dot" style="background:#ff5f57"></div>
               <div class="dot" style="background:#febc2e"></div>
               <div class="dot" style="background:#28c840"></div>
-              <span style="margin-left:.5rem">parkinsons_kinematic.py — spiral drawing comparison</span>
+              <span style="margin-left:.5rem">parkinsons_kinematic.py — spiral drawing comparison <span style="opacity:.6">(illustration)</span></span>
             </div>
             <div class="cv-panel-body">
               <canvas id="cv-demo" height="260"></canvas>
@@ -2186,7 +2389,7 @@
               <div class="dot" style="background:#ff5f57"></div>
               <div class="dot" style="background:#febc2e"></div>
               <div class="dot" style="background:#28c840"></div>
-              <span style="margin-left:.5rem">platelet_vision.py — YOLOv8-Nano blood smear scan</span>
+              <span style="margin-left:.5rem">platelet_vision.py — YOLOv8-Nano blood smear scan <span style="opacity:.6">(illustration)</span></span>
             </div>
             <div class="cv-panel-body">
               <canvas id="cv-platelet-demo" height="220"></canvas>
@@ -2248,8 +2451,8 @@
               <div
                 style="background:rgba(6,8,26,.5);border:1px solid var(--border);border-radius:8px;padding:.9rem .7rem;text-align:center">
                 <div style="font-family:var(--f-mono);font-size:1.2rem;font-weight:700;color:var(--cyan)">p=.019</div>
-                <div style="font-size:.62rem;color:var(--text3);margin-top:.2rem;font-family:var(--f-mono)">PD Motor
-                  Detection</div>
+                <div style="font-size:.62rem;color:var(--text3);margin-top:.2rem;font-family:var(--f-mono)">Micrographia
+                  Signal (Pilot)</div>
               </div>
               <div
                 style="background:rgba(6,8,26,.5);border:1px solid var(--border);border-radius:8px;padding:.9rem .7rem;text-align:center">
@@ -2309,18 +2512,73 @@
 
         <div class="proj-card featured reveal" onmousemove="cardGlow(event,this)">
           <div class="proj-tag"
+            style="color:var(--pink);border-color:rgba(244,114,182,.3);background:rgba(244,114,182,.07)">Affective
+            Computing · Wearable + Vision Sensing <span class="badge-new">NEW 2026</span></div>
+          <div class="proj-split">
+          <div>
+          <h3 class="proj-title">Stress Recovery Measurement: Apple Watch Heart Rate + Facial Landmarks</h3>
+          <p class="proj-desc">Building on my Parkinson's work, I am applying the same smartphone-sensing approach to
+            stress. Stress can worsen Parkinson's symptoms such as tremor, and reduced facial expression can make it hard
+            for others to notice. This prototype measures how quickly a person recovers from stress, using heart rate
+            from an Apple Watch and facial landmarks from a phone camera (only the landmark coordinates are kept, never
+            video), with guided calming exercises at the end. Early prototype: the session shown in the overview uses
+            demo data. Next steps are recording my own sessions and checking the Apple Watch against a reference sensor,
+            then extending it to people with Parkinson's.</p>
+          <div class="proj-metrics">
+            <div>
+              <div class="metric-val" style="color:var(--pink)">HR + Face</div>
+              <div class="metric-lbl">Multimodal Signal</div>
+            </div>
+            <div>
+              <div class="metric-val" style="color:var(--pink)">0 frames</div>
+              <div class="metric-lbl">Video Stored (Landmarks Only)</div>
+            </div>
+            <div>
+              <div class="metric-val" style="color:var(--pink)">Recovery</div>
+              <div class="metric-lbl">Time-to-Baseline Measure</div>
+            </div>
+            <div>
+              <div class="metric-val" style="color:var(--pink)">PD</div>
+              <div class="metric-lbl">Target Population (Next)</div>
+            </div>
+          </div>
+          <div class="proj-pipeline">
+            <span class="pipe-step">Apple Watch HR</span><span class="pipe-step">MediaPipe Face Mesh</span><span
+              class="pipe-step">Facial Landmarks</span><span class="pipe-step">Stress Recovery</span><span
+              class="pipe-step">Guided Calming</span><span class="pipe-step">Privacy-Preserving</span>
+          </div>
+          <div style="margin-top:.9rem">
+            <a href="https://www.youtube.com/shorts/AKbpT4RbvRU" target="_blank" class="proj-link">70-sec Overview
+              Video →</a>
+          </div>
+          </div>
+          <iframe class="short-embed" src="https://www.youtube-nocookie.com/embed/AKbpT4RbvRU?rel=0"
+            title="Stress recovery prototype — 70-second overview" loading="lazy"
+            allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe>
+          </div>
+        </div>
+
+        <div class="proj-card featured reveal" onmousemove="cardGlow(event,this)">
+          <div class="proj-tag"
             style="color:var(--gold);border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.07)">Neuro-Motor
             Assessment · Sketch Process Analysis <span class="badge-new">NEW 2025</span></div>
           <h3 class="proj-title">From Drawing Product to Drawing Process: Parkinson's Motor Assessment</h3>
-          <p class="proj-desc">Two-part feasibility study combining 2D sketch product analysis (204 real PD/healthy
-            drawings) with novel 3D video-based hand kinematic process analysis using MediaPipe. Demonstrated that
-            micrographia is detectable from hand movement alone (p=0.019, Cohen's d=3.2) — without analyzing written
-            text. Tremor features showed &gt;1000% magnitude increases under simulated conditions. Requires only a
-            smartphone camera ($0 hardware).</p>
+          <p class="proj-desc">Two-part feasibility study. <strong>Part A</strong> analyses the drawing product: on 204 public drawings
+            (102 PD, 102 healthy), 6 of 16 sketch features significantly separate the groups. <strong>Part B</strong>
+            analyses the drawing process: 3D hand kinematics from ordinary smartphone video (MediaPipe). In a
+            proof-of-concept with 2 healthy participants under 5 simulated conditions, simulated micrographia was
+            detectable from hand movement alone (SPARC, p=0.019) and tremor features rose by over 1000%. Next step:
+            validation with people with Parkinson's. Requires only a smartphone camera ($0 hardware). You can try the
+            spiral task yourself in the <a href="#demo" style="color:var(--cyan)">live demo</a>.</p>
+          <figure class="proj-figure">
+            <img src="images/pd_micrographia.jpg" alt="Box plots: amplitude decay, mean speed, SPARC smoothness and grip instability for normal writing vs simulated micrographia" loading="lazy">
+            <figcaption>Fig. — Part B, micrographia from hand kinematics alone: normal writing vs simulated micrographia.
+              SPARC smoothness differs significantly (p = 0.019). From the manuscript.</figcaption>
+          </figure>
           <div class="proj-metrics">
             <div>
               <div class="metric-val" style="color:var(--gold)">p=0.019*</div>
-              <div class="metric-lbl">Micrographia Detection (SPARC)</div>
+              <div class="metric-lbl">Simulated Micrographia (SPARC, pilot)</div>
             </div>
             <div>
               <div class="metric-val" style="color:var(--gold)">+2101%</div>
@@ -2328,7 +2586,7 @@
             </div>
             <div>
               <div class="metric-val" style="color:var(--gold)">69.7%</div>
-              <div class="metric-lbl">SVM Accuracy (Kaggle, N=204)</div>
+              <div class="metric-lbl">SVM Accuracy (204 drawings)</div>
             </div>
             <div>
               <div class="metric-val" style="color:var(--gold)">$0</div>
@@ -2355,6 +2613,10 @@
           <p class="proj-desc">Automated giant platelet detection for dengue recovery monitoring. Hybrid YOLOv8-Nano
             pipeline with Otsu-segmented geometric morphometrics. Novel auto-calibration using RBC diameter (7.5µm) as a
             biological ruler — no scale bar, no calibration hardware.</p>
+          <figure class="proj-figure thumb">
+            <img src="images/platelet_detect.jpg" alt="Blood smear with platelets detected and volume estimated in femtolitres" loading="lazy">
+            <figcaption>System output: giant platelets flagged in red with estimated volume (fL).</figcaption>
+          </figure>
           <div class="proj-metrics">
             <div>
               <div class="metric-val">96.56%</div>
@@ -2362,7 +2624,7 @@
             </div>
             <div>
               <div class="metric-val">8.61 fL</div>
-              <div class="metric-lbl">MPV · clinically validated</div>
+              <div class="metric-lbl">MPV · within 7.2–11.7 fL normal range</div>
             </div>
           </div>
           <div class="proj-pipeline"><span class="pipe-step">YOLOv8-Nano</span><span class="pipe-step">Otsu
@@ -2378,6 +2640,10 @@
           <p class="proj-desc">Non-invasive freshness grading using K-Means gill region segmentation and HSV statistical
             analysis. Hybrid edge-cloud architecture. Live market price comparison via integrated scraping. No reagents,
             no expert needed.</p>
+          <figure class="proj-figure thumb">
+            <img src="images/fishmeter.jpg" alt="FishMeter segmentation overlay on a rohu fish with a 76% freshness score" loading="lazy">
+            <figcaption>App output: segmentation overlay and freshness score.</figcaption>
+          </figure>
           <div class="proj-metrics">
             <div>
               <div class="metric-val" style="color:#fb923c">Edge</div>
@@ -2393,6 +2659,66 @@
           </div>
           <a href="https://github.com/fmubarrat/FishMeter-Non-Invasive-Quality-Assessment-AI" target="_blank"
             class="proj-link">GitHub →</a>
+        </div>
+
+        <div class="proj-card reveal" onmousemove="cardGlow(event,this)">
+          <div class="proj-tag"
+            style="color:#34d399;border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.07)">Pose Estimation ·
+            In-Browser ML <span class="badge-new">NEW 2026</span></div>
+          <h3 class="proj-title">relaxicise</h3>
+          <p class="proj-desc">Focus timer that turns breaks into short exercise sessions verified by the camera.
+            MediaPipe pose tracking checks each exercise; reps are counted from body-size-normalized joint signals with
+            EMA smoothing and a hysteresis band, so jitter never double counts. Runs entirely in the browser — no
+            backend, no video leaves the device. Optional Bluetooth heart-rate monitor.</p>
+          <figure class="proj-figure thumb">
+            <img src="images/relaxicise.jpg" alt="relaxicise break screen: pose skeleton tracking overhead arm raises" loading="lazy">
+            <figcaption>Live pose tracking counting overhead arm raises.</figcaption>
+          </figure>
+          <div class="proj-metrics">
+            <div>
+              <div class="metric-val" style="color:#34d399">12</div>
+              <div class="metric-lbl">Tracked exercises</div>
+            </div>
+            <div>
+              <div class="metric-val" style="color:#34d399">On-device</div>
+              <div class="metric-lbl">No video leaves the browser</div>
+            </div>
+          </div>
+          <div class="proj-pipeline"><span class="pipe-step">MediaPipe Pose</span><span class="pipe-step">Rep
+              Counting</span><span class="pipe-step">Hysteresis</span><span class="pipe-step">Web
+              Bluetooth</span><span class="pipe-step">TypeScript</span></div>
+          <a href="https://relaxicise.vercel.app" target="_blank" class="proj-link">Live App →</a>
+          <a href="https://github.com/fmubarrat/relaxicise" target="_blank" class="proj-link">GitHub →</a>
+        </div>
+
+        <div class="proj-card reveal" onmousemove="cardGlow(event,this)">
+          <div class="proj-tag"
+            style="color:var(--blue);border-color:rgba(91,141,255,.3);background:rgba(91,141,255,.07)">Multi-Object
+            Tracking · Sports Analytics <span class="badge-new">NEW 2026</span></div>
+          <h3 class="proj-title">Messi Spatiotemporal Analysis</h3>
+          <p class="proj-desc">Event data + computer vision for player movement analysis. StatsBomb open data (~600
+            matches) for per-90 metrics and zone densities across career periods, plus a YOLO + ByteTrack pipeline with
+            camera-shake correction (ORB + RANSAC homographies). Tracking evaluated with MOTA and ID switches against
+            SoccerNet ground truth.</p>
+          <figure class="proj-figure thumb">
+            <img src="images/messi_goal_involvement.jpg" alt="Waffle chart: Messi involved in 77% of his team's goals" loading="lazy" style="object-position:50% 6%">
+            <figcaption>Involved in 77% of team goals while on the pitch · 599 matches · StatsBomb Open Data.</figcaption>
+          </figure>
+          <div class="proj-metrics">
+            <div>
+              <div class="metric-val" style="color:var(--blue)">77%</div>
+              <div class="metric-lbl">Team goals involved in</div>
+            </div>
+            <div>
+              <div class="metric-val" style="color:var(--blue)">599</div>
+              <div class="metric-lbl">Matches analysed</div>
+            </div>
+          </div>
+          <div class="proj-pipeline"><span class="pipe-step">YOLO</span><span class="pipe-step">ByteTrack</span><span
+              class="pipe-step">Homography</span><span class="pipe-step">MOTA Eval</span><span
+              class="pipe-step">StatsBomb</span></div>
+          <a href="https://github.com/fmubarrat/messi-spatiotemporal-analysis" target="_blank" class="proj-link">GitHub
+            →</a>
         </div>
 
         <div class="proj-card reveal" onmousemove="cardGlow(event,this)">
@@ -2441,6 +2767,31 @@
           resource-constrained clinical settings, and video-based diagnostics replacing expensive equipment with
           smartphone cameras.
         </p>
+
+        <div style="font-family:var(--f-mono);font-size:.6rem;letter-spacing:.25em;text-transform:uppercase;color:var(--cyan);margin-bottom:1rem">
+          The research arc</div>
+        <div class="arc">
+          <div class="arc-step">
+            <div class="arc-when">2025 · PART A</div>
+            <div class="arc-title">Drawing product</div>
+            <div class="arc-desc">What was drawn: sketch features from 204 PD / healthy drawings.</div>
+          </div>
+          <div class="arc-step">
+            <div class="arc-when">2025 · PART B</div>
+            <div class="arc-title">Drawing process</div>
+            <div class="arc-desc">How it was drawn: 3D hand kinematics from smartphone video.</div>
+          </div>
+          <div class="arc-step">
+            <div class="arc-when">2026 · PROTOTYPE</div>
+            <div class="arc-title">Stress recovery</div>
+            <div class="arc-desc">Stress worsens PD symptoms: heart rate + facial landmarks measure recovery.</div>
+          </div>
+          <div class="arc-step next">
+            <div class="arc-when">NEXT · PhD</div>
+            <div class="arc-title">People with Parkinson's</div>
+            <div class="arc-desc">Validate motor and stress measures with patients, at home, on a phone.</div>
+          </div>
+        </div>
 
         <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.5rem">
           <span class="pipe-step"
@@ -2499,18 +2850,70 @@
       <div class="reveal">
         <div class="sec-label">Live Demos</div>
         <h2 class="sec-title">Computer Vision, Interactive</h2>
-        <p style="color:var(--text2);max-width:580px;line-height:1.75;margin-top:.8rem">Core CV techniques I've
-          implemented — draw, adjust parameters, watch algorithms respond in real time.</p>
+        <p style="color:var(--text2);max-width:620px;line-height:1.75;margin-top:.8rem">Start with the spiral test:
+          the task from my Parkinson's study, running live in your browser with the same kinematic features as the
+          paper. The other tabs show core CV techniques behind my projects.</p>
       </div>
       <div class="demo-wrap reveal">
         <div class="demo-tabs">
-          <div class="dtab active" onclick="switchTab('edge')">Edge Detection</div>
+          <div class="dtab active" onclick="switchTab('spiral')">● Spiral Test · Live</div>
+          <div class="dtab" onclick="switchTab('edge')">Edge Detection</div>
           <div class="dtab" onclick="switchTab('segment')">Segmentation</div>
           <div class="dtab" onclick="switchTab('cluster')">K-Means</div>
           <div class="dtab" onclick="switchTab('yolo')">YOLO Sim</div>
           <div class="dtab" onclick="switchTab('platelet')">Platelet Sim</div>
         </div>
-        <div class="dpanel active" id="panel-edge">
+        <div class="dpanel active" id="panel-spiral">
+          <div class="demo-cw">
+            <div style="width:100%;max-width:400px;flex-shrink:0">
+              <canvas id="spiralCanvas" width="400" height="400" aria-label="Spiral tracing canvas"></canvas>
+              <video id="spiralVideo" playsinline muted style="display:none"></video>
+              <div class="demo-note">Nothing is recorded or uploaded: the trace and camera frames stay in your
+                browser. A research demo, not a diagnostic tool.</div>
+            </div>
+            <div class="demo-ctrl">
+              <h3>Spiral Test — Live Hand Kinematics</h3>
+              <p>Trace the dashed spiral from the centre outwards. Use your mouse or finger, or switch on the camera
+                and trace it in the air with your index fingertip (MediaPipe hand tracking). Your trace is analysed
+                with the features from my paper. Try it once normally, save it as a baseline, then add simulated tremor
+                and compare, as in Part B.</p>
+              <div class="ctrl-grp">
+                <div class="ctrl-lbl">INPUT</div>
+                <div class="ctrl-row" id="spiral-mode">
+                  <button class="cbtn active" data-mode="mouse">Mouse / Touch</button>
+                  <button class="cbtn" data-mode="camera">Camera · Hand Tracking</button>
+                </div>
+              </div>
+              <div class="ctrl-grp" id="spiral-cam-ctrl" style="display:none">
+                <div class="ctrl-lbl">CAMERA</div>
+                <div class="ctrl-row">
+                  <button class="cbtn" id="spiral-rec">● Record 10 s</button>
+                  <button class="cbtn" id="spiral-stop">■ Stop</button>
+                </div>
+              </div>
+              <div class="ctrl-grp">
+                <div class="ctrl-lbl">SIMULATE 5 HZ TREMOR</div>
+                <div class="ctrl-row" id="spiral-sim">
+                  <button class="cbtn active" data-amp="0">Off</button>
+                  <button class="cbtn" data-amp="2.5">Mild</button>
+                  <button class="cbtn" data-amp="6">Strong</button>
+                </div>
+              </div>
+              <div class="ctrl-grp">
+                <div class="ctrl-lbl">ACTION</div>
+                <div class="ctrl-row">
+                  <button class="cbtn" id="spiral-base">Save as baseline</button>
+                  <button class="cbtn" id="spiral-clear">Clear</button>
+                </div>
+              </div>
+              <div class="spiral-metrics" id="spiral-metrics"></div>
+              <canvas id="spiralSpec" width="520" height="90" aria-label="Velocity spectrum"></canvas>
+              <div class="out-log" id="spiral-log" style="min-height:auto">&gt; Trace the spiral to begin</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dpanel" id="panel-edge">
           <div class="demo-cw">
             <canvas id="edgeCanvas" width="400" height="300"></canvas>
             <div class="demo-ctrl">
@@ -2639,72 +3042,15 @@
         <div>
           <div class="skill-cat reveal">
             <div class="skill-cat-title">Computer Vision &amp; Hand Tracking</div>
-            <div class="skill-item"><span class="skill-name">YOLOv8 / Object Detection</span>
-              <div class="skill-bar-wrap">
-                <div class="skill-bar" data-w="90"></div>
-              </div>
-            </div>
-            <div class="skill-item"><span class="skill-name">MediaPipe / Hand Tracking</span>
-              <div class="skill-bar-wrap">
-                <div class="skill-bar" data-w="85"></div>
-              </div>
-            </div>
-            <div class="skill-item"><span class="skill-name">Image Segmentation</span>
-              <div class="skill-bar-wrap">
-                <div class="skill-bar" data-w="85"></div>
-              </div>
-            </div>
-            <div class="skill-item"><span class="skill-name">OpenCV / Morphometrics</span>
-              <div class="skill-bar-wrap">
-                <div class="skill-bar" data-w="88"></div>
-              </div>
-            </div>
+            <div class="skill-chips"><span>YOLOv8 / Object Detection</span><span>MediaPipe Hands · Pose · Face Mesh</span><span>ByteTrack / Multi-Object Tracking</span><span>Image Segmentation</span><span>OpenCV / Morphometrics</span></div>
           </div>
           <div class="skill-cat reveal">
             <div class="skill-cat-title">Machine Learning &amp; Signal Processing</div>
-            <div class="skill-item"><span class="skill-name">Python / PyTorch</span>
-              <div class="skill-bar-wrap">
-                <div class="skill-bar" data-w="88"></div>
-              </div>
-            </div>
-            <div class="skill-item"><span class="skill-name">scikit-learn / SciPy</span>
-              <div class="skill-bar-wrap">
-                <div class="skill-bar" data-w="86"></div>
-              </div>
-            </div>
-            <div class="skill-item"><span class="skill-name">FFT / Spectral Analysis</span>
-              <div class="skill-bar-wrap">
-                <div class="skill-bar" data-w="78"></div>
-              </div>
-            </div>
-            <div class="skill-item"><span class="skill-name">Statistical Testing</span>
-              <div class="skill-bar-wrap">
-                <div class="skill-bar" data-w="82"></div>
-              </div>
-            </div>
+            <div class="skill-chips"><span>Python / PyTorch</span><span>TypeScript</span><span>scikit-learn / SciPy</span><span>FFT / Spectral Analysis</span><span>Statistical Testing</span><span>Wearable Heart-Rate Signals</span></div>
           </div>
           <div class="skill-cat reveal">
             <div class="skill-cat-title">Software Engineering</div>
-            <div class="skill-item"><span class="skill-name">Java / Spring Boot</span>
-              <div class="skill-bar-wrap">
-                <div class="skill-bar" data-w="92"></div>
-              </div>
-            </div>
-            <div class="skill-item"><span class="skill-name">Angular / Frontend</span>
-              <div class="skill-bar-wrap">
-                <div class="skill-bar" data-w="85"></div>
-              </div>
-            </div>
-            <div class="skill-item"><span class="skill-name">MySQL / SQL Server</span>
-              <div class="skill-bar-wrap">
-                <div class="skill-bar" data-w="88"></div>
-              </div>
-            </div>
-            <div class="skill-item"><span class="skill-name">Git / LaTeX / Docker</span>
-              <div class="skill-bar-wrap">
-                <div class="skill-bar" data-w="84"></div>
-              </div>
-            </div>
+            <div class="skill-chips"><span>Java / Spring Boot</span><span>Angular / Frontend</span><span>MySQL / SQL Server</span><span>Git / LaTeX / Docker</span></div>
           </div>
         </div>
         <div class="reveal">
@@ -2809,8 +3155,8 @@
             <div class="pub-venue" style="margin-top:.35rem"><strong style="color:var(--text2)">Jamee, M. F. M.</strong>
               (2025). Independent research. Manuscript in preparation for submission.</div>
             <div class="pub-doi">
-              Key result: Cohen's d = 3.2 · p = 0.019 · +2101% tremor jerk magnitude · N=204 participants · $0 hardware
-              requirement
+              Part A: 204 public drawings (102 PD / 102 healthy), 6 of 16 features significant · Part B: 2-participant
+              proof-of-concept with simulated symptoms, micrographia SPARC p = 0.019 · +2101% normalized jerk under simulated tremor
               <span style="display:block;margin-top:.3rem;color:var(--text3)">GitHub: <a
                   href="https://github.com/fmubarrat/Parkinsons-Hand-Kinematic-Analysis-Smartphone"
                   target="_blank">fmubarrat/Parkinsons-Hand-Kinematic-Analysis</a> · <a
@@ -2827,8 +3173,8 @@
                 style="background:rgba(251,191,36,.1);color:var(--gold);border:1px solid rgba(251,191,36,.3)">Targeting
                 Submission</span></div>
             <div class="pub-venue" style="margin-top:.35rem"><strong style="color:var(--text2)">Jamee, M. F. M.</strong>
-              (2025). Target venues: <em>IEEE ISBI 2026</em> · <em>MICCAI Workshop on Computational Pathology</em></div>
-            <div class="pub-doi">Key result: 96.56% mAP@50 · Clinically-validated MPV 8.61 fL · Novel RBC-anchored
+              (2025). Manuscript in preparation.</div>
+            <div class="pub-doi">Key result: 96.56% mAP@50 · MPV 8.61 fL (within normal range) · Novel RBC-anchored
               auto-calibration (no scale bar) · GitHub: <a href="https://github.com/fmubarrat/PlateletVision"
                 target="_blank">fmubarrat/PlateletVision</a></div>
           </div>
@@ -2863,7 +3209,7 @@
         <div class="roadmap-item reveal">
           <div class="ri-num">01 / CORE</div>
           <div class="ri-title">Sketch-Process Biomarkers for Early-Stage Parkinson's Detection</div>
-          <div class="ri-desc">Extend my feasibility study (N=204) to a longitudinal, multi-site cohort. Build a
+          <div class="ri-desc">Extend my feasibility study (204 drawings + a 2-participant video pilot) to a longitudinal, multi-site cohort. Build a
             validated temporal kinematic biomarker suite from drawing tasks, targeting sensitivity &gt;85% at Stage 1 PD
             — before tremor is visible to clinicians.</div>
           <span class="ri-tag">Longitudinal Study</span>
@@ -2950,15 +3296,14 @@
               <div style="position:relative;display:inline-block;margin-bottom:1.5rem;">
                 <div class="award-trophy" style="font-size:3.5rem;margin-bottom:0;">🚀</div>
               </div>
-              <h3 class="proj-title" style="color:var(--gold);font-size:1.1rem;">Transmission Successful</h3>
-              <p class="proj-desc" style="font-size:.8rem;margin-bottom:1rem;">Signal received. I'll process this and
-                ping you back at the provided endpoint.</p>
+              <h3 class="proj-title" style="color:var(--gold);font-size:1.1rem;">Message sent</h3>
+              <p class="proj-desc" style="font-size:.8rem;margin-bottom:1rem;">Thank you for reaching out. I'll reply to the
+                email address you provided.</p>
               <div class="out-log"
-                style="text-align:left;font-size:.65rem;min-height:auto;border-color:rgba(251,191,36,.2);">&gt; Packet
-                delivery verified...<br>&gt; Status: <span style="color:var(--gold)">Awaiting Human Response</span>
+                style="text-align:left;font-size:.65rem;min-height:auto;border-color:rgba(251,191,36,.2);">&gt; Status: <span style="color:var(--gold)">Delivered</span>
               </div>
               <button onclick="resetForm()" class="btn btn-outline"
-                style="margin-top:1.5rem;padding:.5rem 1rem;font-size:.6rem;">⟳ New Inference</button>
+                style="margin-top:1.5rem;padding:.5rem 1rem;font-size:.6rem;">⟳ Send another message</button>
             </div>
           </div>
         </div>
@@ -3331,9 +3676,10 @@
     }
 
     // ══ DEMO TABS ══
-    let activeTab = 'edge';
+    let activeTab = 'spiral';
     function switchTab(name) {
-      document.querySelectorAll('.dtab').forEach((t, i) => t.classList.toggle('active', ['edge', 'segment', 'cluster', 'yolo', 'platelet'][i] === name));
+      document.querySelectorAll('.dtab').forEach((t, i) => t.classList.toggle('active', ['spiral', 'edge', 'segment', 'cluster', 'yolo', 'platelet'][i] === name));
+      if (name !== 'spiral' && window.spiralStopCamera) window.spiralStopCamera();
       document.querySelectorAll('.dpanel').forEach(p => p.classList.remove('active'));
       document.getElementById('panel-' + name).classList.add('active');
       activeTab = name;
@@ -3882,3 +4228,415 @@
 
     applyTheme(localStorage.getItem("theme") || "dark");
   </script>
+  <!-- ══ SPIRAL TEST: live hand kinematics (features from the Parkinson's manuscript) ══ -->
+  <script>
+    (function () {
+      const C = document.getElementById('spiralCanvas');
+      if (!C) return;
+      const X = C.getContext('2d');
+      const SPEC = document.getElementById('spiralSpec'), SX = SPEC.getContext('2d');
+      const logEl = document.getElementById('spiral-log'), tbl = document.getElementById('spiral-metrics');
+      const W = 400, H = 400, CX = 200, CY = 200, TURNS = 3, RMAX = 165, FS = 60, REC_MS = 10000;
+      const B = RMAX / (TURNS * 2 * Math.PI);
+      const MP = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14';
+      const MODEL = 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task';
+
+      const template = [];
+      for (let i = 0; i <= 1500; i++) {
+        const th = i / 1500 * TURNS * 2 * Math.PI;
+        template.push([CX + B * th * Math.cos(th), CY + B * th * Math.sin(th)]);
+      }
+
+      let mode = 'mouse', amp = 0, trace = [], drawing = false, t0 = 0;
+      let result = null, baseline = null, baseTrace = null;
+      const cam = { stream: null, video: document.getElementById('spiralVideo'), lm: null, raf: 0, state: 'off', tip: null, lastVT: -1, recStart: 0, countStart: 0 };
+
+      const log = (msg) => { logEl.innerHTML = msg; };
+
+      // Simulated tremor: ~5 Hz oscillation added to the input, as in Part B of the study.
+      function tremor(t) {
+        if (!amp) return [0, 0];
+        const w = 2 * Math.PI * 5;
+        return [amp * Math.sin(w * t), amp * Math.sin(w * t * 1.04 + 1.3)];
+      }
+
+      // ── Drawing ──
+      function strokePath(pts, color, width) {
+        if (pts.length < 2) return;
+        X.strokeStyle = color; X.lineWidth = width; X.lineJoin = 'round'; X.lineCap = 'round';
+        X.beginPath(); X.moveTo(pts[0].x, pts[0].y);
+        for (let i = 1; i < pts.length; i++) X.lineTo(pts[i].x, pts[i].y);
+        X.stroke();
+      }
+
+      function draw() {
+        const v = cam.video;
+        if (mode === 'camera' && cam.stream && v.readyState >= 2) {
+          const s = Math.min(v.videoWidth, v.videoHeight);
+          X.save(); X.translate(W, 0); X.scale(-1, 1);
+          X.drawImage(v, (v.videoWidth - s) / 2, (v.videoHeight - s) / 2, s, s, 0, 0, W, H);
+          X.restore();
+          X.fillStyle = 'rgba(6,8,26,.6)'; X.fillRect(0, 0, W, H);
+        } else {
+          X.fillStyle = '#06081a'; X.fillRect(0, 0, W, H);
+          X.strokeStyle = 'rgba(79,127,255,.08)'; X.lineWidth = .5;
+          for (let g = 0; g <= W; g += 20) {
+            X.beginPath(); X.moveTo(g, 0); X.lineTo(g, H); X.stroke();
+            X.beginPath(); X.moveTo(0, g); X.lineTo(W, g); X.stroke();
+          }
+        }
+        X.setLineDash([4, 5]);
+        X.strokeStyle = 'rgba(174,184,214,.45)'; X.lineWidth = 1.5;
+        X.beginPath(); X.moveTo(template[0][0], template[0][1]);
+        template.forEach(p => X.lineTo(p[0], p[1])); X.stroke();
+        X.setLineDash([]);
+        X.fillStyle = '#ffc94a'; X.beginPath(); X.arc(CX, CY, 4, 0, 7); X.fill();
+
+        if (baseTrace) strokePath(baseTrace, 'rgba(154,108,255,.5)', 1.5);
+        strokePath(trace, '#3de5ff', 2);
+
+        if (mode === 'camera') {
+          if (cam.tip) {
+            X.strokeStyle = cam.state === 'rec' ? '#ff83c7' : '#3de5ff'; X.lineWidth = 2;
+            X.beginPath(); X.arc(cam.tip[0], cam.tip[1], 9, 0, 7); X.stroke();
+          }
+          X.font = '600 13px JetBrains Mono, monospace'; X.textAlign = 'left';
+          if (cam.state === 'count') {
+            const n = 3 - Math.floor((performance.now() - cam.countStart) / 1000);
+            X.fillStyle = '#ffc94a'; X.font = '700 64px Outfit, sans-serif'; X.textAlign = 'center';
+            X.fillText(n, CX, 90); X.textAlign = 'left';
+          } else if (cam.state === 'rec') {
+            const left = Math.max(0, (REC_MS - (performance.now() - cam.recStart)) / 1000);
+            X.fillStyle = '#ff83c7'; X.fillText('● REC ' + left.toFixed(1) + 's', 12, 22);
+          } else if (cam.state === 'live') {
+            X.fillStyle = cam.tip ? '#3de5ff' : '#aeb8d6';
+            X.fillText(cam.tip ? 'Hand found · press Record' : 'Show one hand to the camera', 12, 22);
+          }
+        }
+      }
+
+      // ── Signal processing ──
+      function resample(pts) {
+        const T = pts[pts.length - 1].t - pts[0].t;
+        const n = Math.floor(T * FS) + 1, x = new Float64Array(n), y = new Float64Array(n);
+        let j = 0;
+        for (let i = 0; i < n; i++) {
+          const t = pts[0].t + i / FS;
+          while (j < pts.length - 2 && pts[j + 1].t < t) j++;
+          const a = pts[j], b = pts[j + 1], u = b.t > a.t ? Math.min(1, Math.max(0, (t - a.t) / (b.t - a.t))) : 0;
+          x[i] = a.x + (b.x - a.x) * u; y[i] = a.y + (b.y - a.y) * u;
+        }
+        return { x, y, T };
+      }
+
+      function fft(re, im) {
+        const n = re.length;
+        for (let i = 1, j = 0; i < n; i++) {
+          let bit = n >> 1;
+          for (; j & bit; bit >>= 1) j ^= bit;
+          j ^= bit;
+          if (i < j) { [re[i], re[j]] = [re[j], re[i]]; [im[i], im[j]] = [im[j], im[i]]; }
+        }
+        for (let len = 2; len <= n; len <<= 1) {
+          const ang = -2 * Math.PI / len, wr = Math.cos(ang), wi = Math.sin(ang);
+          for (let i = 0; i < n; i += len) {
+            let cr = 1, ci = 0;
+            for (let k = 0; k < len / 2; k++) {
+              const a = i + k, b = a + len / 2;
+              const tr = re[b] * cr - im[b] * ci, ti = re[b] * ci + im[b] * cr;
+              re[b] = re[a] - tr; im[b] = im[a] - ti; re[a] += tr; im[a] += ti;
+              const ncr = cr * wr - ci * wi; ci = cr * wi + ci * wr; cr = ncr;
+            }
+          }
+        }
+      }
+
+      // Zero-phase 2nd-order Butterworth low-pass (forward + backward), removes pixel/landmark jitter above fc.
+      function lowpass(sig, fc) {
+        const w0 = 2 * Math.PI * fc / FS, alpha = Math.sin(w0) / Math.SQRT2, cw = Math.cos(w0), a0 = 1 + alpha;
+        const b0 = (1 - cw) / 2 / a0, b1 = (1 - cw) / a0, b2 = b0, a1 = -2 * cw / a0, a2 = (1 - alpha) / a0;
+        const pass = (x) => {
+          const y = new Float64Array(x.length);
+          let x1 = x[0], x2 = x[0], y1 = x[0], y2 = x[0];
+          for (let i = 0; i < x.length; i++) {
+            const v = b0 * x[i] + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2;
+            x2 = x1; x1 = x[i]; y2 = y1; y1 = v; y[i] = v;
+          }
+          return y;
+        };
+        return pass(pass(sig).reverse()).reverse();
+      }
+
+      const nextPow2 = (n) => 1 << Math.ceil(Math.log2(Math.max(2, n)));
+      const diff = (a) => { const d = new Float64Array(a.length - 1); for (let i = 0; i < d.length; i++) d[i] = (a[i + 1] - a[i]) * FS; return d; };
+
+      // Power spectrum of a signal (mean removed, Hann window), for 0..FS/2.
+      function powerSpectrum(sig) {
+        const n = sig.length, N = nextPow2(n), re = new Float64Array(N), im = new Float64Array(N);
+        let mean = 0; for (let i = 0; i < n; i++) mean += sig[i]; mean /= n;
+        for (let i = 0; i < n; i++) re[i] = (sig[i] - mean) * (0.5 - 0.5 * Math.cos(2 * Math.PI * i / (n - 1)));
+        fft(re, im);
+        const P = new Float64Array(N / 2 + 1);
+        for (let k = 0; k <= N / 2; k++) P[k] = re[k] * re[k] + im[k] * im[k];
+        return { P, df: FS / N };
+      }
+
+      // Spectral arc length (Balasubramanian et al., 2012) of the speed profile.
+      function sparc(speed) {
+        const n = speed.length, N = Math.min(nextPow2(n) * 16, 65536);
+        const re = new Float64Array(N), im = new Float64Array(N);
+        for (let i = 0; i < n; i++) re[i] = speed[i];
+        fft(re, im);
+        const df = FS / N, kMax = Math.floor(10 / df), M = [];
+        for (let k = 0; k <= kMax; k++) M.push(Math.hypot(re[k], im[k]));
+        let m0 = 0; for (const m of M) if (m > m0) m0 = m;
+        m0 = m0 || 1;
+        for (let k = 0; k < M.length; k++) M[k] /= m0;
+        let last = 0;
+        for (let k = 0; k < M.length; k++) if (M[k] >= 0.05) last = k;
+        const fc = Math.max(last * df, df);
+        let arc = 0;
+        for (let k = 1; k <= last; k++) arc += Math.hypot(df / fc, M[k] - M[k - 1]);
+        return -arc;
+      }
+
+      function analyze(pts) {
+        if (pts.length < 20 || pts[pts.length - 1].t - pts[0].t < 1) return null;
+        const rs = resample(pts), T = rs.T;
+        if (rs.x.length < 40) return null;
+        const x = lowpass(rs.x, 10), y = lowpass(rs.y, 10);
+        const vx = diff(x), vy = diff(y), speed = vx.map((v, i) => Math.hypot(v, vy[i]));
+        const ax = diff(vx), ay = diff(vy), jx = diff(ax), jy = diff(ay);
+
+        // Tremor-band power: share of velocity power in 3.5–7.5 Hz (Parkinsonian tremor is ~4–6 Hz).
+        const sx = powerSpectrum(vx), sy = powerSpectrum(vy);
+        const P = sx.P.map((p, k) => p + sy.P[k]), df = sx.df;
+        let band = 0, total = 0;
+        P.forEach((p, k) => { const f = k * df; if (f >= 0.5 && f <= 15) { total += p; if (f >= 3.5 && f <= 7.5) band += p; } });
+
+        // Dimensionless normalized jerk: sqrt(0.5 · ∫|jerk|² dt · T⁵ / L²)
+        let J = 0; for (let i = 0; i < jx.length; i++) J += (jx[i] * jx[i] + jy[i] * jy[i]) / FS;
+        let L = 0; for (let i = 1; i < x.length; i++) L += Math.hypot(x[i] - x[i - 1], y[i] - y[i - 1]);
+        const nj = L ? Math.sqrt(0.5 * J * Math.pow(T, 5) / (L * L)) : 0;
+
+        // Mean distance from the template spiral, and how far out the trace reached.
+        let dev = 0, rReach = 0;
+        for (let i = 0; i < x.length; i++) {
+          let best = Infinity;
+          for (let k = 0; k < template.length; k += 2) {
+            const d = (template[k][0] - x[i]) ** 2 + (template[k][1] - y[i]) ** 2;
+            if (d < best) best = d;
+          }
+          dev += Math.sqrt(best);
+          rReach = Math.max(rReach, Math.hypot(x[i] - CX, y[i] - CY));
+        }
+
+        return {
+          tremor: total ? band / total * 100 : 0, nj, sparc: sparc(speed), dev: dev / x.length,
+          T, n: x.length, coverage: rReach / RMAX, spectrum: P, df
+        };
+      }
+
+      // ── Output ──
+      const fmtNJ = (v) => v >= 1e4 ? v.toExponential(1).replace('e+', 'e') : v.toFixed(0);
+      function delta(cur, base, kind) {
+        if (base == null) return '<span class="d">—</span>';
+        if (kind === 'abs') {
+          const d = cur - base, cls = d < 0 ? 'up' : 'down';  // SPARC: more negative = less smooth
+          return `<span class="d ${cls}">${d >= 0 ? '+' : ''}${d.toFixed(2)}</span>`;
+        }
+        const pct = base ? (cur - base) / Math.abs(base) * 100 : 0, cls = pct > 0 ? 'up' : 'down';
+        return `<span class="d ${cls}">${pct >= 0 ? '+' : ''}${pct.toFixed(0)}%</span>`;
+      }
+
+      function renderMetrics() {
+        const r = result, b = baseline;
+        const row = (lbl, val, d) => `<span>${lbl}</span><span class="v">${val}</span>${d}`;
+        const none = '<span class="d">—</span>';
+        let html = '<span class="h">FEATURE</span><span class="h v" style="color:var(--text3)">VALUE</span><span class="h d">VS BASELINE</span>';
+        if (!r) {
+          html += row('Tremor-band power (3.5–7.5 Hz)', '—', none) + row('Normalized jerk', '—', none) +
+            row('SPARC smoothness', '—', none) + row('Deviation from spiral', '—', none);
+        } else {
+          html += row('Tremor-band power (3.5–7.5 Hz)', r.tremor.toFixed(1) + '%', delta(r.tremor, b && b.tremor)) +
+            row('Normalized jerk', fmtNJ(r.nj), delta(r.nj, b && b.nj)) +
+            row('SPARC smoothness', r.sparc.toFixed(2), delta(r.sparc, b && b.sparc, 'abs')) +
+            row('Deviation from spiral', r.dev.toFixed(1) + ' px', delta(r.dev, b && b.dev));
+        }
+        tbl.innerHTML = html;
+        drawSpectrum();
+      }
+
+      function drawSpectrum() {
+        const w = SPEC.width, h = SPEC.height, fMax = 15;
+        SX.fillStyle = '#06081a'; SX.fillRect(0, 0, w, h);
+        const bx = (f) => 6 + f / fMax * (w - 12);
+        SX.fillStyle = 'rgba(255,131,199,.12)'; SX.fillRect(bx(3.5), 0, bx(7.5) - bx(3.5), h);
+        SX.font = '9px JetBrains Mono, monospace'; SX.fillStyle = '#aeb8d6';
+        SX.fillText('velocity spectrum · 0–15 Hz', 8, 12);
+        SX.fillStyle = '#ff83c7'; SX.fillText('tremor band', bx(3.5) + 3, 24);
+        if (!result) return;
+        const plot = (r, color) => {
+          let mx = 0; const pts = [];
+          r.spectrum.forEach((p, k) => { const f = k * r.df; if (f >= 0.5 && f <= fMax) { pts.push([f, p]); if (p > mx) mx = p; } });
+          SX.strokeStyle = color; SX.lineWidth = 1.5; SX.beginPath();
+          pts.forEach(([f, p], i) => { const yy = h - 6 - Math.sqrt(p / (mx || 1)) * (h - 32); i ? SX.lineTo(bx(f), yy) : SX.moveTo(bx(f), yy); });
+          SX.stroke();
+        };
+        if (baseline) plot(baseline, 'rgba(154,108,255,.7)');
+        plot(result, '#3de5ff');
+      }
+
+      function finish() {
+        const r = analyze(trace);
+        if (!r) { log('&gt; Trace too short — draw the whole spiral (at least 1 second)'); return; }
+        result = r; renderMetrics();
+        let msg = `&gt; ${r.n} samples · ${r.T.toFixed(1)} s · resampled to ${FS} Hz`;
+        if (r.coverage < 0.6) msg += '<br>&gt; <span style="color:var(--gold)">Tip: trace further out to cover the full spiral</span>';
+        msg += baseline ? '<br>&gt; Compared with your baseline (purple)' : '<br>&gt; Happy with it? Click <b>Save as baseline</b>, then try Simulate → Strong';
+        if (mode === 'camera') msg += '<br>&gt; Camera traces include landmark jitter, so compare camera with camera';
+        log(msg);
+      }
+
+      // ── Mouse / touch input ──
+      function addPoint(e) {
+        const r = C.getBoundingClientRect();
+        const t = (e.timeStamp - t0) / 1000;
+        if (trace.length && t <= trace[trace.length - 1].t) return;
+        const [ox, oy] = tremor(t);
+        trace.push({ x: (e.clientX - r.left) * W / r.width + ox, y: (e.clientY - r.top) * H / r.height + oy, t });
+      }
+      C.addEventListener('pointerdown', (e) => {
+        if (mode !== 'mouse') return;
+        e.preventDefault();
+        drawing = true; try { C.setPointerCapture(e.pointerId); } catch (err) { }
+        trace = []; t0 = e.timeStamp; addPoint(e); draw();
+      });
+      C.addEventListener('pointermove', (e) => {
+        if (!drawing) return;
+        const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [];
+        (evs.length ? evs : [e]).forEach(addPoint);
+        draw();
+      });
+      const endStroke = () => { if (!drawing) return; drawing = false; finish(); };
+      C.addEventListener('pointerup', endStroke);
+      C.addEventListener('pointercancel', endStroke);
+
+      // ── Camera input (MediaPipe HandLandmarker; index fingertip = landmark 8) ──
+      async function startCamera() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          log('&gt; Camera not available here (needs HTTPS and camera permission)'); return false;
+        }
+        try {
+          if (!cam.lm) {
+            log('&gt; Loading MediaPipe hand-tracking model…');
+            const vision = await import(MP + '/vision_bundle.mjs');
+            const files = await vision.FilesetResolver.forVisionTasks(MP + '/wasm');
+            const opts = (delegate) => ({ baseOptions: { modelAssetPath: MODEL, delegate }, runningMode: 'VIDEO', numHands: 1 });
+            try { cam.lm = await vision.HandLandmarker.createFromOptions(files, opts('GPU')); }
+            catch (err) { cam.lm = await vision.HandLandmarker.createFromOptions(files, opts('CPU')); }
+          }
+          if (mode !== 'camera') return false;
+          log('&gt; Requesting camera…');
+          cam.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }, audio: false });
+          cam.video.srcObject = cam.stream;
+          await cam.video.play();
+          cam.state = 'live';
+          log('&gt; Camera on · hold your index finger up, then press <b>Record 10 s</b><br>&gt; Frames are processed locally and never stored');
+          loop();
+          return true;
+        } catch (err) {
+          log('&gt; Could not start the camera (' + ((err && err.name) || 'error') + '). Mouse/touch still works.');
+          stopCamera();
+          return false;
+        }
+      }
+
+      function stopCamera() {
+        cancelAnimationFrame(cam.raf);
+        if (cam.stream) cam.stream.getTracks().forEach(t => t.stop());
+        cam.stream = null; cam.state = 'off'; cam.tip = null;
+        cam.video.srcObject = null;
+      }
+      window.spiralStopCamera = function () { if (mode === 'camera') setMode('mouse'); };
+
+      function loop() {
+        cam.raf = requestAnimationFrame(loop);
+        const v = cam.video, now = performance.now();
+        if (v.readyState >= 2 && v.currentTime !== cam.lastVT) {
+          cam.lastVT = v.currentTime;
+          const res = cam.lm.detectForVideo(v, now);
+          if (res.landmarks && res.landmarks.length) {
+            const p = res.landmarks[0][8], s = Math.min(v.videoWidth, v.videoHeight);
+            const px = (p.x * v.videoWidth - (v.videoWidth - s) / 2) / s * W;
+            const py = (p.y * v.videoHeight - (v.videoHeight - s) / 2) / s * H;
+            cam.tip = [W - px, py];
+            if (cam.state === 'rec') {
+              const t = (now - cam.recStart) / 1000, [ox, oy] = tremor(t);
+              trace.push({ x: cam.tip[0] + ox, y: cam.tip[1] + oy, t });
+            }
+          } else cam.tip = null;
+        }
+        if (cam.state === 'count' && now - cam.countStart >= 3000) { cam.state = 'rec'; cam.recStart = now; trace = []; }
+        if (cam.state === 'rec' && now - cam.recStart >= REC_MS) stopRecording();
+        draw();
+      }
+
+      function stopRecording() {
+        if (cam.state !== 'rec' && cam.state !== 'count') return;
+        const wasRec = cam.state === 'rec';
+        cam.state = 'live';
+        if (wasRec) finish();
+      }
+
+      document.getElementById('spiral-rec').addEventListener('click', () => {
+        if (!cam.stream) return;
+        trace = []; cam.state = 'count'; cam.countStart = performance.now();
+        log('&gt; Get ready: put your fingertip on the yellow centre dot');
+      });
+      document.getElementById('spiral-stop').addEventListener('click', stopRecording);
+
+      // ── Controls ──
+      async function setMode(m) {
+        document.querySelectorAll('#spiral-mode .cbtn').forEach(b => b.classList.toggle('active', b.dataset.mode === m));
+        document.getElementById('spiral-cam-ctrl').style.display = m === 'camera' ? '' : 'none';
+        trace = [];
+        if (m === 'camera') {
+          if (mode === 'camera' && cam.stream) return;
+          mode = 'camera'; draw();
+          if (!(await startCamera()) && mode === 'camera') setMode('mouse');
+        } else {
+          mode = 'mouse'; stopCamera(); draw();
+          log('&gt; Mouse / touch input · trace the spiral from the centre');
+        }
+      }
+      document.querySelectorAll('#spiral-mode .cbtn').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+
+      document.querySelectorAll('#spiral-sim .cbtn').forEach(b => b.addEventListener('click', () => {
+        document.querySelectorAll('#spiral-sim .cbtn').forEach(o => o.classList.toggle('active', o === b));
+        amp = parseFloat(b.dataset.amp);
+        log(amp ? `&gt; Simulated 5 Hz tremor on (${b.textContent.toLowerCase()}) · trace again to compare` : '&gt; Simulated tremor off');
+      }));
+
+      document.getElementById('spiral-base').addEventListener('click', () => {
+        if (!result) { log('&gt; Trace the spiral first, then save it as your baseline'); return; }
+        baseline = result; baseTrace = trace.slice();
+        renderMetrics(); draw();
+        log('&gt; Baseline saved (purple). Now try Simulate → Strong and trace again');
+      });
+      document.getElementById('spiral-clear').addEventListener('click', () => {
+        trace = []; result = null; baseline = null; baseTrace = null;
+        renderMetrics(); draw();
+        log('&gt; Cleared · trace the spiral from the centre');
+      });
+
+      // Turn the camera off when the demo scrolls out of view.
+      new IntersectionObserver((es) => es.forEach(e => { if (!e.isIntersecting && mode === 'camera') setMode('mouse'); }), { threshold: 0 })
+        .observe(document.getElementById('demo'));
+
+      draw(); renderMetrics();
+    })();
+  </script>
+</body>
+
+</html>
