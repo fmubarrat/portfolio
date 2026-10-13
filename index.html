@@ -2788,6 +2788,56 @@
           </div>
         </div>
 
+        <div class="proj-card featured reveal" onmousemove="cardGlow(event,this)">
+          <div class="proj-tag"
+            style="color:#34d399;border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.07)">Human-AI
+            Interaction · Learning Technologies <span class="badge-new">NEW 2026</span></div>
+          <h3 class="proj-title">Attune: When Should an AI Coding Assistant Make a Novice Think?</h3>
+          <p class="proj-desc">Novices often paste AI-generated code without understanding or checking it, and
+            <em>sycophantic</em> assistants, which agree with whatever the learner already believes, make this worse.
+            Engagement techniques such as predicting what code does help, but adding them to every request slows down
+            learners who are already thinking. Attune adds friction <strong>only when interaction and typing signals
+              suggest over-reliance or struggle</strong>. It keeps the learner in control (every step can be skipped,
+            and the assistant can explain why it adapted) and measures trust calibration and learning. On-device
+            facial sensing is an optional, lab-only extra; no video is ever stored. A tested research prototype with
+            a pilot protocol; not yet run with participants.</p>
+          <figure class="proj-figure">
+            <img src="images/attune.jpg" alt="Attune: Python task editor beside an AI assistant that asks the learner to predict the code's output before inserting it, with a 'Why this step?' explanation and a confidence rating" loading="lazy">
+            <figcaption>The learner accepted a sycophantic suggestion within seconds, so the next request comes as
+              Trace &amp; predict, with a "Why this step?" explanation, a skip option and a confidence probe.</figcaption>
+          </figure>
+          <div class="proj-metrics">
+            <div>
+              <div class="metric-val" style="color:#34d399">4</div>
+              <div class="metric-lbl">Engagement techniques, chosen adaptively</div>
+            </div>
+            <div>
+              <div class="metric-val" style="color:#34d399">Belief-aware</div>
+              <div class="metric-lbl">Sycophancy agrees with the learner's misconception</div>
+            </div>
+            <div>
+              <div class="metric-val" style="color:#34d399">Skip + explain</div>
+              <div class="metric-lbl">Learner agency and transparency</div>
+            </div>
+            <div>
+              <div class="metric-val" style="color:#34d399">27 / 27</div>
+              <div class="metric-lbl">End-to-end checks passing</div>
+            </div>
+          </div>
+          <div class="proj-pipeline">
+            <span class="pipe-step">Adaptive Policy</span><span class="pipe-step">Interaction Signals</span><span
+              class="pipe-step">Keystroke Dynamics</span><span class="pipe-step">Pyodide (Python in browser)</span><span
+              class="pipe-step">Trust Calibration</span><span class="pipe-step">MediaPipe Face (optional)</span><span
+              class="pipe-step">Mixed Methods</span>
+          </div>
+          <div style="margin-top:.9rem">
+            <a href="attune/?pid=DEMO&amp;condition=adaptive&amp;flawed=1&amp;explain=1&amp;cam=0" target="_blank"
+              class="proj-link">Try the live prototype →</a>
+            <span style="font-family:var(--f-mono);font-size:.62rem;color:var(--text3)">Tip: press D for the
+              researcher view</span>
+          </div>
+        </div>
+
         <div class="proj-card reveal" onmousemove="cardGlow(event,this)">
           <div class="proj-tag">Medical Imaging · Healthcare AI</div>
           <h3 class="proj-title">Platelet Vision</h3>
@@ -2993,6 +3043,9 @@
           <span class="pipe-step"
             style="color:var(--cyan);border-color:rgba(34,211,238,.3);padding:.3rem .8rem;font-size:.68rem">Video-Based
             Diagnostics</span>
+          <span class="pipe-step"
+            style="color:#34d399;border-color:rgba(52,211,153,.3);padding:.3rem .8rem;font-size:.68rem">Human-AI
+            Interaction</span>
         </div>
 
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem">

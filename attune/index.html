@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Attune — Sensing-Adaptive Cognitive Engagement</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <header class="top">
+    <div class="brand"><b>Attune</b><span>research prototype</span></div>
+    <div id="progress" class="progress"></div>
+    <div class="top-right">
+      <span id="py-status" class="pill">python: loading</span>
+      <span id="cam-status" class="pill">camera off</span>
+      <button id="toggle-dash" class="ghost" title="Researcher view (D)">Researcher view</button>
+    </div>
+  </header>
+
+  <!-- ── Welcome / consent ── -->
+  <main id="screen-welcome" class="screen">
+    <div class="welcome">
+      <h1>Attune</h1>
+      <p class="lede">A study prototype that adapts how an AI coding assistant engages novices, based on signals of
+        over-reliance and struggle sensed on the device.</p>
+
+      <div class="card">
+        <h2>What you will do</h2>
+        <p>Answer three quick questions, solve three short Python tasks, then answer the questions again and a short
+          questionnaire (about 35 minutes). An AI assistant is available whenever you want help. Like any AI, its
+          suggestions may be wrong. After each task you answer one short question about the code.</p>
+        <h2>What is measured</h2>
+        <ul>
+          <li><b>Always:</b> your interactions (runs, AI requests, insertions) and typing rhythm (key counts and
+            pauses, never the keys themselves).</li>
+          <li><b>Only if you turn on the camera:</b> head direction, brow movement and blink rate, computed in this
+            browser from facial landmarks. <b>No video, image or landmark is stored or sent anywhere.</b></li>
+        </ul>
+      </div>
+
+      <div class="card form">
+        <label class="check"><input type="checkbox" id="use-cam"> Also use the camera for on-device sensing
+          (optional, lab sessions only)</label>
+        <button id="start" class="primary">I agree, start the study</button>
+      </div>
+
+      <details class="card setup">
+        <summary>Study setup (researcher)</summary>
+        <div class="form" style="margin-top:.8rem">
+          <label>Participant ID <input id="pid" value="P01" maxlength="20"></label>
+          <label>Condition
+            <select id="condition">
+              <option value="adaptive">Adaptive engagement (sensing-driven)</option>
+              <option value="static-direct">Static: direct code (no engagement)</option>
+              <option value="static-trace">Static: always trace &amp; predict</option>
+              <option value="static-lead">Static: always lead &amp; reveal</option>
+            </select>
+          </label>
+          <label>Sycophantic AI on tasks <input id="flawed" value="2" placeholder="e.g. 2 or 1,3"></label>
+          <label>Explain adaptations to the participant
+            <select id="explain">
+              <option value="1">Yes: show "Why this step?" and allow skipping</option>
+              <option value="0">No: adapt silently (skipping still allowed)</option>
+            </select>
+          </label>
+          <p class="hint">These can be preset in the link, e.g.
+            <code>?pid=P07&amp;condition=adaptive&amp;flawed=2&amp;explain=1&amp;cam=0</code>, so participants never see this
+            panel. For demos, open <b>Researcher view</b> (or press D) to watch the signals and the policy, and use
+            “Simulate” to show each adaptation without acting it out.</p>
+        </div>
+      </details>
+    </div>
+  </main>
+
+  <!-- ── Task ── -->
+  <main id="screen-task" class="screen hidden">
+    <section class="col work">
+      <div class="task-head">
+        <div class="task-kicker" id="task-kicker">Task 1 of 3</div>
+        <h2 id="task-title"></h2>
+        <p id="task-prompt"></p>
+        <ul id="task-examples" class="examples"></ul>
+      </div>
+      <div class="editor-wrap">
+        <div class="editor-bar"><span>solution.py</span><span id="editor-origin" class="muted"></span></div>
+        <textarea id="editor" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
+      </div>
+      <div class="actions">
+        <button id="run" class="primary">▶ Run tests</button>
+        <button id="submit" class="ghost">Submit &amp; continue →</button>
+      </div>
+      <div id="results" class="results"></div>
+    </section>
+
+    <section class="col assistant">
+      <div class="assist-head">
+        <h3>AI assistant</h3>
+        <span class="muted">Ask for help at any time</span>
+      </div>
+      <div id="assist-log" class="assist-log"></div>
+      <div class="assist-belief">
+        <label for="belief">Your idea so far (optional)</label>
+        <select id="belief"></select>
+      </div>
+      <div class="assist-input">
+        <input id="ask-text" placeholder="Optional: describe what you need…">
+        <button id="ask" class="primary">Ask for help</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ── Concept test (before and after the tasks) ── -->
+  <main id="screen-quiz" class="screen hidden">
+    <div class="welcome">
+      <div class="task-kicker" id="quiz-kicker">Before you start</div>
+      <h2 id="quiz-title">Three quick questions</h2>
+      <p class="muted">Answer as well as you can. It is fine not to know.</p>
+      <div id="quiz-items"></div>
+      <button id="quiz-next" class="primary" disabled>Continue →</button>
+    </div>
+  </main>
+
+  <!-- ── Questionnaire ── -->
+  <main id="screen-survey" class="screen hidden">
+    <div class="welcome wide">
+      <div class="task-kicker">Almost done</div>
+      <h2>About your experience</h2>
+      <p class="muted">1 = strongly disagree, 7 = strongly agree</p>
+      <div id="survey-items"></div>
+      <label class="open-q"><span id="survey-open-q"></span><textarea id="survey-open" rows="4"></textarea></label>
+      <button id="survey-next" class="primary" disabled>Finish →</button>
+    </div>
+  </main>
+
+  <!-- ── Comprehension check ── -->
+  <main id="screen-check" class="screen hidden">
+    <div class="welcome">
+      <div class="task-kicker">Quick check</div>
+      <h2 id="check-q"></h2>
+      <div id="check-options" class="options"></div>
+      <button id="check-next" class="primary" disabled>Continue →</button>
+    </div>
+  </main>
+
+  <!-- ── Done ── -->
+  <main id="screen-done" class="screen hidden">
+    <div class="welcome wide">
+      <h1>Thank you</h1>
+      <p class="lede">Session complete. The researcher can export the data below.</p>
+      <div id="summary"></div>
+      <div class="actions">
+        <button id="export-json" class="primary">⬇ Export session (JSON)</button>
+        <button id="export-csv" class="ghost">⬇ Export signal timeline (CSV)</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- ── Researcher dashboard ── -->
+  <aside id="dash" class="dash hidden" aria-label="Researcher view">
+    <div class="dash-head">
+      <b>Researcher view</b>
+      <button id="close-dash" class="ghost small">✕</button>
+    </div>
+    <div class="dash-sec">
+      <div class="dash-lbl">Policy (evaluated when help is requested)</div>
+      <div id="dash-policy" class="dash-policy"></div>
+      <div id="dash-reasons" class="dash-reasons"></div>
+    </div>
+    <div class="dash-sec">
+      <div class="dash-lbl">Scores</div>
+      <div id="dash-scores"></div>
+    </div>
+    <div class="dash-sec">
+      <div class="dash-lbl">Signals · last 30 s</div>
+      <table id="dash-signals" class="dash-table"></table>
+      <canvas id="dash-spark" width="300" height="70"></canvas>
+      <div class="spark-legend"><span class="k1">on-screen</span><span class="k2">brow z</span><span
+          class="k3">idle</span></div>
+    </div>
+    <div class="dash-sec">
+      <div class="dash-lbl">Wizard controls</div>
+      <label class="dash-row">Force technique
+        <select id="override">
+          <option value="">auto (policy)</option>
+          <option value="direct">direct</option>
+          <option value="trace">trace &amp; predict</option>
+          <option value="lead">lead &amp; reveal</option>
+          <option value="verify">verify first</option>
+        </select>
+      </label>
+      <div class="dash-lbl" style="margin-top:.6rem">Simulate a participant state</div>
+      <div class="sim-row">
+        <button class="ghost small" data-sim="reliant">over-reliant</button>
+        <button class="ghost small" data-sim="struggling">struggling</button>
+        <button class="ghost small" data-sim="distracted">distracted</button>
+        <button class="ghost small" data-sim="">clear</button>
+      </div>
+    </div>
+    <video id="cam" playsinline muted></video>
+    <div class="dash-foot">Camera preview is shown here only. Frames are never stored.</div>
+  </aside>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+
+</html>
