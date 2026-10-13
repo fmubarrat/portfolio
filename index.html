@@ -5,6 +5,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>Md Fayek Mubarrat Jamee — CV Researcher</title>
+  <meta name="description" content="Md Fayek Mubarrat Jamee — computer vision researcher building smartphone and wearable sensing for Parkinson's disease: hand kinematics during drawing, and stress recovery. Seeking PhD, Fall 2027.">
+  <link rel="canonical" href="https://fmubarrat.github.io/portfolio/">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://fmubarrat.github.io/portfolio/">
+  <meta property="og:title" content="Md Fayek Mubarrat Jamee — Computer Vision for Accessible Health">
+  <meta property="og:description" content="Md Fayek Mubarrat Jamee — computer vision researcher building smartphone and wearable sensing for Parkinson's disease: hand kinematics during drawing, and stress recovery. Seeking PhD, Fall 2027.">
+  <meta property="og:image" content="https://fmubarrat.github.io/portfolio/images/og-card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Md Fayek Mubarrat Jamee — smartphone and wearable sensing for Parkinson's disease">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Md Fayek Mubarrat Jamee — Computer Vision for Accessible Health">
+  <meta name="twitter:description" content="Md Fayek Mubarrat Jamee — computer vision researcher building smartphone and wearable sensing for Parkinson's disease: hand kinematics during drawing, and stress recovery. Seeking PhD, Fall 2027.">
+  <meta name="twitter:image" content="https://fmubarrat.github.io/portfolio/images/og-card.png">
   <link rel="icon"
     href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔬</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1391,6 +1405,128 @@
       margin-top: .9rem;
     }
 
+    /* ── HERO NEWS + LINKS ── */
+    .hero-news {
+      display: inline-flex;
+      align-items: center;
+      gap: .6rem;
+      margin-top: 1.6rem;
+      padding: .45rem 1rem;
+      border: 1px solid rgba(255, 201, 74, .3);
+      border-radius: 100px;
+      background: rgba(255, 201, 74, .06);
+      font-family: var(--f-mono);
+      font-size: .66rem;
+      color: var(--text2);
+      text-decoration: none;
+      animation: fadeUp .8s .9s both;
+      max-width: 100%;
+    }
+
+    .hero-news b {
+      color: var(--gold);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .hero-news:hover {
+      border-color: var(--gold);
+      color: var(--text);
+    }
+
+    .hero-links {
+      display: flex;
+      justify-content: center;
+      gap: 1.4rem;
+      margin-top: 1.1rem;
+      font-family: var(--f-mono);
+      font-size: .66rem;
+      letter-spacing: .08em;
+      animation: fadeUp .8s 1s both;
+    }
+
+    .hero-links a {
+      color: var(--text3);
+      text-decoration: none;
+    }
+
+    .hero-links a:hover {
+      color: var(--cyan);
+    }
+
+    /* ── SELECTED RESULTS ── */
+    #results {
+      padding: clamp(3rem, 7vw, 5rem) 0;
+      background: var(--bg2);
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.2rem;
+      margin-top: 2rem;
+    }
+
+    .result-card {
+      display: flex;
+      flex-direction: column;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      transition: transform .3s, border-color .3s;
+    }
+
+    .result-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--border2);
+    }
+
+    .result-card .rc-fig {
+      background: #fff;
+      aspect-ratio: 16 / 10;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .result-card .rc-fig img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .result-card .rc-body {
+      padding: 1rem 1.1rem 1.2rem;
+    }
+
+    .rc-num {
+      font-family: var(--f-mono);
+      font-size: 1.35rem;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    .rc-lbl {
+      font-weight: 600;
+      font-size: .86rem;
+      margin: .35rem 0 .3rem;
+    }
+
+    .rc-note {
+      font-size: .74rem;
+      color: var(--text3);
+      line-height: 1.55;
+    }
+
+    @media (max-width:900px) {
+      .results-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     /* ── PROJECT FIGURES (real outputs) ── */
     .proj-figure {
       margin: 1.1rem 0 .3rem;
@@ -1564,6 +1700,7 @@
       color: #34d399;
     }
 
+    #spiralSpeed,
     #spiralSpec {
       cursor: default !important;
       margin-top: .7rem;
@@ -2331,9 +2468,53 @@
         <a href="Fayek_Jamee_CV.pdf" download class="btn btn-outline">⬇ Download CV</a>
         <a href="#contact" class="btn btn-outline">Let's Connect</a>
       </div>
+      <a class="hero-news" href="https://www.youtube.com/shorts/AKbpT4RbvRU" target="_blank" rel="noopener"><b>OCT 2026</b>
+        New: stress-recovery prototype (Apple Watch + facial landmarks) · watch the 70-sec overview →</a>
+      <div class="hero-links">
+        <a href="https://github.com/fmubarrat" target="_blank" rel="noopener">GITHUB</a>
+        <a href="https://www.linkedin.com/in/md-fayek-mubarrat-jamee/" target="_blank" rel="noopener">LINKEDIN</a>
+        <a href="mailto:fmubarrat@gmail.com">EMAIL</a>
+        <a href="#demo">TRY THE SPIRAL TEST</a>
+      </div>
     </div>
     <div class="scroll-cue">
       <div class="scroll-cue-line"></div>
+    </div>
+  </section>
+
+  <!-- ═══ SELECTED RESULTS ═══ -->
+  <section id="results">
+    <div class="container">
+      <div class="reveal">
+        <div class="sec-label">Selected Results</div>
+        <h2 class="sec-title">Evidence, Not Just Ideas</h2>
+      </div>
+      <div class="results-grid">
+        <a class="result-card reveal" href="#projects">
+          <div class="rc-fig"><img src="images/result_sparc.jpg" alt="Box plot: SPARC smoothness, normal writing vs simulated micrographia, p = 0.019" loading="lazy" style="object-fit:contain"></div>
+          <div class="rc-body">
+            <div class="rc-num" style="color:var(--gold)">p = 0.019</div>
+            <div class="rc-lbl">Micrographia from hand movement alone</div>
+            <div class="rc-note">SPARC smoothness separates normal writing from simulated micrographia, using only smartphone video. 2-participant proof-of-concept.</div>
+          </div>
+        </a>
+        <a class="result-card reveal" href="#projects">
+          <div class="rc-fig"><img src="images/result_jerk.jpg" alt="Bar chart: normalized jerk, normal vs simulated tremor for participants P01 and P02" loading="lazy" style="object-fit:contain"></div>
+          <div class="rc-body">
+            <div class="rc-num" style="color:var(--pink)">+2101%</div>
+            <div class="rc-lbl">Normalized jerk under simulated tremor</div>
+            <div class="rc-note">3D hand kinematics (MediaPipe) during spiral tracing. The effect was large for P01 and small for P02, one reason larger samples come next. Try it yourself in the live spiral test.</div>
+          </div>
+        </a>
+        <a class="result-card reveal" href="#projects">
+          <div class="rc-fig"><img src="images/platelet_detect.jpg" alt="Blood smear with detected platelets and estimated volumes" loading="lazy"></div>
+          <div class="rc-body">
+            <div class="rc-num" style="color:var(--cyan)">96.56% mAP@50</div>
+            <div class="rc-lbl">Giant platelet detection, no scale bar</div>
+            <div class="rc-note">YOLOv8-Nano with RBC-based auto-calibration; estimated MPV 8.61 fL, within the 7.2–11.7 fL normal range.</div>
+          </div>
+        </a>
+      </div>
     </div>
   </section>
 
@@ -2586,7 +2767,7 @@
             </div>
             <div>
               <div class="metric-val" style="color:var(--gold)">69.7%</div>
-              <div class="metric-lbl">SVM Accuracy (204 drawings)</div>
+              <div class="metric-lbl">SVM Accuracy (wave drawings)</div>
             </div>
             <div>
               <div class="metric-val" style="color:var(--gold)">$0</div>
@@ -2904,9 +3085,11 @@
                 <div class="ctrl-row">
                   <button class="cbtn" id="spiral-base">Save as baseline</button>
                   <button class="cbtn" id="spiral-clear">Clear</button>
+                  <button class="cbtn" id="spiral-csv">⬇ Download CSV</button>
                 </div>
               </div>
               <div class="spiral-metrics" id="spiral-metrics"></div>
+              <canvas id="spiralSpeed" width="520" height="80" aria-label="Speed profile"></canvas>
               <canvas id="spiralSpec" width="520" height="90" aria-label="Velocity spectrum"></canvas>
               <div class="out-log" id="spiral-log" style="min-height:auto">&gt; Trace the spiral to begin</div>
             </div>
@@ -3266,7 +3449,7 @@
             analysis, or motor monitoring — I'd love to connect.</p>
           <div class="contact-links" style="display:flex;flex-direction:column;gap:.8rem">
             <a href="mailto:fmubarrat@gmail.com" class="clink"><span class="clink-icon">✉</span>fmubarrat@gmail.com</a>
-            <a href="https://linkedin.com/in/md-fayek-mubarrat-jamee/" target="_blank" class="clink"><span
+            <a href="https://www.linkedin.com/in/md-fayek-mubarrat-jamee/" target="_blank" rel="noopener" class="clink"><span
                 class="clink-icon">in</span>linkedin.com/in/md-fayek-mubarrat-jamee</a>
             <a href="https://github.com/fmubarrat" target="_blank" class="clink"><span
                 class="clink-icon">⌥</span>github.com/fmubarrat</a>
@@ -4235,6 +4418,7 @@
       if (!C) return;
       const X = C.getContext('2d');
       const SPEC = document.getElementById('spiralSpec'), SX = SPEC.getContext('2d');
+      const SPD = document.getElementById('spiralSpeed'), DX = SPD.getContext('2d');
       const logEl = document.getElementById('spiral-log'), tbl = document.getElementById('spiral-metrics');
       const W = 400, H = 400, CX = 200, CY = 200, TURNS = 3, RMAX = 165, FS = 60, REC_MS = 10000;
       const B = RMAX / (TURNS * 2 * Math.PI);
@@ -4433,7 +4617,7 @@
 
         return {
           tremor: total ? band / total * 100 : 0, nj, sparc: sparc(speed), dev: dev / x.length,
-          T, n: x.length, coverage: rReach / RMAX, spectrum: P, df
+          T, n: x.length, coverage: rReach / RMAX, spectrum: P, df, speed
         };
       }
 
@@ -4465,6 +4649,7 @@
         }
         tbl.innerHTML = html;
         drawSpectrum();
+        drawSpeed();
       }
 
       function drawSpectrum() {
@@ -4487,10 +4672,55 @@
         plot(result, '#3de5ff');
       }
 
+      // Speed over time (smoothed trace), baseline in purple, current in cyan.
+      function drawSpeed() {
+        const w = SPD.width, h = SPD.height;
+        DX.fillStyle = '#06081a'; DX.fillRect(0, 0, w, h);
+        DX.font = '9px JetBrains Mono, monospace'; DX.fillStyle = '#aeb8d6';
+        DX.fillText('speed profile · px/s over time', 8, 12);
+        if (!result) return;
+        const all = [result].concat(baseline ? [baseline] : []);
+        let vmax = 0, tmax = 0;
+        all.forEach(r => { for (const v of r.speed) if (v > vmax) vmax = v; tmax = Math.max(tmax, r.T); });
+        DX.fillStyle = '#5b6b94'; DX.fillText(Math.round(vmax) + ' px/s', w - 70, 12);
+        const plot = (r, color) => {
+          DX.strokeStyle = color; DX.lineWidth = 1.2; DX.beginPath();
+          r.speed.forEach((v, i) => {
+            const xx = 6 + (i / FS) / (tmax || 1) * (w - 12), yy = h - 5 - v / (vmax || 1) * (h - 24);
+            i ? DX.lineTo(xx, yy) : DX.moveTo(xx, yy);
+          });
+          DX.stroke();
+        };
+        if (baseline) plot(baseline, 'rgba(154,108,255,.7)');
+        plot(result, '#3de5ff');
+      }
+
+      function downloadCSV() {
+        if (!lastTrace.length) { log('&gt; Trace the spiral first, then download it'); return; }
+        const rows = ['t_s,x_px,y_px,input,simulated_tremor_px'];
+        lastTrace.forEach(p => rows.push(`${p.t.toFixed(4)},${p.x.toFixed(2)},${p.y.toFixed(2)},${lastMeta.mode},${lastMeta.amp}`));
+        if (result) {
+          rows.push('');
+          rows.push('# tremor_band_power_pct,' + result.tremor.toFixed(2));
+          rows.push('# normalized_jerk,' + result.nj.toFixed(1));
+          rows.push('# sparc,' + result.sparc.toFixed(3));
+          rows.push('# mean_deviation_px,' + result.dev.toFixed(2));
+        }
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([rows.join('\n')], { type: 'text/csv' }));
+        a.download = 'spiral_trace.csv';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+        log('&gt; Saved spiral_trace.csv: raw samples (t, x, y) plus the computed features');
+      }
+
+      let lastTrace = [], lastMeta = { mode: 'mouse', amp: 0 };
+
       function finish() {
         const r = analyze(trace);
         if (!r) { log('&gt; Trace too short — draw the whole spiral (at least 1 second)'); return; }
-        result = r; renderMetrics();
+        result = r; lastTrace = trace.slice(); lastMeta = { mode, amp };
+        renderMetrics();
         let msg = `&gt; ${r.n} samples · ${r.T.toFixed(1)} s · resampled to ${FS} Hz`;
         if (r.coverage < 0.6) msg += '<br>&gt; <span style="color:var(--gold)">Tip: trace further out to cover the full spiral</span>';
         msg += baseline ? '<br>&gt; Compared with your baseline (purple)' : '<br>&gt; Happy with it? Click <b>Save as baseline</b>, then try Simulate → Strong';
@@ -4624,6 +4854,7 @@
         renderMetrics(); draw();
         log('&gt; Baseline saved (purple). Now try Simulate → Strong and trace again');
       });
+      document.getElementById('spiral-csv').addEventListener('click', downloadCSV);
       document.getElementById('spiral-clear').addEventListener('click', () => {
         trace = []; result = null; baseline = null; baseTrace = null;
         renderMetrics(); draw();
