@@ -2468,8 +2468,8 @@
         <a href="Fayek_Jamee_CV.pdf" download class="btn btn-outline">⬇ Download CV</a>
         <a href="#contact" class="btn btn-outline">Let's Connect</a>
       </div>
-      <a class="hero-news" href="https://www.youtube.com/shorts/AKbpT4RbvRU" target="_blank" rel="noopener"><b>OCT 2026</b>
-        New: stress-recovery prototype (Apple Watch + facial landmarks) · watch the 70-sec overview →</a>
+      <a class="hero-news" href="https://www.youtube.com/shorts/S-XhaC9u1vA" target="_blank" rel="noopener"><b>NOV 2026</b>
+        New: stress detection and recovery (face + Apple Watch), checked on public data · watch the 2-min video →</a>
       <div class="hero-links">
         <a href="https://github.com/fmubarrat" target="_blank" rel="noopener">GITHUB</a>
         <a href="https://www.linkedin.com/in/md-fayek-mubarrat-jamee/" target="_blank" rel="noopener">LINKEDIN</a>
@@ -2491,11 +2491,11 @@
       </div>
       <div class="results-grid">
         <a class="result-card reveal" href="#projects">
-          <div class="rc-fig"><img src="images/result_sparc.jpg" alt="Box plot: SPARC smoothness, normal writing vs simulated micrographia, p = 0.019" loading="lazy" style="object-fit:contain"></div>
+          <div class="rc-fig"><img src="images/result_sparc_paired.jpg" alt="SPARC smoothness for each participant, normal writing vs simulated micrographia: it drops in both" loading="lazy" style="object-fit:contain"></div>
           <div class="rc-body">
-            <div class="rc-num" style="color:var(--gold)">p = 0.019</div>
-            <div class="rc-lbl">Micrographia from hand movement alone</div>
-            <div class="rc-note">SPARC smoothness separates normal writing from simulated micrographia, using only smartphone video. 2-participant proof-of-concept.</div>
+            <div class="rc-num" style="color:var(--gold)">2 of 2</div>
+            <div class="rc-lbl">Smoothness dropped with simulated micrographia</div>
+            <div class="rc-note">SPARC from smartphone video alone fell in both participants (writing vs writing). A consistent direction in a 2-person proof-of-concept, not a statistical result.</div>
           </div>
         </a>
         <a class="result-card reveal" href="#projects">
@@ -2697,14 +2697,16 @@
             Computing · Wearable + Vision Sensing <span class="badge-new">NEW 2026</span></div>
           <div class="proj-split">
           <div>
-          <h3 class="proj-title">Stress Recovery Measurement: Apple Watch Heart Rate + Facial Landmarks</h3>
-          <p class="proj-desc">Building on my Parkinson's work, I am applying the same smartphone-sensing approach to
-            stress. Stress can worsen Parkinson's symptoms such as tremor, and reduced facial expression can make it hard
-            for others to notice. This prototype measures how quickly a person recovers from stress, using heart rate
-            from an Apple Watch and facial landmarks from a phone camera (only the landmark coordinates are kept, never
-            video), with guided calming exercises at the end. Early prototype: the session shown in the overview uses
-            demo data. Next steps are recording my own sessions and checking the Apple Watch against a reference sensor,
-            then extending it to people with Parkinson's.</p>
+          <h3 class="proj-title">Stress Detection and Recovery: Apple Watch Heart Rate + Facial Landmarks</h3>
+          <p class="proj-desc">Burnout builds when stress doesn't switch off. This prototype <strong>detects the stress
+            response</strong> (face tension and heart rate rising above the person's own calm baseline) and then
+            <strong>times how fast it switches off</strong>, comparing quiet rest with guided breathing. Only landmark
+            coordinates are kept, never video. On the public <strong>WESAD</strong> data (15 people), heart rate rose in
+            all 15 and calmed in about a minute, while skin sweat stayed high for 10+ minutes: heart rate can look calm
+            before the body is. The face signal is now being checked on <strong>UBFC-Phys</strong> (56 people, stressed
+            vs control group); the first people suggest it may track talking and effort, so no claim yet. The session in
+            the video uses demo data. Next: real sessions, and designing how a watch should show someone their own
+            recovery, honestly.</p>
           <div class="proj-metrics">
             <div>
               <div class="metric-val" style="color:var(--pink)">HR + Face</div>
@@ -2715,26 +2717,25 @@
               <div class="metric-lbl">Video Stored (Landmarks Only)</div>
             </div>
             <div>
-              <div class="metric-val" style="color:var(--pink)">Recovery</div>
-              <div class="metric-lbl">Time-to-Baseline Measure</div>
+              <div class="metric-val" style="color:var(--pink)">15/15</div>
+              <div class="metric-lbl">Heart-Rate Response Detected (WESAD)</div>
             </div>
             <div>
-              <div class="metric-val" style="color:var(--pink)">PD</div>
-              <div class="metric-lbl">Target Population (Next)</div>
+              <div class="metric-val" style="color:var(--pink)">56</div>
+              <div class="metric-lbl">People: Face Check Under Way (UBFC-Phys)</div>
             </div>
           </div>
           <div class="proj-pipeline">
             <span class="pipe-step">Apple Watch HR</span><span class="pipe-step">MediaPipe Face Mesh</span><span
-              class="pipe-step">Facial Landmarks</span><span class="pipe-step">Stress Recovery</span><span
+              class="pipe-step">Stress-Response Detection</span><span class="pipe-step">Recovery Time</span><span
               class="pipe-step">Guided Calming</span><span class="pipe-step">Privacy-Preserving</span>
           </div>
           <div style="margin-top:.9rem">
-            <a href="https://www.youtube.com/shorts/AKbpT4RbvRU" target="_blank" class="proj-link">70-sec Overview
-              Video →</a>
+            <a href="https://www.youtube.com/shorts/S-XhaC9u1vA" target="_blank" class="proj-link">2-min Video →</a>
           </div>
           </div>
-          <iframe class="short-embed" src="https://www.youtube-nocookie.com/embed/AKbpT4RbvRU?rel=0"
-            title="Stress recovery prototype — 70-second overview" loading="lazy"
+          <iframe class="short-embed" src="https://www.youtube-nocookie.com/embed/S-XhaC9u1vA?rel=0"
+            title="Stress detection and recovery — 2-minute video" loading="lazy"
             allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe>
           </div>
         </div>
@@ -2744,30 +2745,31 @@
             style="color:var(--gold);border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.07)">Neuro-Motor
             Assessment · Sketch Process Analysis <span class="badge-new">NEW 2025</span></div>
           <h3 class="proj-title">From Drawing Product to Drawing Process: Parkinson's Motor Assessment</h3>
-          <p class="proj-desc">Two-part feasibility study. <strong>Part A</strong> analyses the drawing product: on 204 public drawings
-            (102 PD, 102 healthy), 6 of 16 sketch features significantly separate the groups. <strong>Part B</strong>
-            analyses the drawing process: 3D hand kinematics from ordinary smartphone video (MediaPipe). In a
-            proof-of-concept with 2 healthy participants under 5 simulated conditions, simulated micrographia was
-            detectable from hand movement alone (SPARC, p=0.019) and tremor features rose by over 1000%. Next step:
+          <p class="proj-desc">Two-part feasibility study. <strong>Part A</strong> analyses the drawing product: 204 public
+            drawings that come from about 28 people (15 PD, 13 healthy). Re-analysed so each person counts once, accuracy
+            is about 60% and one of 16 features differs; my first, drawing-level analysis overstated this, and I
+            corrected it. <strong>Part B</strong> analyses the drawing process: 3D hand kinematics from ordinary
+            smartphone video (MediaPipe). In a proof-of-concept with 2 healthy participants simulating symptoms,
+            smoothness (SPARC) dropped in both with simulated micrographia, and tremor features rose sharply. Next step:
             validation with people with Parkinson's. Requires only a smartphone camera ($0 hardware). You can try the
             spiral task yourself in the <a href="#demo" style="color:var(--cyan)">live demo</a>.</p>
           <figure class="proj-figure">
-            <img src="images/pd_micrographia.jpg" alt="Box plots: amplitude decay, mean speed, SPARC smoothness and grip instability for normal writing vs simulated micrographia" loading="lazy">
-            <figcaption>Fig. — Part B, micrographia from hand kinematics alone: normal writing vs simulated micrographia.
-              SPARC smoothness differs significantly (p = 0.019). From the manuscript.</figcaption>
+            <img src="images/pd_micrographia_paired.jpg" alt="Amplitude decay, mean speed and SPARC for each participant, normal vs simulated micrographia writing" loading="lazy">
+            <figcaption>Fig. — Part B, micrographia from hand kinematics alone, each line one person (writing vs writing).
+              Speed and smoothness fell in both; amplitude decay did not agree. Two people: directions, not tests.</figcaption>
           </figure>
           <div class="proj-metrics">
             <div>
-              <div class="metric-val" style="color:var(--gold)">p=0.019*</div>
-              <div class="metric-lbl">Simulated Micrographia (SPARC, pilot)</div>
+              <div class="metric-val" style="color:var(--gold)">2 / 2</div>
+              <div class="metric-lbl">SPARC Drop, Simulated Micrographia</div>
             </div>
             <div>
               <div class="metric-val" style="color:var(--gold)">+2101%</div>
               <div class="metric-lbl">Jerk Increase Under Tremor</div>
             </div>
             <div>
-              <div class="metric-val" style="color:var(--gold)">69.7%</div>
-              <div class="metric-lbl">SVM Accuracy (wave drawings)</div>
+              <div class="metric-val" style="color:var(--gold)">~60%</div>
+              <div class="metric-lbl">Accuracy, Each Person Counted Once</div>
             </div>
             <div>
               <div class="metric-val" style="color:var(--gold)">$0</div>
@@ -3015,8 +3017,8 @@
           </div>
           <div class="arc-step">
             <div class="arc-when">2026 · PROTOTYPE</div>
-            <div class="arc-title">Stress recovery</div>
-            <div class="arc-desc">Stress worsens PD symptoms: heart rate + facial landmarks measure recovery.</div>
+            <div class="arc-title">Stress detection and recovery</div>
+            <div class="arc-desc">Stress worsens PD symptoms: face + heart rate detect it and time its recovery.</div>
           </div>
           <div class="arc-step next">
             <div class="arc-when">NEXT · PhD</div>
@@ -3392,8 +3394,8 @@
             <div class="pub-venue" style="margin-top:.35rem"><strong style="color:var(--text2)">Jamee, M. F. M.</strong>
               (2025). Independent research. Manuscript in preparation for submission.</div>
             <div class="pub-doi">
-              Part A: 204 public drawings (102 PD / 102 healthy), 6 of 16 features significant · Part B: 2-participant
-              proof-of-concept with simulated symptoms, micrographia SPARC p = 0.019 · +2101% normalized jerk under simulated tremor
+              Part A: 204 public drawings from ~28 people; participant-level re-analysis ~60% accuracy · Part B: 2-participant
+              proof-of-concept with simulated symptoms, SPARC dropped in both with micrographia · being revised after re-analysis
               <span style="display:block;margin-top:.3rem;color:var(--text3)">GitHub: <a
                   href="https://github.com/fmubarrat/Parkinsons-Hand-Kinematic-Analysis-Smartphone"
                   target="_blank">fmubarrat/Parkinsons-Hand-Kinematic-Analysis</a> · <a
@@ -3802,7 +3804,7 @@
 
         cvX.fillStyle = 'rgba(251,191,36,.15)';
         cvX.beginPath(); cvX.roundRect(W - 90, H - 48, 82, 18, 3); cvX.fill();
-        cvX.fillStyle = '#fbbf24'; cvX.fillText('p=0.019 · d=3.2', W - 87, H - 36);
+        cvX.fillStyle = '#fbbf24'; cvX.fillText('demo · simulated', W - 87, H - 36);
 
         cvX.fillStyle = 'rgba(79,127,255,.5)'; cvX.fillText('frame ' + frameN, 10, H - 12);
         cvX.fillStyle = '#8892b0'; cvX.fillText('MediaPipe 3D · SPARC · FFT', 60, H - 12);
