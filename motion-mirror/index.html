@@ -6,79 +6,120 @@
 <title>Motion Mirror</title>
 <style>
   :root {
-    --bg: #05070d;
-    --panel: rgba(10, 14, 24, 0.78);
-    --line: rgba(255, 255, 255, 0.12);
-    --text: #eef2f8;
-    --muted: #9aa6b8;
-    --accent: #7ee0ff;
+    --bg: #04060c;
+    --glass: rgba(14, 18, 32, 0.62);
+    --glass-strong: rgba(14, 18, 32, 0.82);
+    --line: rgba(255, 255, 255, 0.10);
+    --text: #f2f5fb;
+    --muted: #a3adc2;
+    --cyan: #6ee7ff;
+    --violet: #a78bfa;
     --gold: #ffd27a;
-    --warn: #ff8a7a;
+    --rose: #ff8fa3;
+    --good: #7cf0b4;
+    --grad: linear-gradient(135deg, var(--cyan), var(--violet));
   }
   * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
-    font-family: "Segoe UI", system-ui, -apple-system, sans-serif; overflow: hidden; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); overflow: hidden;
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; }
   canvas#stage { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
   video { display: none; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  .glass { background: var(--glass); border: 1px solid var(--line); backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%); }
 
   .ui { transition: opacity .4s; }
   body.clean .ui { opacity: 0; pointer-events: none; }
 
-  header { position: fixed; top: 16px; left: 16px; right: 16px; display: flex; gap: 12px;
-    align-items: center; flex-wrap: wrap; }
-  .brand { font-weight: 700; letter-spacing: .3px; font-size: 18px; padding: 8px 14px;
-    background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
-  .brand span { color: var(--accent); }
-  nav { display: flex; gap: 6px; flex-wrap: wrap; background: var(--panel);
-    border: 1px solid var(--line); border-radius: 12px; padding: 5px; }
-  nav button { background: transparent; color: var(--muted); border: 0; border-radius: 8px;
-    padding: 7px 12px; font: inherit; font-size: 14px; cursor: pointer; }
+  /* ---- top bar ---- */
+  header { position: fixed; top: 14px; left: 14px; right: 14px; display: flex; gap: 10px; align-items: center; }
+  .brand { font-weight: 800; font-size: 17px; padding: 9px 14px; border-radius: 14px; white-space: nowrap; }
+  .brand span { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  nav { display: flex; gap: 4px; padding: 5px; border-radius: 14px; overflow-x: auto; }
+  nav button { background: transparent; border: 0; border-radius: 10px; padding: 8px 12px; color: var(--muted);
+    font-size: 14px; white-space: nowrap; display: flex; gap: 7px; align-items: center; }
+  nav button .ic { font-size: 16px; }
   nav button:hover { color: var(--text); }
-  nav button.on { background: rgba(126, 224, 255, .16); color: var(--text); }
-  nav kbd { font-size: 11px; opacity: .6; margin-right: 6px; }
+  nav button.on { color: var(--text); background: linear-gradient(135deg, rgba(110,231,255,.22), rgba(167,139,250,.22)); }
+  .spacer { flex: 1; }
+  .view { display: flex; padding: 4px; border-radius: 14px; }
+  .view button { border: 0; background: transparent; padding: 7px 12px; border-radius: 10px; color: var(--muted); font-size: 13px; }
+  .view button.on { background: var(--grad); color: #071018; font-weight: 700; }
 
-  aside { position: fixed; right: 16px; top: 76px; width: 330px; max-width: calc(100vw - 32px);
-    max-height: calc(100vh - 140px); overflow-y: auto;
-    background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px;
-    backdrop-filter: blur(8px); }
-  aside h2 { margin: 0 0 4px; font-size: 20px; }
-  aside .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
-  .compare { display: grid; grid-template-columns: 1fr; gap: 6px; margin-bottom: 14px; font-size: 13px; }
-  .compare div { padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); }
-  .compare b { display: block; font-size: 11px; letter-spacing: .6px; text-transform: uppercase; color: var(--muted); }
-  .compare .now b { color: var(--gold); }
-  .big { font-size: 38px; font-weight: 700; line-height: 1.05; }
-  .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .6px; }
-  .row { display: flex; gap: 18px; margin: 8px 0 10px; }
-  .row > div { flex: 1; }
-  .bars { display: flex; align-items: flex-end; gap: 3px; height: 64px; margin-top: 8px; }
-  .bars i { flex: 1; background: var(--accent); border-radius: 3px 3px 0 0; min-height: 2px; display: block; }
-  .bars i.hot { background: var(--gold); }
-  .axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 3px; }
-  .note { font-size: 12px; color: var(--muted); margin-top: 10px; line-height: 1.45; }
-  .warn { color: var(--warn); }
+  /* ---- result panel ---- */
+  aside { position: fixed; right: 14px; top: 74px; width: 360px; max-width: calc(100vw - 28px);
+    max-height: calc(100vh - 210px); display: flex; flex-direction: column; border-radius: 20px; padding: 18px 20px 16px; }
+  #pbody { overflow-y: auto; min-height: 0; }
+  #pacts:empty { display: none; }
+  aside .kicker { font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--cyan); font-weight: 700; }
+  aside h2 { margin: 4px 0 6px; font-size: 22px; }
+  aside .what { color: var(--muted); font-size: 14px; line-height: 1.45; margin-bottom: 12px; }
+  .headline { font-size: 26px; font-weight: 800; line-height: 1.15; margin: 6px 0 8px; }
+  .headline.good { color: var(--good); } .headline.mid { color: var(--gold); } .headline.note { color: var(--rose); }
+  ul.plain { list-style: none; padding: 0; margin: 6px 0 10px; }
+  ul.plain li { padding: 9px 0 9px 26px; position: relative; font-size: 15px; line-height: 1.4; border-top: 1px solid var(--line); }
+  ul.plain li:first-child { border-top: 0; }
+  ul.plain li::before { content: ""; position: absolute; left: 4px; top: 15px; width: 10px; height: 10px; border-radius: 50%; background: var(--grad); }
+  table.m { width: 100%; border-collapse: collapse; font-size: 14px; margin: 6px 0 8px; }
+  table.m td { padding: 7px 0; border-top: 1px solid var(--line); }
+  table.m td:last-child { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .bars { display: flex; align-items: flex-end; gap: 3px; height: 56px; margin: 8px 0 2px; }
+  .bars i { flex: 1; display: block; border-radius: 4px 4px 0 0; min-height: 3px; background: var(--grad); }
+  .bars i.hot { background: linear-gradient(180deg, var(--gold), var(--rose)); }
+  .axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
+  .live { display: flex; gap: 14px; margin: 4px 0 6px; }
+  .live div { flex: 1; }
+  .live .v { font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .live .k { font-size: 12px; color: var(--muted); }
+  .small { font-size: 12px; color: var(--muted); line-height: 1.5; margin-top: 8px; }
+  .chip { display: inline-block; font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); margin: 2px 4px 2px 0; }
+  .actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .btn { border: 0; border-radius: 12px; padding: 10px 14px; font-size: 14px; font-weight: 700; background: var(--grad); color: #071018; }
+  .btn.ghost { background: rgba(255,255,255,.07); color: var(--text); border: 1px solid var(--line); font-weight: 600; }
 
-  footer { position: fixed; left: 16px; bottom: 14px; right: 16px; display: flex; justify-content: space-between;
-    gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
-  footer .pill { background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; }
+  /* ---- coach bar ---- */
+  #coach { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); width: min(720px, calc(100vw - 28px));
+    border-radius: 22px; padding: 16px 22px; text-align: center; }
+  #coach .steps { display: flex; justify-content: center; gap: 6px; margin-bottom: 8px; }
+  #coach .steps i { width: 26px; height: 5px; border-radius: 5px; background: rgba(255,255,255,.15); display: block; }
+  #coach .steps i.on { background: var(--grad); }
+  #ctitle { font-size: clamp(20px, 3vw, 30px); font-weight: 800; line-height: 1.2; }
+  #csub { color: var(--muted); font-size: 15px; margin-top: 4px; }
+  #cbar { height: 6px; border-radius: 6px; background: rgba(255,255,255,.08); margin-top: 12px; overflow: hidden; display: none; }
+  #cbar i { display: block; height: 100%; width: 0; background: var(--grad); transition: width .15s linear; }
+  #cbtns { display: flex; justify-content: center; gap: 8px; margin-top: 12px; }
+  #cbtns:empty { display: none; }
 
-  #start { position: fixed; inset: 0; display: grid; place-items: center; z-index: 5;
-    background: radial-gradient(circle at 50% 40%, #13213a 0%, var(--bg) 65%); }
-  #start .card { text-align: center; max-width: 560px; padding: 24px; }
-  #start h1 { font-size: 44px; margin: 0 0 8px; }
-  #start h1 span { color: var(--accent); }
-  #start p { color: var(--muted); line-height: 1.55; }
-  #start button { margin-top: 18px; font: inherit; font-size: 18px; padding: 14px 28px; border-radius: 999px; border: 0;
-    background: var(--accent); color: #04121a; font-weight: 700; cursor: pointer; }
-  #start .status { margin-top: 14px; font-size: 14px; color: var(--muted); min-height: 20px; }
+  #privacy { position: fixed; left: 14px; bottom: 14px; font-size: 11px; color: var(--muted); max-width: 210px; line-height: 1.45; }
 
-  #toast { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 64px; font-weight: 700;
-    opacity: 0; pointer-events: none; transition: opacity 1.2s; text-shadow: 0 0 30px rgba(126, 224, 255, .6); text-align: center; }
-  #toast small { display: block; font-size: 20px; font-weight: 400; color: var(--muted); margin-top: 8px; }
+  /* ---- big center text ---- */
+  #center { position: fixed; left: 50%; top: 46%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; }
+  #count { font-size: 160px; font-weight: 900; line-height: 1; background: var(--grad); -webkit-background-clip: text; background-clip: text;
+    color: transparent; opacity: 0; transition: opacity .2s, transform .2s; }
+  #thanks { font-size: 72px; font-weight: 800; opacity: 0; transition: opacity 1.4s; text-shadow: 0 0 40px rgba(110,231,255,.5); }
+  #thanks small { display: block; font-size: 20px; font-weight: 500; color: #e6ecf7; margin-top: 6px; text-shadow: 0 2px 12px rgba(0,0,0,.8); }
+  #thanks { text-shadow: 0 0 40px rgba(110,231,255,.5), 0 4px 24px rgba(0,0,0,.6); }
 
-  @media (max-width: 760px) {
-    aside { top: auto; bottom: 56px; width: auto; left: 16px; }
-    .big { font-size: 28px; }
+  /* ---- start screen ---- */
+  #start { position: fixed; inset: 0; z-index: 9; display: grid; place-items: center; padding: 20px;
+    background: radial-gradient(circle at 30% 20%, rgba(110,231,255,.18), transparent 45%),
+                radial-gradient(circle at 75% 75%, rgba(167,139,250,.20), transparent 45%), var(--bg); }
+  #start .card { max-width: 640px; text-align: center; }
+  #start h1 { font-size: clamp(40px, 7vw, 64px); margin: 0; font-weight: 900; letter-spacing: -1px; }
+  #start h1 span { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  #start p { color: var(--muted); font-size: 17px; line-height: 1.6; margin: 14px auto 0; max-width: 520px; }
+  #start .tiles { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 24px 0 6px; }
+  #start .tile { border-radius: 14px; padding: 12px 6px; font-size: 13px; color: var(--muted); }
+  #start .tile b { display: block; font-size: 22px; margin-bottom: 4px; }
+  #go { margin-top: 20px; border: 0; border-radius: 999px; padding: 15px 34px; font-size: 18px; font-weight: 800;
+    background: var(--grad); color: #071018; box-shadow: 0 10px 40px rgba(110,231,255,.25); }
+  #status { margin-top: 14px; color: var(--muted); font-size: 14px; min-height: 20px; }
+
+  @media (max-width: 860px) {
+    nav button .lbl { display: none; }
+    aside { top: auto; bottom: 150px; left: 14px; width: auto; max-height: 34vh; }
+    #privacy { display: none; }
+    #start .tiles { grid-template-columns: repeat(3, 1fr); }
   }
 </style>
 </head>
@@ -87,32 +128,48 @@
 <canvas id="stage"></canvas>
 
 <header class="ui">
-  <div class="brand">Motion <span>Mirror</span></div>
-  <nav id="nav">
-    <button data-mode="tap"><kbd>1</kbd>Tap Test</button>
-    <button data-mode="ribbon"><kbd>2</kbd>Light Ribbon</button>
-    <button data-mode="write"><kbd>3</kbd>Writing Lanes</button>
-    <button data-mode="bloom"><kbd>4</kbd>Bloom</button>
-    <button data-mode="vanish"><kbd>5</kbd>Vanish</button>
+  <div class="brand glass">Motion <span>Mirror</span></div>
+  <nav id="nav" class="glass">
+    <button data-mode="tap"><span class="ic">✋</span><span class="lbl">Tap</span></button>
+    <button data-mode="ribbon"><span class="ic">〰</span><span class="lbl">Steadiness</span></button>
+    <button data-mode="write"><span class="ic">✍</span><span class="lbl">Writing</span></button>
+    <button data-mode="bloom"><span class="ic">✿</span><span class="lbl">Bloom</span></button>
+    <button data-mode="vanish"><span class="ic">✨</span><span class="lbl">Vanish</span></button>
   </nav>
+  <div class="spacer"></div>
+  <div class="view glass" id="view">
+    <button data-view="patient" class="on">For you</button>
+    <button data-view="doctor">For clinicians</button>
+  </div>
 </header>
 
-<aside class="ui" id="panel"></aside>
+<aside class="ui glass" id="panel"><div id="pbody"></div><div class="actions" id="pacts"></div></aside>
 
-<footer class="ui">
-  <div class="pill">Prototype, not a medical test · Runs on this device · No video is stored or sent</div>
-  <div class="pill" id="hint">Space reset · H hide panels · F fullscreen</div>
-</footer>
+<div id="coach" class="ui glass">
+  <div class="steps" id="csteps"></div>
+  <div id="ctitle"></div>
+  <div id="csub"></div>
+  <div id="cbar"><i></i></div>
+  <div id="cbtns"></div>
+</div>
 
-<div id="toast"></div>
+<div id="privacy" class="ui">A demo, not a medical test. Everything runs on this device: no video is recorded or sent anywhere.</div>
+
+<div id="center"><div id="count"></div><div id="thanks">Thank you<small>Motion Mirror · a demo by Fayek</small></div></div>
 
 <div id="start">
   <div class="card">
     <h1>Motion <span>Mirror</span></h1>
-    <p>Parkinson's movement tests, rebuilt as augmented reality.<br>
-      Your camera stays on this device: nothing is recorded or uploaded.</p>
-    <button id="go">Start camera</button>
-    <div class="status" id="status"></div>
+    <p>Movement tests that doctors use for Parkinson's, turned into short activities you can try with your camera, and explained in plain words.</p>
+    <div class="tiles">
+      <div class="tile glass"><b>✋</b>Tap</div>
+      <div class="tile glass"><b>〰</b>Steadiness</div>
+      <div class="tile glass"><b>✍</b>Writing</div>
+      <div class="tile glass"><b>✿</b>Bloom</div>
+      <div class="tile glass"><b>✨</b>Vanish</div>
+    </div>
+    <button id="go">Start</button>
+    <div id="status">Your camera stays on this device. Nothing is recorded or uploaded.</div>
   </div>
 </div>
 
@@ -124,73 +181,64 @@ const WASM = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
 const HAND_MODEL = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
 const SEG_MODEL = "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite";
 
-const video = document.getElementById("video");
-const canvas = document.getElementById("stage");
-const ctx = canvas.getContext("2d");
-const panel = document.getElementById("panel");
-const hint = document.getElementById("hint");
-const toast = document.getElementById("toast");
-const statusEl = document.getElementById("status");
-
+const $ = (id) => document.getElementById(id);
+const video = $("video"), canvas = $("stage"), ctx = canvas.getContext("2d");
 let hands = null, segmenter = null, audio = null;
-let mode = "tap";
+let mode = "tap", view = "patient", showNums = false;
 let W = 0, H = 0;
-let rect = { x: 0, y: 0, w: 0, h: 0 };   // where the (mirrored) video is drawn
-let lm = null;                           // latest hand landmarks (normalized)
-let handSize = 0;                        // wrist to middle knuckle, in pixels
-let lastVideoTime = -1;
+const rect = { x: 0, y: 0, w: 0, h: 0 };     // where the mirrored video is drawn
+let lm = null, handSize = 0, lastVideoTime = -1;
 
-// ---------- layout ----------
+// =====================================================================
+// Layout and drawing helpers
+// =====================================================================
 function resize() {
-  W = canvas.width = innerWidth;
-  H = canvas.height = innerHeight;
-  layoutVideo();
-}
-function layoutVideo() {
+  W = canvas.width = innerWidth; H = canvas.height = innerHeight;
   const vw = video.videoWidth || 1280, vh = video.videoHeight || 720;
   const s = Math.max(W / vw, H / vh);
-  rect.w = vw * s; rect.h = vh * s;
-  rect.x = (W - rect.w) / 2; rect.y = (H - rect.h) / 2;
+  rect.w = vw * s; rect.h = vh * s; rect.x = (W - rect.w) / 2; rect.y = (H - rect.h) / 2;
 }
 addEventListener("resize", resize);
-
-// Normalized landmark -> screen point (mirrored like a mirror)
 const P = (l) => ({ x: rect.x + (1 - l.x) * rect.w, y: rect.y + l.y * rect.h });
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
-function dLm(i, j) { return dist(P(lm[i]), P(lm[j])); }
-
-function drawVideo(dim = 0.35) {
-  ctx.save();
-  ctx.translate(rect.x + rect.w, rect.y);
-  ctx.scale(-1, 1);
-  ctx.drawImage(video, 0, 0, rect.w, rect.h);
-  ctx.restore();
-  if (dim > 0) { ctx.fillStyle = `rgba(3,5,10,${dim})`; ctx.fillRect(0, 0, W, H); }
+const dLm = (i, j) => dist(P(lm[i]), P(lm[j]));
+function drawMirrored(c, src) {
+  c.save(); c.translate(rect.x + rect.w, rect.y); c.scale(-1, 1); c.drawImage(src, 0, 0, rect.w, rect.h); c.restore();
 }
-
-const BONES = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],
-  [9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
-function drawSkeleton(alpha = 0.35) {
-  if (!lm) return;
-  ctx.save();
-  ctx.strokeStyle = `rgba(126,224,255,${alpha})`;
-  ctx.lineWidth = 2;
-  for (const [a, b] of BONES) {
-    const p = P(lm[a]), q = P(lm[b]);
-    ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y); ctx.stroke();
+function drawVideo(dim) {
+  drawMirrored(ctx, video);
+  if (dim) {
+    const g = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.2, W / 2, H / 2, Math.max(W, H) * 0.75);
+    g.addColorStop(0, `rgba(4,6,12,${dim * 0.6})`); g.addColorStop(1, `rgba(4,6,12,${Math.min(0.9, dim * 1.8)})`);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   }
-  ctx.fillStyle = `rgba(255,255,255,${alpha + 0.2})`;
-  for (const l of lm) { const p = P(l); ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, 7); ctx.fill(); }
+}
+const BONES = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
+function drawHand(alpha = 0.45) {
+  if (!lm) return;
+  ctx.save(); ctx.lineCap = "round";
+  ctx.strokeStyle = `rgba(110,231,255,${alpha})`; ctx.lineWidth = 2.5; ctx.shadowBlur = 12; ctx.shadowColor = "rgba(110,231,255,.8)";
+  for (const [a, b] of BONES) { const p = P(lm[a]), q = P(lm[b]); ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y); ctx.stroke(); }
+  ctx.fillStyle = `rgba(255,255,255,${alpha + 0.3})`;
+  for (const l of lm) { const p = P(l); ctx.beginPath(); ctx.arc(p.x, p.y, 3.2, 0, 7); ctx.fill(); }
+  ctx.restore();
+}
+function ring(x, y, r, frac, color = "rgba(110,231,255,1)") {
+  ctx.save(); ctx.lineWidth = 7; ctx.lineCap = "round";
+  ctx.strokeStyle = "rgba(255,255,255,.12)"; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.stroke();
+  ctx.strokeStyle = color; ctx.shadowBlur = 20; ctx.shadowColor = color;
+  ctx.beginPath(); ctx.arc(x, y, r, -Math.PI / 2, -Math.PI / 2 + frac * Math.PI * 2); ctx.stroke();
   ctx.restore();
 }
 
-// ---------- signal helpers ----------
-// Resample a history of {t, x, y} to a uniform rate over the last `span` ms
+// =====================================================================
+// Signal helpers
+// =====================================================================
 function resample(hist, span, fs) {
   if (hist.length < 8) return null;
-  const tEnd = hist[hist.length - 1].t, tStart = tEnd - span;
-  if (hist[0].t > tStart + span * 0.25) return null;
-  const n = Math.floor(span / 1000 * fs);
+  const tEnd = hist[hist.length - 1].t, tStart = Math.max(hist[0].t, tEnd - span);
+  const n = Math.floor((tEnd - tStart) / 1000 * fs);
+  if (n < 48) return null;
   const xs = new Float64Array(n), ys = new Float64Array(n);
   let j = 0;
   for (let i = 0; i < n; i++) {
@@ -198,12 +246,10 @@ function resample(hist, span, fs) {
     while (j < hist.length - 2 && hist[j + 1].t < t) j++;
     const a = hist[j], b = hist[j + 1] || a;
     const u = b.t === a.t ? 0 : Math.min(1, Math.max(0, (t - a.t) / (b.t - a.t)));
-    xs[i] = a.x + (b.x - a.x) * u;
-    ys[i] = a.y + (b.y - a.y) * u;
+    xs[i] = a.x + (b.x - a.x) * u; ys[i] = a.y + (b.y - a.y) * u;
   }
   return { xs, ys, n };
 }
-// Remove slow, voluntary movement so only fast shaking remains
 function highpass(a, win) {
   const out = new Float64Array(a.length);
   for (let i = 0; i < a.length; i++) {
@@ -216,542 +262,636 @@ function highpass(a, win) {
 function power(a, fs, f) {
   let re = 0, im = 0;
   for (let i = 0; i < a.length; i++) {
-    const w = 0.5 - 0.5 * Math.cos(2 * Math.PI * i / (a.length - 1));   // Hann window
+    const w = 0.5 - 0.5 * Math.cos(2 * Math.PI * i / (a.length - 1));
     const ang = 2 * Math.PI * f * i / fs;
     re += a[i] * w * Math.cos(ang); im -= a[i] * w * Math.sin(ang);
   }
   return re * re + im * im;
 }
-// SPARC smoothness of a speed profile (closer to zero = smoother)
-function sparc(speed, fs, fc = 10, ampTh = 0.05, pad = 4) {
-  const n = speed.length;
-  if (n < 16) return null;
-  const nfft = 2 ** (Math.ceil(Math.log2(n)) + pad);
-  const df = fs / nfft;
-  const kMax = Math.floor(fc / df);
-  const mag = new Float64Array(kMax + 1);
-  let peak = 0;
-  for (let k = 0; k <= kMax; k++) {
-    let re = 0, im = 0;
-    for (let i = 0; i < n; i++) {
-      const ang = 2 * Math.PI * k * i / nfft;
-      re += speed[i] * Math.cos(ang); im -= speed[i] * Math.sin(ang);
-    }
-    mag[k] = Math.hypot(re, im);
-    if (mag[k] > peak) peak = mag[k];
+function tremorOf(hist, span) {
+  const fs = 30, r = resample(hist, span, fs);
+  if (!r) return null;
+  const hx = highpass(r.xs, 6), hy = highpass(r.ys, 6);
+  const spec = []; let best = 0, bestF = 4, total = 0, band = 0;
+  for (let f = 1; f <= 12; f++) {
+    let s = 0;
+    for (let sub = -0.4; sub <= 0.41; sub += 0.2) s += power(hx, fs, f + sub) + power(hy, fs, f + sub);
+    spec.push(s); total += s; if (f >= 4 && f <= 7) band += s;
+    if (f >= 3 && s > best) { best = s; bestF = f; }
   }
-  if (peak === 0) return null;
-  let last = 0;
-  for (let k = 0; k <= kMax; k++) { mag[k] /= peak; if (mag[k] >= ampTh) last = k; }
-  if (last < 2) return null;
-  const fmax = last * df;
-  let len = 0;
-  for (let k = 1; k <= last; k++) len += Math.hypot(df / fmax, mag[k] - mag[k - 1]);
-  return -len;
+  let bp = 0, bf = bestF;
+  for (let f = bestF - 0.5; f <= bestF + 0.5; f += 0.1) { const s = power(hx, fs, f) + power(hy, fs, f); if (s > bp) { bp = s; bf = f; } }
+  let rms = 0;
+  for (let i = 0; i < r.n; i++) rms += hx[i] * hx[i] + hy[i] * hy[i];
+  rms = Math.sqrt(rms / r.n) * 100;
+  return { spec, amp: rms, peak: rms > 1.2 ? bf : null, bandShare: total ? band / total : 0 };
 }
 
-// ---------- audio ----------
-function tone(freq, dur = 0.12, type = "sine", gain = 0.15) {
+// =====================================================================
+// Sound
+// =====================================================================
+function tone(freq, dur = 0.12, type = "sine", gain = 0.12) {
   if (!audio) return;
   const o = audio.createOscillator(), g = audio.createGain();
   o.type = type; o.frequency.value = freq;
   g.gain.setValueAtTime(gain, audio.currentTime);
   g.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + dur);
-  o.connect(g).connect(audio.destination);
-  o.start(); o.stop(audio.currentTime + dur);
+  o.connect(g).connect(audio.destination); o.start(); o.stop(audio.currentTime + dur);
 }
+function chord() { [523, 659, 784].forEach((f, i) => setTimeout(() => tone(f, 0.5, "sine", 0.08), i * 90)); }
 function whoosh() {
   if (!audio) return;
-  const len = audio.sampleRate * 2.2;
-  const buf = audio.createBuffer(1, len, audio.sampleRate);
-  const d = buf.getChannelData(0);
-  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2);
+  const len = audio.sampleRate * 2.4, buf = audio.createBuffer(1, len, audio.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.2);
   const src = audio.createBufferSource(); src.buffer = buf;
   const f = audio.createBiquadFilter(); f.type = "bandpass";
-  f.frequency.setValueAtTime(400, audio.currentTime);
-  f.frequency.exponentialRampToValueAtTime(3000, audio.currentTime + 2);
-  const g = audio.createGain(); g.gain.value = 0.35;
-  src.connect(f).connect(g).connect(audio.destination);
-  src.start();
-}
-
-// ---------- panel ----------
-let panelTimer = 0;
-function setPanel(html) { panel.innerHTML = html; }
-const compare = (clinic, here) =>
-  `<div class="compare"><div class="now"><b>In the clinic today</b>${clinic}</div><div><b>Here</b>${here}</div></div>`;
-function barsHtml(values, hot = () => false, max = null) {
-  const m = max ?? Math.max(1e-9, ...values);
-  return `<div class="bars">${values.map((v, i) =>
-    `<i class="${hot(i) ? "hot" : ""}" style="height:${Math.max(2, 100 * v / m)}%"></i>`).join("")}</div>`;
+  f.frequency.setValueAtTime(350, audio.currentTime); f.frequency.exponentialRampToValueAtTime(3200, audio.currentTime + 2.2);
+  const g = audio.createGain(); g.gain.value = 0.3;
+  src.connect(f).connect(g).connect(audio.destination); src.start();
 }
 
 // =====================================================================
-// MODE 1: Tap Test (finger tapping)
+// Guided flow shared by the tests: show hand -> 3-2-1 -> run -> result
 // =====================================================================
-const tap = { open: false, peak: 0, taps: [], start: 0 };
-function tapReset() { tap.open = false; tap.peak = 0; tap.taps = []; tap.start = 0; }
+const flow = { phase: "intro", t0: 0, seen: 0 };
+function flowReset() { flow.phase = "intro"; flow.seen = 0; flow.t0 = 0; }
+function flowTick(now, countdown = true) {
+  if (flow.phase === "intro") {
+    if (lm) { flow.seen ||= now; if (now - flow.seen > 700) { flow.phase = countdown ? "count" : "run"; flow.t0 = now; if (!countdown) MODES[mode].begin(now); } }
+    else flow.seen = 0;
+  } else if (flow.phase === "count" && now - flow.t0 >= 3000) {
+    flow.phase = "run"; flow.t0 = now; tone(880, 0.15); MODES[mode].begin(now);
+  }
+}
+function finish(now) { flow.phase = "done"; flow.t0 = now; chord(); renderActions(); }
+let lastCount = "";
+function drawCountdown(now) {
+  const el = $("count");
+  if (flow.phase === "count") {
+    const n = String(3 - Math.floor((now - flow.t0) / 1000));
+    if (n !== lastCount) { lastCount = n; el.textContent = n; tone(440, 0.08, "triangle", 0.08); }
+    el.style.opacity = 1;
+  } else { el.style.opacity = 0; lastCount = ""; }
+}
+
+// =====================================================================
+// Panel and coach rendering
+// =====================================================================
+let lastBody = "", lastActs = "";
+function setBody(html) { if (html !== lastBody) { $("pbody").innerHTML = html; lastBody = html; } }
+function renderActions() {
+  let html = "";
+  if (flow.phase === "done") {
+    html = `<button class="btn" data-act="again">Try again</button><button class="btn ghost" data-act="next">Next activity →</button>`;
+    if (view === "patient" && MODES[mode].hasNums) html += `<button class="btn ghost" data-act="nums">${showNums ? "Hide" : "Show"} my numbers</button>`;
+  }
+  if (html !== lastActs) { $("pacts").innerHTML = html; lastActs = html; }
+}
+function coach(c) {
+  $("csteps").innerHTML = (c.steps || []).map((s, i) => `<i class="${i <= c.step ? "on" : ""}"></i>`).join("");
+  $("ctitle").textContent = c.title || "";
+  $("csub").textContent = c.sub || "";
+  $("cbar").style.display = c.progress == null ? "none" : "block";
+  $("cbar").firstElementChild.style.width = `${Math.round((c.progress || 0) * 100)}%`;
+  const b = c.buttons || "";
+  if ($("cbtns").dataset.k !== b) { $("cbtns").innerHTML = b; $("cbtns").dataset.k = b; }
+}
+const STEPS4 = ["hand", "count", "run", "done"];
+const stepIndex = () => ({ intro: 0, count: 1, run: 2, done: 3 })[flow.phase];
+const bars = (vals, hot = () => false) => {
+  const m = Math.max(1e-9, ...vals);
+  return `<div class="bars">${vals.map((v, i) => `<i class="${hot(i) ? "hot" : ""}" style="height:${Math.max(3, 100 * v / m)}%"></i>`).join("")}</div>`;
+};
+const disclaimer = `<div class="small">This is a demo, not a medical test. If you notice changes in how you move, talk to your doctor.</div>`;
+function header(kicker, title, what) { return `<div class="kicker">${kicker}</div><h2>${title}</h2><div class="what">${what}</div>`; }
+function table(rows) { return `<table class="m">${rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join("")}</table>`; }
+
+// =====================================================================
+// 1. TAP: finger tapping
+// =====================================================================
+const tap = { open: false, peak: 0, taps: [], res: null };
+const TAP_MAX = 10, TAP_TIME = 15000;
+function tapReset() { tap.open = false; tap.peak = 0; tap.taps = []; tap.res = null; flowReset(); }
+function tapBegin() { tap.taps = []; tap.open = false; tap.peak = 0; }
 function tapUpdate(now) {
-  if (!lm || !handSize) return;
+  flowTick(now);
+  if (flow.phase !== "run" || !lm || !handSize) return;
   const d = dLm(4, 8) / handSize;
   if (d > 0.45) { tap.open = true; tap.peak = Math.max(tap.peak, d); }
-  if (tap.open && d < 0.25 && tap.taps.length < 10) {
-    if (!tap.start) tap.start = now;
-    tap.taps.push({ t: now, amp: tap.peak });
-    tap.open = false; tap.peak = 0;
-    tone(520 + tap.taps.length * 40, 0.08, "triangle", 0.12);
-    if (tap.taps.length === 10) tone(880, 0.4, "sine", 0.15);
+  if (tap.open && d < 0.25) {
+    tap.taps.push({ t: now, amp: tap.peak }); tap.open = false; tap.peak = 0;
+    tone(500 + tap.taps.length * 45, 0.07, "triangle", 0.1);
   }
+  if (tap.taps.length >= TAP_MAX || now - flow.t0 > TAP_TIME) { tap.res = tapResult(); finish(now); }
 }
-function tapDraw() {
+function tapResult() {
+  const t = tap.taps, n = t.length;
+  if (n < 3) return { n, short: true };
+  const amps = t.map(x => x.amp);
+  const rate = (n - 1) / ((t[n - 1].t - t[0].t) / 1000);
+  const k = Math.min(3, Math.floor(n / 2));
+  const first = amps.slice(0, k).reduce((a, b) => a + b, 0) / k, last = amps.slice(-k).reduce((a, b) => a + b, 0) / k;
+  const dec = 100 * (first - last) / first;
+  const iv = t.slice(1).map((x, i) => x.t - t[i].t), m = iv.reduce((a, b) => a + b, 0) / iv.length;
+  const cv = Math.sqrt(iv.reduce((s, v) => s + (v - m) ** 2, 0) / iv.length) / m;
+  return { n, amps, rate, dec, cv };
+}
+function tapDraw(now) {
+  drawHand();
   if (!lm) return;
-  const a = P(lm[4]), b = P(lm[8]);
-  const d = dLm(4, 8) / (handSize || 1);
-  ctx.save();
-  ctx.globalCompositeOperation = "lighter";
-  ctx.strokeStyle = d < 0.25 ? "rgba(255,210,122,0.95)" : "rgba(126,224,255,0.9)";
-  ctx.lineWidth = 6; ctx.shadowBlur = 25; ctx.shadowColor = ctx.strokeStyle;
+  const a = P(lm[4]), b = P(lm[8]), closed = dLm(4, 8) / (handSize || 1) < 0.25;
+  ctx.save(); ctx.globalCompositeOperation = "lighter";
+  const col = closed ? "rgba(255,210,122,1)" : "rgba(110,231,255,1)";
+  ctx.strokeStyle = col; ctx.lineWidth = 6; ctx.shadowBlur = 30; ctx.shadowColor = col;
   ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-  for (const p of [a, b]) { ctx.beginPath(); ctx.arc(p.x, p.y, 14, 0, 7); ctx.stroke(); }
+  for (const p of [a, b]) { ctx.beginPath(); ctx.arc(p.x, p.y, 13, 0, 7); ctx.stroke(); }
   ctx.restore();
+  if (flow.phase === "run") { const c = P(lm[9]); ring(c.x, c.y, handSize * 1.6, tap.taps.length / TAP_MAX); }
+}
+function tapCoach(now) {
+  const s = { steps: STEPS4, step: stepIndex() };
+  if (flow.phase === "intro") return { ...s, title: "Hold up your hand so the camera can see it", sub: "Palm towards the screen, fingers open" };
+  if (flow.phase === "count") return { ...s, title: "Get ready to tap", sub: "Thumb and index finger, as big and fast as you can" };
+  if (flow.phase === "run") return { ...s, title: `Tap! ${tap.taps.length} of ${TAP_MAX}`, sub: "Open wide, close fully", progress: tap.taps.length / TAP_MAX };
+  return { ...s, title: "All done. Here's what we saw", sub: "Your result is on the right" };
 }
 function tapPanel() {
-  const n = tap.taps.length;
-  const amps = tap.taps.map(t => t.amp);
-  let rate = "–", dec = "–", decClass = "";
-  if (n >= 2) rate = ((n - 1) / ((tap.taps[n - 1].t - tap.taps[0].t) / 1000)).toFixed(1);
-  if (n >= 6) {
-    const first = (amps[0] + amps[1] + amps[2]) / 3, last = (amps[n - 3] + amps[n - 2] + amps[n - 1]) / 3;
-    const pct = Math.round(100 * (first - last) / first);
-    dec = (pct > 0 ? "−" : "+") + Math.abs(pct) + "%";
-    if (pct > 20) decClass = "warn";
+  const head = header("Activity 1", "Tap", "Checks how quickly and evenly you can tap your thumb and index finger together.");
+  if (flow.phase !== "done") {
+    const live = view === "doctor" ? `<div class="live"><div><div class="v">${tap.taps.length}</div><div class="k">taps</div></div>
+      <div><div class="v">${(tapResult().rate || 0).toFixed(1)}</div><div class="k">taps per second</div></div></div>${bars(tap.taps.map(x => x.amp).concat(tap.taps.length ? [] : [0]))}` : "";
+    return setBody(head + live + (view === "doctor" ? `<div class="small">Analogue of MDS-UPDRS item 3.4 (finger tapping), which a clinician scores 0–4 by eye.</div>` : ""));
   }
-  setPanel(`<h2>Tap Test</h2><div class="sub">Tap thumb and index finger, as big and fast as you can, 10 times.</div>
-    ${compare("A neurologist watches finger tapping and gives a score from 0 to 4.", "Every tap is measured: speed, size, and whether it shrinks.")}
-    <div class="row"><div><div class="label">Taps</div><div class="big">${n}/10</div></div>
-    <div><div class="label">Taps per second</div><div class="big">${rate}</div></div></div>
-    <div class="label">Size of each tap</div>${barsHtml(amps.length ? amps : [0], i => false)}
-    <div class="row"><div><div class="label">Change, first 3 → last 3</div><div class="big ${decClass}">${dec}</div></div></div>
-    <div class="note">Shrinking taps (decrement) are one of the signs a clinician looks for. Press Space to try again.</div>`);
+  const r = tap.res;
+  if (r.short) return setBody(head + `<div class="headline mid">We didn't catch enough taps</div><ul class="plain"><li>Keep your hand in view and open your fingers wide between taps.</li></ul>`);
+  if (view === "doctor") {
+    return setBody(head + table([["Taps (max 10 in 15 s)", r.n], ["Tapping rate", r.rate.toFixed(2) + " /s"],
+      ["Amplitude decrement, first→last 3", (r.dec >= 0 ? "−" : "+") + Math.abs(r.dec).toFixed(0) + "%"], ["Rhythm variability (CV of intervals)", r.cv.toFixed(2)]]) +
+      `<div class="k small">Amplitude per tap (thumb–index distance / hand size)</div>${bars(r.amps)}
+      <div class="small">Analogue of MDS-UPDRS 3.4. Amplitude is normalized to wrist–middle-knuckle length. Webcam at ~30 fps; not clinically validated.</div>`);
+  }
+  let headCls = "good", headTxt = "Steady and even";
+  const items = [];
+  if (r.dec <= 15) items.push("Your taps stayed about the same size from start to finish.");
+  else if (r.dec <= 30) { items.push("Your taps got a little smaller towards the end. Tired hands often do this."); headCls = "mid"; headTxt = "A little slowing at the end"; }
+  else { items.push("Your taps got noticeably smaller towards the end."); headCls = "note"; headTxt = "Your taps got smaller"; }
+  items.push(r.cv < 0.25 ? "Your rhythm was even." : "Your rhythm was a bit uneven.");
+  if (r.n < TAP_MAX) items.push(`You did ${r.n} taps in the time.`);
+  const nums = showNums ? table([["Taps per second", r.rate.toFixed(1)], ["Change in size", (r.dec >= 0 ? "−" : "+") + Math.abs(r.dec).toFixed(0) + "%"]]) : "";
+  setBody(head + `<div class="headline ${headCls}">${headTxt}</div><ul class="plain">${items.map(i => `<li>${i}</li>`).join("")}</ul>${nums}${disclaimer}`);
 }
 
 // =====================================================================
-// MODE 2: Light Ribbon (tremor + smoothness)
+// 2. STEADINESS: hold still (tremor), then free light-painting
 // =====================================================================
-const ribbon = { hist: [], trail: [], spectrum: new Array(12).fill(0), peakHz: null, amp: 0, sparc: null };
-function ribbonReset() { ribbon.hist = []; ribbon.trail = []; ribbon.peakHz = null; ribbon.amp = 0; ribbon.sparc = null; }
-function ribbonUpdate(now) {
+const rib = { hist: [], trail: [], live: null, res: null };
+const RIB_TIME = 10000;
+function ribReset() { rib.hist = []; rib.trail = []; rib.live = null; rib.res = null; flowReset(); }
+function ribBegin() { rib.hist = []; }
+function ribUpdate(now) {
+  flowTick(now);
   if (lm && handSize) {
     const p = P(lm[8]);
-    ribbon.hist.push({ t: now, x: p.x / handSize, y: p.y / handSize });
-    ribbon.trail.push({ t: now, x: p.x, y: p.y });
+    rib.hist.push({ t: now, x: p.x / handSize, y: p.y / handSize });
+    rib.trail.push({ t: now, x: p.x, y: p.y });
   }
-  while (ribbon.hist.length && now - ribbon.hist[0].t > 5000) ribbon.hist.shift();
-  while (ribbon.trail.length && now - ribbon.trail[0].t > 2200) ribbon.trail.shift();
+  while (rib.hist.length && now - rib.hist[0].t > 12000) rib.hist.shift();
+  while (rib.trail.length && now - rib.trail[0].t > 2200) rib.trail.shift();
+  if (flow.phase === "run" && now - flow.t0 >= RIB_TIME) {
+    rib.res = tremorOf(rib.hist.filter(h => h.t >= flow.t0), RIB_TIME) || { amp: 0, peak: null, spec: new Array(12).fill(0), bandShare: 0 };
+    finish(now);
+  }
 }
-function ribbonAnalyse() {
-  const fs = 30, r = resample(ribbon.hist, 4000, fs);
-  if (!r) return;
-  const hx = highpass(r.xs, 6), hy = highpass(r.ys, 6);
-  const spec = [];
-  let best = 0, bestF = null;
-  for (let f = 1; f <= 12; f++) {
-    let s = 0;
-    for (let sub = -0.4; sub <= 0.4; sub += 0.2) s += power(hx, fs, f + sub) + power(hy, fs, f + sub);
-    spec.push(s);
-    if (f >= 3 && s > best) { best = s; bestF = f; }
-  }
-  // refine the peak within the winning 1 Hz bin
-  if (bestF) {
-    let bp = 0, bf = bestF;
-    for (let f = bestF - 0.5; f <= bestF + 0.5; f += 0.1) {
-      const s = power(hx, fs, f) + power(hy, fs, f);
-      if (s > bp) { bp = s; bf = f; }
+let ribAnalyseT = 0;
+function ribAnalyse(now) {
+  if (now - ribAnalyseT < 200) return; ribAnalyseT = now;
+  rib.live = tremorOf(rib.hist, flow.phase === "run" ? Math.min(now - flow.t0, 4000) : 4000);
+}
+function ribDraw(now) {
+  ribAnalyse(now);
+  const tr = rib.trail;
+  const shaky = rib.live && rib.live.peak && rib.live.amp > 2;
+  if (tr.length > 1) {
+    ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.lineCap = "round"; ctx.lineJoin = "round";
+    for (let i = 1; i < tr.length; i++) {
+      const a = tr[i - 1], b = tr[i], age = (now - b.t) / 2200, sp = Math.hypot(b.x - a.x, b.y - a.y);
+      const hue = shaky ? 25 + 25 * Math.sin(i) : 190 + Math.min(80, sp * 2.5);
+      ctx.strokeStyle = `hsla(${hue},100%,66%,${Math.max(0, 1 - age)})`; ctx.lineWidth = 3 + 16 * (1 - age);
+      ctx.shadowBlur = 30; ctx.shadowColor = `hsla(${hue},100%,60%,1)`;
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
     }
-    bestF = bf;
-  }
-  let rms = 0;
-  for (let i = 0; i < r.n; i++) rms += hx[i] * hx[i] + hy[i] * hy[i];
-  rms = Math.sqrt(rms / r.n);
-  ribbon.spectrum = spec;
-  ribbon.amp = rms * 100;                       // % of hand size
-  ribbon.peakHz = ribbon.amp > 1.2 ? bestF : null;
-  // smoothness of the last 3 s of movement
-  const speed = [];
-  for (let i = 1; i < r.n; i++) speed.push(Math.hypot(r.xs[i] - r.xs[i - 1], r.ys[i] - r.ys[i - 1]) * fs);
-  const recent = speed.slice(-90);
-  const mean = recent.reduce((a, b) => a + b, 0) / (recent.length || 1);
-  ribbon.sparc = mean > 0.4 ? sparc(recent, fs) : null;
-}
-function ribbonDraw(now) {
-  const tr = ribbon.trail;
-  if (tr.length < 2) return;
-  ctx.save();
-  ctx.globalCompositeOperation = "lighter";
-  ctx.lineCap = "round"; ctx.lineJoin = "round";
-  const shaky = ribbon.peakHz !== null && ribbon.amp > 2;
-  for (let i = 1; i < tr.length; i++) {
-    const a = tr[i - 1], b = tr[i];
-    const age = (now - b.t) / 2200;
-    const sp = Math.hypot(b.x - a.x, b.y - a.y);
-    const hue = shaky ? 20 + 30 * Math.sin(i * 0.9) : 190 + Math.min(70, sp * 2);
-    ctx.strokeStyle = `hsla(${hue}, 100%, ${shaky ? 62 : 68}%, ${Math.max(0, 1 - age)})`;
-    ctx.lineWidth = 3 + 16 * (1 - age);
-    ctx.shadowBlur = 30; ctx.shadowColor = `hsla(${hue},100%,60%,1)`;
-    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-  }
-  if (shaky) {   // sparks when tremor is present
-    const tip = tr[tr.length - 1];
-    for (let k = 0; k < 8; k++) {
-      const ang = Math.random() * 7, rr = 10 + Math.random() * 40;
-      ctx.fillStyle = `hsla(${30 + Math.random() * 30},100%,70%,${Math.random()})`;
-      ctx.beginPath(); ctx.arc(tip.x + Math.cos(ang) * rr, tip.y + Math.sin(ang) * rr, 2 + Math.random() * 2, 0, 7); ctx.fill();
+    if (shaky) {
+      const tip = tr[tr.length - 1];
+      for (let k = 0; k < 10; k++) {
+        const ang = Math.random() * 7, rr = 12 + Math.random() * 46;
+        ctx.fillStyle = `hsla(${30 + Math.random() * 30},100%,72%,${Math.random()})`;
+        ctx.beginPath(); ctx.arc(tip.x + Math.cos(ang) * rr, tip.y + Math.sin(ang) * rr, 1.5 + Math.random() * 2.5, 0, 7); ctx.fill();
+      }
     }
+    ctx.restore();
   }
-  ctx.restore();
+  if (flow.phase === "run" && lm) { const c = P(lm[9]); ring(c.x, c.y, handSize * 1.7, (now - flow.t0) / RIB_TIME, shaky ? "rgba(255,210,122,1)" : "rgba(110,231,255,1)"); }
 }
-function ribbonPanel() {
-  const hz = ribbon.peakHz ? ribbon.peakHz.toFixed(1) + " Hz" : "–";
-  const sp = ribbon.sparc !== null ? ribbon.sparc.toFixed(2) : "–";
-  setPanel(`<h2>Light Ribbon</h2><div class="sub">Draw a slow spiral in the air with your index finger. Then try shaking.</div>
-    ${compare("Tremor is rated by eye, from 0 to 4.", "Shaking is split into frequencies, live. Parkinson's rest tremor is usually 4–6 Hz.")}
-    <div class="row"><div><div class="label">Main shaking frequency</div><div class="big">${hz}</div></div>
-    <div><div class="label">Shake size</div><div class="big">${ribbon.amp.toFixed(1)}%</div></div></div>
-    <div class="label">Shaking by frequency (1–12 Hz)</div>
-    ${barsHtml(ribbon.spectrum, i => i + 1 >= 4 && i + 1 <= 6)}
-    <div class="axis"><span>1 Hz</span><span>4–6 Hz band</span><span>12 Hz</span></div>
-    <div class="row"><div><div class="label">Smoothness (SPARC)</div><div class="big">${sp}</div></div></div>
-    <div class="note">SPARC: closer to zero means smoother. Shake size is a % of your hand size.</div>`);
+function ribCoach(now) {
+  const s = { steps: STEPS4, step: stepIndex() };
+  if (flow.phase === "intro") return { ...s, title: "Hold your hand up in front of you", sub: "Fingers open, palm towards the screen" };
+  if (flow.phase === "count") return { ...s, title: "Get ready to hold still", sub: "Keep your hand as still as you can for 10 seconds" };
+  if (flow.phase === "run") return { ...s, title: `Hold still… ${Math.max(0, Math.ceil((RIB_TIME - (now - flow.t0)) / 1000))}`, sub: "Breathe normally", progress: (now - flow.t0) / RIB_TIME };
+  return { ...s, title: "Done! Now draw in the air for fun", sub: "Move your index finger to paint with light. Shake it to see sparks." };
+}
+function ribPanel() {
+  const head = header("Activity 2", "Steadiness", "Checks for small, fast shaking (tremor) while you hold your hand still.");
+  const l = rib.live;
+  if (flow.phase !== "done") {
+    if (view !== "doctor" || !l) return setBody(head + (view === "doctor" ? `<div class="small">Analogue of postural tremor of the hands (MDS-UPDRS 3.15).</div>` : ""));
+    return setBody(head + `<div class="live"><div><div class="v">${l.peak ? l.peak.toFixed(1) + " Hz" : "–"}</div><div class="k">main frequency</div></div>
+      <div><div class="v">${l.amp.toFixed(1)}%</div><div class="k">size (% of hand)</div></div></div>${bars(l.spec, i => i + 1 >= 4 && i + 1 <= 7)}
+      <div class="axis"><span>1 Hz</span><span>4–7 Hz</span><span>12 Hz</span></div>`);
+  }
+  const r = rib.res;
+  if (view === "doctor") {
+    return setBody(head + table([["Peak frequency", r.peak ? r.peak.toFixed(1) + " Hz" : "none above noise"], ["RMS amplitude (index tip)", r.amp.toFixed(1) + "% hand size"],
+      ["Share of power in 4–7 Hz", Math.round(r.bandShare * 100) + "%"], ["Window", "10 s, outstretched hand"]]) + bars(r.spec, i => i + 1 >= 4 && i + 1 <= 7) +
+      `<div class="axis"><span>1 Hz</span><span>4–7 Hz</span><span>12 Hz</span></div>
+      <div class="small">Postural condition, analogue of MDS-UPDRS 3.15. Rest tremor needs a resting posture. Webcam landmark jitter sets a floor of about 1%. Not clinically validated.</div>`);
+  }
+  let headCls = "good", headTxt = "Your hand was steady";
+  const items = [];
+  if (!r.peak || r.amp < 1.5) items.push("We didn't pick up any clear shaking.");
+  else {
+    const size = r.amp < 3 ? "very small" : r.amp < 6 ? "small" : "noticeable";
+    headCls = r.amp < 3 ? "good" : "mid"; headTxt = r.amp < 3 ? "Mostly steady" : "Some shaking";
+    items.push(`We picked up ${size} shaking, about ${Math.round(r.peak)} times a second.`);
+    if (r.peak >= 4 && r.peak <= 7) items.push("Shaking at this speed is one of the things doctors look at, but tiredness, coffee and nerves can cause it too.");
+  }
+  items.push("Everyone's hand moves a little. A single test can't tell you much on its own.");
+  const nums = showNums ? table([["Shaking speed", r.peak ? r.peak.toFixed(1) + " per second" : "–"], ["Shaking size", r.amp.toFixed(1) + "% of hand size"]]) : "";
+  setBody(head + `<div class="headline ${headCls}">${headTxt}</div><ul class="plain">${items.map(i => `<li>${i}</li>`).join("")}</ul>${nums}${disclaimer}`);
 }
 
 // =====================================================================
-// MODE 3: Writing Lanes (micrographia)
+// 3. WRITING: write between guide lines, check if writing shrinks
 // =====================================================================
-const write = { strokes: [], penDown: false, empathy: false, inkTime: 0, lastT: 0 };
-function writeReset() { write.strokes = []; write.penDown = false; write.inkTime = 0; }
-function lane() {
-  const mid = H * 0.52, h = Math.min(220, H * 0.24);
-  const panelLeft = document.body.classList.contains("clean") || W < 760 ? W : W - 362;   // keep lanes clear of the panel
-  return { top: mid - h / 2, bot: mid + h / 2, mid, h, x0: W * 0.05, x1: Math.min(W * 0.95, panelLeft - 24) };
+const wr = { strokes: [], pen: false, empathy: false, ink: 0, lastT: 0, lastInk: 0, res: null };
+function wrReset() { wr.strokes = []; wr.pen = false; wr.ink = 0; wr.lastInk = 0; wr.res = null; flowReset(); }
+function wrBegin() { wr.strokes = []; wr.ink = 0; wr.lastInk = 0; }
+function lanes() {
+  const mid = H * 0.5, h = Math.min(200, H * 0.22);
+  const right = document.body.classList.contains("clean") || W < 860 ? W * 0.95 : W - 400;
+  return { top: mid - h / 2, bot: mid + h / 2, mid, h, x0: W * 0.06, x1: right };
 }
-function writeUpdate(now) {
-  const dt = write.lastT ? now - write.lastT : 0;
-  write.lastT = now;
-  if (!lm || !handSize) { write.penDown = false; return; }
-  const pinch = dLm(4, 8) / handSize;
-  const down = write.penDown ? pinch < 0.42 : pinch < 0.28;   // hysteresis
-  if (down && !write.penDown) write.strokes.push([]);
-  write.penDown = down;
-  if (down) {
-    write.inkTime += dt;
-    const a = P(lm[4]), b = P(lm[8]);
-    write.strokes[write.strokes.length - 1].push({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, k: write.inkTime });
+function wrUpdate(now) {
+  const dt = wr.lastT ? now - wr.lastT : 0; wr.lastT = now;
+  flowTick(now, false);
+  if (flow.phase !== "run") { wr.pen = false; return; }
+  if (!lm || !handSize) { wr.pen = false; }
+  else {
+    const pinch = dLm(4, 8) / handSize;
+    const down = wr.pen ? pinch < 0.42 : pinch < 0.28;
+    if (down && !wr.pen) wr.strokes.push([]);
+    wr.pen = down;
+    if (down) {
+      wr.ink += dt; wr.lastInk = now;
+      const a = P(lm[4]), b = P(lm[8]);
+      wr.strokes[wr.strokes.length - 1].push({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, k: wr.ink });
+    }
   }
+  const pts = wr.strokes.reduce((s, x) => s + x.length, 0);
+  if (pts > 60 && wr.lastInk && now - wr.lastInk > 3500) wrDone(now);
 }
-// What the ink looks like: real, or with simulated micrographia + tremor
+function wrDone(now) { if (flow.phase !== "run") return; wr.res = wrAnalyse(); finish(now); }
 function inkPoint(p) {
-  if (!write.empathy) return p;
-  const L = lane();
-  const s = Math.max(0.35, 1 - p.k / 9000);                  // writing shrinks over time
-  const trem = 6 * Math.sin(2 * Math.PI * 5 * p.k / 1000) + (Math.random() - 0.5) * 3;
-  return { x: p.x, y: L.mid + (p.y - L.mid) * s + trem };
+  if (!wr.empathy) return p;
+  const L = lanes(), s = Math.max(0.35, 1 - p.k / 9000);
+  return { x: p.x, y: L.mid + (p.y - L.mid) * s + 6 * Math.sin(2 * Math.PI * 5 * p.k / 1000) + (Math.random() - 0.5) * 3 };
 }
-function writeAnalyse() {
-  const pts = write.strokes.flat().map(inkPoint);
+function wrAnalyse() {
+  const pts = wr.strokes.flat().map(inkPoint);
   if (pts.length < 40) return null;
   const xs = pts.map(p => p.x), x0 = Math.min(...xs), x1 = Math.max(...xs);
   if (x1 - x0 < 120) return null;
   const third = (x1 - x0) / 3;
   const ext = [0, 1, 2].map(k => {
     const ys = pts.filter(p => p.x >= x0 + k * third && p.x <= x0 + (k + 1) * third).map(p => p.y).sort((a, b) => a - b);
-    if (ys.length < 8) return null;
-    return ys[Math.floor(ys.length * 0.9)] - ys[Math.floor(ys.length * 0.1)];
+    return ys.length < 8 ? null : ys[Math.floor(ys.length * 0.9)] - ys[Math.floor(ys.length * 0.1)];
   });
   if (!ext[0] || !ext[2]) return null;
-  return { ext, ratio: ext[2] / ext[0] };
+  return { ext, ratio: ext[2] / ext[0], strokes: wr.strokes.length, secs: wr.ink / 1000 };
 }
-function writeDraw() {
-  const L = lane();
-  const res = writeAnalyse();
-  const small = res && res.ratio < 0.7;
+function wrDraw(now) {
+  const L = lanes(), res = flow.phase === "done" ? wr.res : null, small = res && res.ratio < 0.7;
   ctx.save();
-  // guide lanes
+  const lc = small ? "rgba(255,143,163,.85)" : "rgba(110,231,255,.75)";
+  ctx.fillStyle = "rgba(110,231,255,.05)"; ctx.fillRect(L.x0, L.top, L.x1 - L.x0, L.h);
   for (const y of [L.top, L.bot]) {
-    ctx.strokeStyle = small ? "rgba(255,138,122,0.8)" : "rgba(126,224,255,0.7)";
-    ctx.lineWidth = 3; ctx.shadowBlur = 20; ctx.shadowColor = ctx.strokeStyle;
-    ctx.setLineDash([18, 12]);
+    ctx.strokeStyle = lc; ctx.lineWidth = 3; ctx.shadowBlur = 18; ctx.shadowColor = lc; ctx.setLineDash([20, 12]);
     ctx.beginPath(); ctx.moveTo(L.x0, y); ctx.lineTo(L.x1, y); ctx.stroke();
   }
-  ctx.setLineDash([]);
-  // ink
-  ctx.globalCompositeOperation = "lighter";
-  ctx.lineCap = "round"; ctx.lineJoin = "round";
-  ctx.strokeStyle = write.empathy ? "rgba(255,190,120,0.95)" : "rgba(255,240,200,0.95)";
-  ctx.shadowColor = "rgba(255,200,120,1)"; ctx.shadowBlur = 18; ctx.lineWidth = 6;
-  for (const s of write.strokes) {
+  ctx.setLineDash([]); ctx.globalCompositeOperation = "lighter"; ctx.lineCap = "round"; ctx.lineJoin = "round";
+  ctx.strokeStyle = wr.empathy ? "rgba(255,180,120,.95)" : "rgba(255,244,214,.95)"; ctx.shadowColor = "rgba(255,200,120,1)"; ctx.shadowBlur = 18; ctx.lineWidth = 6;
+  for (const s of wr.strokes) {
     if (s.length < 2) continue;
-    ctx.beginPath();
-    s.forEach((p, i) => { const q = inkPoint(p); i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y); });
-    ctx.stroke();
-  }
-  // pen indicator
-  if (lm) {
-    const a = P(lm[4]), b = P(lm[8]);
-    ctx.fillStyle = write.penDown ? "rgba(255,210,122,1)" : "rgba(126,224,255,0.6)";
-    ctx.beginPath(); ctx.arc((a.x + b.x) / 2, (a.y + b.y) / 2, write.penDown ? 9 : 14, 0, 7); ctx.fill();
+    ctx.beginPath(); s.forEach((p, i) => { const q = inkPoint(p); i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y); }); ctx.stroke();
   }
   ctx.restore();
+  if (lm) {
+    const a = P(lm[4]), b = P(lm[8]), c = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+    ctx.save(); ctx.fillStyle = wr.pen ? "rgba(255,210,122,1)" : "rgba(110,231,255,.65)"; ctx.shadowBlur = 20; ctx.shadowColor = ctx.fillStyle;
+    ctx.beginPath(); ctx.arc(c.x, c.y, wr.pen ? 9 : 15, 0, 7); ctx.fill(); ctx.restore();
+  }
 }
-function writePanel() {
-  const res = writeAnalyse();
-  let size = "–", cls = "";
-  if (res) { const pct = Math.round(res.ratio * 100); size = pct + "%"; if (pct < 70) cls = "warn"; }
-  setPanel(`<h2>Writing Lanes</h2><div class="sub">Pinch thumb and index finger to write. Write your name between the lines, left to right.</div>
-    ${compare("Handwriting training with guide lines helped micrographia in a small trial.", "Glowing lanes guide size, and the camera tracks whether your writing shrinks.")}
-    <div class="row"><div><div class="label">Size at the end vs. the start</div><div class="big ${cls}">${size}</div></div>
-    <div><div class="label">Empathy mode</div><div class="big">${write.empathy ? "On" : "Off"}</div></div></div>
-    ${res ? barsHtml(res.ext.map(v => v || 0)) + '<div class="axis"><span>start</span><span>middle</span><span>end</span></div>' : ""}
-    <div class="note">Press <b>E</b> for empathy mode: your writing gets a 5 Hz tremor and shrinks, like micrographia.
-    ${write.empathy ? '<br><span class="warn">This is a simulation. It does not show how every person with Parkinson\'s feels.</span>' : ""}
-    Space clears the page.</div>`);
+function wrCoach(now) {
+  const s = { steps: ["hand", "write", "done"], step: { intro: 0, run: 1, done: 2 }[flow.phase] ?? 0 };
+  const emp = `<button class="btn ghost" data-act="empathy">${wr.empathy ? "Turn off" : "Feel it:"} tremor simulation</button>`;
+  if (flow.phase === "intro") return { ...s, title: "Show your hand to the camera", sub: "You'll write with your fingertips, in the air" };
+  if (flow.phase === "run") return { ...s, title: "Pinch to write your name between the lines", sub: "Touch thumb and index finger to draw. Let go to lift the pen.",
+    buttons: `<button class="btn" data-act="wrdone">I'm done</button>${emp}` };
+  return { ...s, title: "Here's how your writing changed", sub: wr.empathy ? "With the simulation on, writing shrinks and shakes, as micrographia can feel." : "Try the simulation to feel what micrographia is like", buttons: emp };
+}
+function wrPanel() {
+  const head = header("Activity 3", "Writing", "Checks whether your writing gets smaller as you go, which is called micrographia.");
+  if (flow.phase !== "done") {
+    return setBody(head + (wr.empathy ? `<div class="headline mid">Simulation on</div><ul class="plain"><li>Your ink now shakes and gets smaller as you write.</li><li>This is a simulation. It doesn't show how every person with Parkinson's feels.</li></ul>` : "") +
+      (view === "doctor" ? `<div class="small">Handwriting with visual cues (guide lines) is used in micrographia training.</div>` : ""));
+  }
+  const r = wr.res;
+  if (!r) return setBody(head + `<div class="headline mid">We need a bit more writing</div><ul class="plain"><li>Write a few letters from left to right between the lines, then press I'm done.</li></ul>`);
+  const pct = Math.round(r.ratio * 100);
+  if (view === "doctor") {
+    return setBody(head + table([["Letter height, last third vs first third", pct + "%"], ["Strokes", r.strokes], ["Pen-down time", r.secs.toFixed(1) + " s"],
+      ["Simulation applied", wr.empathy ? "yes" : "no"]]) + bars(r.ext) + `<div class="axis"><span>start</span><span>middle</span><span>end</span></div>
+      <div class="small">Height = 10th–90th percentile vertical extent per third. In-air writing; not clinically validated.</div>`);
+  }
+  let cls = "good", txt = "Your writing stayed the same size", item = "Your letters were about the same height from start to finish.";
+  if (r.ratio < 0.7) { cls = "note"; txt = "Your writing got smaller"; item = `By the end, your letters were about ${pct}% of their starting size. Doctors call this micrographia.`; }
+  else if (r.ratio < 0.85) { cls = "mid"; txt = "A little smaller at the end"; item = "Your letters got a little smaller towards the end."; }
+  const items = [item, "Guide lines like these are used in handwriting training to help keep writing big."];
+  if (wr.empathy) items.unshift("The tremor simulation was on, so this shows the simulated effect.");
+  setBody(head + `<div class="headline ${cls}">${txt}</div><ul class="plain">${items.map(i => `<li>${i}</li>`).join("")}</ul>${disclaimer}`);
 }
 
 // =====================================================================
-// MODE 4: Bloom (amplitude training with a rhythmic cue)
+// 4. BLOOM: big movements on a beat (amplitude training with a cue)
 // =====================================================================
-const bloom = { lo: 1.0, hi: 1.7, open: 0, peakInBeat: 0, nextBeat: 0, flowers: [], hits: 0, beats: 0, pulse: 0 };
-function bloomReset() { bloom.flowers = []; bloom.hits = 0; bloom.beats = 0; bloom.nextBeat = 0; }
-function bloomUpdate(now) {
+const bl = { lo: 1.0, hi: 1.7, open: 0, peak: 0, next: 0, flowers: [], hits: 0, beats: 0, pulse: 0, res: null };
+const BL_BEATS = 12, BL_GAP = 1200;
+function blReset() { bl.flowers = []; bl.hits = 0; bl.beats = 0; bl.next = 0; bl.res = null; flowReset(); }
+function blBegin(now) { bl.hits = 0; bl.beats = 0; bl.flowers = []; bl.next = now + BL_GAP; bl.peak = 0; }
+function blUpdate(now) {
+  flowTick(now);
   if (lm && handSize) {
     const v = [8, 12, 16, 20].reduce((s, i) => s + dLm(i, 0), 0) / 4 / handSize;
-    bloom.lo = Math.min(bloom.lo * 0.999 + v * 0.001, v); bloom.hi = Math.max(bloom.hi * 0.999 + v * 0.001, v);
-    bloom.open = Math.min(1, Math.max(0, (v - bloom.lo) / Math.max(0.2, bloom.hi - bloom.lo)));
-    bloom.peakInBeat = Math.max(bloom.peakInBeat, bloom.open);
+    bl.lo = Math.min(bl.lo * 0.999 + v * 0.001, v); bl.hi = Math.max(bl.hi * 0.999 + v * 0.001, v);
+    bl.open = Math.min(1, Math.max(0, (v - bl.lo) / Math.max(0.2, bl.hi - bl.lo)));
+    bl.peak = Math.max(bl.peak, bl.open);
   }
-  if (!bloom.nextBeat) bloom.nextBeat = now + 1200;
-  if (now >= bloom.nextBeat) {
-    bloom.beats++;
-    if (bloom.peakInBeat > 0.85 && lm) {
-      bloom.hits++;
-      const c = P(lm[9]);
-      bloom.flowers.push({ x: c.x + (Math.random() - 0.5) * 400, y: c.y + (Math.random() - 0.5) * 300,
-        r: 30 + Math.random() * 30, hue: Math.random() * 360, born: now });
-      tone(660 + (bloom.hits % 5) * 110, 0.35, "sine", 0.12);
-    } else tone(220, 0.06, "square", 0.05);
-    bloom.peakInBeat = 0; bloom.pulse = now; bloom.nextBeat += 1200;
+  if (flow.phase !== "run") return;
+  if (now >= bl.next) {
+    bl.beats++;
+    if (bl.peak > 0.85 && lm) {
+      bl.hits++; const c = P(lm[9]);
+      bl.flowers.push({ x: c.x + (Math.random() - 0.5) * 420, y: c.y + (Math.random() - 0.5) * 300, r: 30 + Math.random() * 34, hue: Math.random() * 360, born: now });
+      tone(660 + (bl.hits % 5) * 110, 0.35, "sine", 0.1);
+    } else tone(220, 0.06, "square", 0.04);
+    bl.peak = 0; bl.pulse = now; bl.next += BL_GAP;
+    if (bl.beats >= BL_BEATS) { bl.res = { hits: bl.hits, beats: bl.beats }; finish(now); }
   }
 }
-function flower(x, y, r, hue, alpha) {
-  ctx.save(); ctx.translate(x, y);
-  ctx.globalCompositeOperation = "lighter";
-  for (let i = 0; i < 8; i++) {
-    ctx.rotate(Math.PI / 4);
-    ctx.fillStyle = `hsla(${hue},90%,65%,${0.35 * alpha})`;
-    ctx.beginPath(); ctx.ellipse(r * 0.55, 0, r * 0.55, r * 0.22, 0, 0, 7); ctx.fill();
-  }
-  ctx.fillStyle = `hsla(${hue + 40},100%,75%,${alpha})`;
-  ctx.beginPath(); ctx.arc(0, 0, r * 0.18, 0, 7); ctx.fill();
-  ctx.restore();
+function flower(x, y, r, hue, a) {
+  ctx.save(); ctx.translate(x, y); ctx.globalCompositeOperation = "lighter";
+  for (let i = 0; i < 8; i++) { ctx.rotate(Math.PI / 4); ctx.fillStyle = `hsla(${hue},90%,66%,${0.35 * a})`; ctx.beginPath(); ctx.ellipse(r * 0.55, 0, r * 0.55, r * 0.22, 0, 0, 7); ctx.fill(); }
+  ctx.fillStyle = `hsla(${hue + 40},100%,76%,${a})`; ctx.beginPath(); ctx.arc(0, 0, r * 0.18, 0, 7); ctx.fill(); ctx.restore();
 }
-function bloomDraw(now) {
-  for (const f of bloom.flowers) flower(f.x, f.y, f.r * Math.min(1, (now - f.born) / 400), f.hue, 0.9);
+function blDraw(now) {
+  drawHand(0.3);
+  for (const f of bl.flowers) flower(f.x, f.y, f.r * Math.min(1, (now - f.born) / 400), f.hue, 0.9);
   if (!lm) return;
   const c = P(lm[9]);
-  flower(c.x, c.y, 40 + bloom.open * 160, 190 + bloom.open * 120, 1);
-  const k = Math.max(0, 1 - (now - bloom.pulse) / 600);
-  if (k > 0) {
-    ctx.save(); ctx.strokeStyle = `rgba(255,210,122,${k})`; ctx.lineWidth = 4;
-    ctx.beginPath(); ctx.arc(c.x, c.y, 220 + (1 - k) * 80, 0, 7); ctx.stroke(); ctx.restore();
-  }
+  flower(c.x, c.y, 40 + bl.open * 170, 190 + bl.open * 120, 1);
+  const k = Math.max(0, 1 - (now - bl.pulse) / 600);
+  if (k > 0 && flow.phase === "run") { ctx.save(); ctx.strokeStyle = `rgba(255,210,122,${k})`; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(c.x, c.y, 230 + (1 - k) * 90, 0, 7); ctx.stroke(); ctx.restore(); }
 }
-function bloomPanel() {
-  setPanel(`<h2>Bloom</h2><div class="sub">On every beat, open your hand as wide as you can. Close it between beats.</div>
-    ${compare("Physiotherapy uses big, exaggerated movements (amplitude training, such as LSVT BIG) and rhythmic cues.", "Each big movement on the beat grows a flower. The camera checks the size of every opening.")}
-    <div class="row"><div><div class="label">Big movements on the beat</div><div class="big">${bloom.hits}/${bloom.beats}</div></div>
-    <div><div class="label">Hand openness</div><div class="big">${Math.round(bloom.open * 100)}%</div></div></div>
-    <div class="note">Exercise as a game, with a measure built in. Space resets the garden.</div>`);
+function blCoach(now) {
+  const s = { steps: STEPS4, step: stepIndex() };
+  if (flow.phase === "intro") return { ...s, title: "Show your open hand to the camera", sub: "You'll make big movements to a beat" };
+  if (flow.phase === "count") return { ...s, title: "Open wide on every beat", sub: "Close your hand in between" };
+  if (flow.phase === "run") return { ...s, title: `Open BIG on the beat! ${bl.hits} flowers`, sub: `Beat ${bl.beats} of ${BL_BEATS}`, progress: bl.beats / BL_BEATS };
+  return { ...s, title: `You grew ${bl.res.hits} flowers`, sub: "Big, rhythmic movements are a core part of Parkinson's physiotherapy" };
+}
+function blPanel() {
+  const head = header("Activity 4", "Bloom", "An exercise, not a test: big hand movements timed to a beat, turned into a game.");
+  if (flow.phase !== "done") return setBody(head + (view === "doctor" ? `<div class="small">Amplitude-focused training (as in LSVT BIG) with an external rhythmic cue. Each beat counts as a hit if openness reaches 85% of the calibrated range.</div>` : ""));
+  const r = bl.res, share = r.hits / r.beats;
+  if (view === "doctor") return setBody(head + table([["Full-amplitude openings on the beat", `${r.hits} / ${r.beats}`], ["Hit rate", Math.round(share * 100) + "%"], ["Cue", "1 beat every 1.2 s"]]) +
+    `<div class="small">Openness = mean fingertip-to-wrist distance / hand size, scaled to a running min–max. Engagement metric, not a clinical score.</div>`);
+  const [cls, txt] = share >= 0.75 ? ["good", "Great rhythm, big movements"] : share >= 0.4 ? ["mid", "Nice work"] : ["mid", "Good start"];
+  setBody(head + `<div class="headline ${cls}">${txt}</div><ul class="plain"><li>You made ${r.hits} big openings out of ${r.beats} beats.</li>
+    <li>Practising big movements is used in Parkinson's physiotherapy, because movements can become smaller over time.</li></ul>${disclaimer}`);
 }
 
 // =====================================================================
-// MODE 5: Vanish (snap and dissolve into dust)
+// 5. VANISH: learn the room, snap, dissolve into dust
 // =====================================================================
-const van = { mask: null, mw: 0, mh: 0, invert: false, plate: null, armT: 0, vanished: false, t0: 0,
-  n: 0, px: null, py: null, vx: null, vy: null, dl: null, col: null, lastSnap: 0 };
-const maskCanvas = document.createElement("canvas"), maskCtx = maskCanvas.getContext("2d");
-const fx = document.createElement("canvas"), fxCtx = fx.getContext("2d");
-const dust = document.createElement("canvas"), dustCtx = dust.getContext("2d");
-const grab = document.createElement("canvas"), grabCtx = grab.getContext("2d", { willReadFrequently: true });
+const van = { mask: null, mw: 0, mh: 0, invert: false, phase: "learn", t0: 0, armT: 0, lastSnap: 0, learnFrames: 0,
+  n: 0, px: null, py: null, vx: null, vy: null, dl: null, col: null };
+const SC = 0.5;   // background model works at half resolution
+const mkCanvas = () => { const c = document.createElement("canvas"); return [c, c.getContext("2d", { willReadFrequently: true })]; };
+const [pMask, pMaskCtx] = mkCanvas();     // person (for hiding)
+const [bMask, bMaskCtx] = mkCanvas();     // background (for learning)
+const [bg, bgCtx] = mkCanvas();           // learned empty room, screen coords, half size
+const [fill, fillCtx] = mkCanvas();       // learned room with holes filled
+const [tmp, tmpCtx] = mkCanvas();
+const [fx, fxCtx] = mkCanvas();
+const [dust, dustCtx] = mkCanvas();
+const [grab, grabCtx] = mkCanvas();
 
 function vanReset() {
-  van.vanished = false; van.n = 0;
-  toast.style.opacity = 0;
+  van.phase = "learn"; van.t0 = performance.now(); van.n = 0; van.learnFrames = 0;
+  $("thanks").style.opacity = 0;
+  bg.width = Math.round(W * SC); bg.height = Math.round(H * SC);   // clears the learned room
 }
 function segment(now) {
   if (!segmenter) return;
   segmenter.segmentForVideo(video, now, (res) => {
     const m = res.confidenceMasks && res.confidenceMasks[0];
-    if (!m) return;
-    van.mw = m.width; van.mh = m.height;
-    van.mask = m.getAsFloat32Array().slice();
-    // Work out which side is "person": the centre of the frame vs. the corners
+    if (!m || !m.width) return;
+    van.mw = m.width; van.mh = m.height; van.mask = m.getAsFloat32Array().slice();
     const c = van.mask[Math.floor(van.mh * 0.55) * van.mw + Math.floor(van.mw / 2)];
     const e = (van.mask[0] + van.mask[van.mw - 1]) / 2;
     van.invert = e > c;
   });
 }
 const personAt = (i) => van.invert ? 1 - van.mask[i] : van.mask[i];
-
-function updateMaskCanvas() {
-  if (!van.mask) return;
-  if (maskCanvas.width !== van.mw) { maskCanvas.width = van.mw; maskCanvas.height = van.mh; }
-  const img = maskCtx.createImageData(van.mw, van.mh);
-  for (let i = 0; i < van.mw * van.mh; i++) {
-    const p = personAt(i);
-    img.data[i * 4 + 3] = p > 0.35 ? Math.min(255, (p - 0.35) / 0.3 * 255) : 0;
+// Build two masks at quarter of the mask resolution: person (slightly grown) and safe background
+function buildMasks() {
+  const s = 2, w = Math.floor(van.mw / s), h = Math.floor(van.mh / s);
+  if (pMask.width !== w || pMask.height !== h) { pMask.width = bMask.width = w; pMask.height = bMask.height = h; }
+  const pi = pMaskCtx.createImageData(w, h), bi = bMaskCtx.createImageData(w, h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const p = personAt(y * s * van.mw + x * s), k = (y * w + x) * 4 + 3;
+    pi.data[k] = p > 0.15 ? 255 : 0;       // generous: hide the whole person
+    bi.data[k] = p < 0.04 ? 255 : 0;       // strict: only learn pixels that are surely background
   }
-  maskCtx.putImageData(img, 0, 0);
+  pMaskCtx.putImageData(pi, 0, 0); bMaskCtx.putImageData(bi, 0, 0);
 }
-function drawMirrored(c, src) {
-  c.save(); c.translate(rect.x + rect.w, rect.y); c.scale(-1, 1); c.drawImage(src, 0, 0, rect.w, rect.h); c.restore();
+function drawMaskTo(c, m, scale, blur = 0) {
+  c.save(); c.scale(scale, scale);
+  if (blur) c.filter = `blur(${blur}px)`;
+  drawMirrored(c, m); c.restore();
 }
-function capturePlate() {
-  const pl = document.createElement("canvas"); pl.width = W; pl.height = H;
-  drawMirrored(pl.getContext("2d"), video);
-  van.plate = pl;
-  flash("Background saved", "Now step back in, then snap");
+// Keep learning what the room looks like wherever the person is not
+function learnBackground() {
+  const w = Math.round(W * SC), h = Math.round(H * SC);
+  if (bg.width !== w) { bg.width = w; bg.height = h; }
+  if (tmp.width !== w) { tmp.width = w; tmp.height = h; }
+  tmpCtx.globalCompositeOperation = "source-over"; tmpCtx.clearRect(0, 0, w, h);
+  drawMaskTo(tmpCtx, bMask, SC);
+  tmpCtx.globalCompositeOperation = "source-in";
+  tmpCtx.save(); tmpCtx.scale(SC, SC); drawMirrored(tmpCtx, video); tmpCtx.restore();
+  tmpCtx.globalCompositeOperation = "source-over";
+  bgCtx.globalAlpha = van.learnFrames < 5 ? 1 : 0.35;    // blend so lighting changes are followed
+  bgCtx.drawImage(tmp, 0, 0); bgCtx.globalAlpha = 1;
+  van.learnFrames++;
+}
+// Fill any spots the camera has never seen by spreading the colours around them
+function buildFill() {
+  const w = bg.width, h = bg.height;
+  if (fill.width !== w) { fill.width = w; fill.height = h; }
+  fillCtx.clearRect(0, 0, w, h);
+  for (const b of [60, 30, 14]) { fillCtx.filter = `blur(${b}px)`; fillCtx.drawImage(bg, 0, 0); fillCtx.drawImage(bg, 0, 0); }
+  fillCtx.filter = "none"; fillCtx.drawImage(bg, 0, 0);
+}
+function drawWithoutPerson() {
+  drawMirrored(ctx, video);
+  if (!van.mask) return;
+  if (fx.width !== W) { fx.width = W; fx.height = H; }
+  buildFill();
+  fxCtx.globalCompositeOperation = "source-over"; fxCtx.clearRect(0, 0, W, H);
+  drawMaskTo(fxCtx, pMask, 1, 3);                  // soft edge
+  fxCtx.globalCompositeOperation = "source-in";
+  fxCtx.drawImage(fill, 0, 0, W, H);
+  fxCtx.globalCompositeOperation = "source-over";
+  ctx.drawImage(fx, 0, 0);
 }
 function snap(now) {
-  if (van.vanished || !van.mask || now - van.lastSnap < 1500) return;
+  if (van.phase === "gone" || !van.mask || !van.mw || now - van.lastSnap < 1500) return;
   van.lastSnap = now;
-  // Freeze the current frame and turn every person pixel into a particle
-  grab.width = W; grab.height = H;
-  drawMirrored(grabCtx, video);
-  const img = grabCtx.getImageData(0, 0, W, H).data;
-  const step = 4, list = [];
-  for (let y = Math.max(0, Math.floor(rect.y)); y < Math.min(H, rect.y + rect.h); y += step) {
+  grab.width = W; grab.height = H; drawMirrored(grabCtx, video);
+  const img = grabCtx.getImageData(0, 0, W, H).data, step = 4, list = [];
+  for (let y = Math.max(0, Math.floor(rect.y)); y < Math.min(H, rect.y + rect.h); y += step)
     for (let x = Math.max(0, Math.floor(rect.x)); x < Math.min(W, rect.x + rect.w); x += step) {
-      const u = 1 - (x - rect.x) / rect.w, v = (y - rect.y) / rect.h;   // un-mirror to mask coords
+      const u = 1 - (x - rect.x) / rect.w, v = (y - rect.y) / rect.h;
       const mi = Math.min(van.mh - 1, Math.floor(v * van.mh)) * van.mw + Math.min(van.mw - 1, Math.floor(u * van.mw));
       if (personAt(mi) > 0.5) list.push(x, y);
     }
-  }
   const n = list.length / 2;
-  van.n = n;
-  van.px = new Float32Array(n); van.py = new Float32Array(n);
-  van.vx = new Float32Array(n); van.vy = new Float32Array(n);
+  van.n = n; van.px = new Float32Array(n); van.py = new Float32Array(n); van.vx = new Float32Array(n); van.vy = new Float32Array(n);
   van.dl = new Float32Array(n); van.col = new Uint8ClampedArray(n * 3);
   for (let i = 0; i < n; i++) {
-    const x = list[i * 2], y = list[i * 2 + 1];
-    van.px[i] = x; van.py[i] = y;
-    van.vx[i] = 0.6 + Math.random() * 2.6; van.vy[i] = -Math.random() * 1.6;
+    const x = list[i * 2], y = list[i * 2 + 1], k = (y * W + x) * 4;
+    van.px[i] = x; van.py[i] = y; van.vx[i] = 0.6 + Math.random() * 2.6; van.vy[i] = -Math.random() * 1.6;
     van.dl[i] = Math.random() * 1500 + (y - rect.y) / rect.h * 300;
-    const k = (y * W + x) * 4;
     van.col[i * 3] = img[k]; van.col[i * 3 + 1] = img[k + 1]; van.col[i * 3 + 2] = img[k + 2];
   }
-  van.vanished = true; van.t0 = now;
-  whoosh();
-}
-// Draw the live room, with the person painted over by the empty background
-function drawWithoutPerson() {
-  drawVideo(0);
-  if (!van.mask) return;
-  updateMaskCanvas();
-  if (fx.width !== W) { fx.width = W; fx.height = H; }
-  fxCtx.clearRect(0, 0, W, H);
-  fxCtx.globalCompositeOperation = "source-over";
-  drawMirrored(fxCtx, maskCanvas);
-  fxCtx.globalCompositeOperation = "source-in";
-  if (van.plate) fxCtx.drawImage(van.plate, 0, 0);
-  else { fxCtx.filter = "blur(40px) brightness(0.8)"; drawMirrored(fxCtx, video); fxCtx.filter = "none"; }
-  fxCtx.globalCompositeOperation = "source-over";
-  ctx.drawImage(fx, 0, 0);
+  van.phase = "gone"; van.t0 = now; whoosh();
 }
 function dustDraw(now) {
   if (!van.n) return;
   if (dust.width !== W) { dust.width = W; dust.height = H; }
-  const img = dustCtx.createImageData(W, H), d = img.data;
-  const t = now - van.t0;
+  const img = dustCtx.createImageData(W, H), d = img.data, t = now - van.t0;
   let alive = 0;
   for (let i = 0; i < van.n; i++) {
-    const local = t - van.dl[i];
-    let a = 1;
-    if (local > 0) {
-      van.vx[i] += (Math.random() - 0.45) * 0.25; van.vy[i] += (Math.random() - 0.6) * 0.12;
-      van.px[i] += van.vx[i]; van.py[i] += van.vy[i];
-      a = 1 - local / 1600;
-    }
+    const local = t - van.dl[i]; let a = 1;
+    if (local > 0) { van.vx[i] += (Math.random() - 0.45) * 0.25; van.vy[i] += (Math.random() - 0.6) * 0.12; van.px[i] += van.vx[i]; van.py[i] += van.vy[i]; a = 1 - local / 1600; }
     if (a <= 0) continue;
     alive++;
     const x = van.px[i] | 0, y = van.py[i] | 0;
-    if (x < 0 || y < 0 || x >= W - 2 || y >= H - 2) continue;
-    const s = local > 0 ? 2 : 4;   // solid before dissolving, fine dust after
+    if (x < 0 || y < 0 || x >= W - 4 || y >= H - 4) continue;
+    const s = local > 0 ? 2 : 4;
     for (let yy = 0; yy < s; yy++) for (let xx = 0; xx < s; xx++) {
       const k = ((y + yy) * W + x + xx) * 4;
       d[k] = van.col[i * 3]; d[k + 1] = van.col[i * 3 + 1]; d[k + 2] = van.col[i * 3 + 2]; d[k + 3] = a * 255;
     }
   }
-  dustCtx.putImageData(img, 0, 0);
-  ctx.drawImage(dust, 0, 0);
+  dustCtx.putImageData(img, 0, 0); ctx.drawImage(dust, 0, 0);
   if (!alive) van.n = 0;
-  if (t > 2400 && toast.style.opacity !== "1") flash("Thank you", "", true);
 }
 function vanUpdate(now) {
-  // Snap: thumb and middle fingertip touch, then the middle finger snaps down to the palm
+  if (van.mask && van.mw) {
+    buildMasks();
+    learnBackground();          // keeps learning, even after you vanish
+  }
+  if (van.phase === "learn" && now - van.t0 > 2500 && van.learnFrames > 20) van.phase = "ready";
+  if (van.phase === "gone" && now - van.t0 > 2400) $("thanks").style.opacity = 1;
   if (!lm || !handSize) return;
   const tm = dLm(4, 12) / handSize, fold = dLm(12, 0) / handSize;
   if (tm < 0.25) van.armT = now;
-  else if (van.armT && now - van.armT < 350 && tm > 0.45 && fold < 1.3) { van.armT = 0; snap(now); }
+  else if (van.armT && now - van.armT < 350 && tm > 0.45 && fold < 1.3) { van.armT = 0; if (van.phase === "ready") snap(now); }
+}
+function vanDraw(now) { dustDraw(now); }
+function vanCoach(now) {
+  const steps = ["learn", "snap", "gone"], step = { learn: 0, ready: 1, gone: 2 }[van.phase];
+  if (van.phase === "learn") return { steps, step, title: "Learning the room…", sub: "Move around a little so the camera can see behind you", progress: Math.min(1, (now - van.t0) / 2500) };
+  if (van.phase === "ready") return { steps, step, title: "Snap your fingers to vanish", sub: "Or press the button", buttons: `<button class="btn" data-act="snap">✨ Vanish</button>` };
+  return { steps, step, title: "", sub: "", buttons: `<button class="btn ghost" data-act="back">Come back</button>` };
 }
 function vanPanel() {
-  setPanel(`<h2>Vanish</h2><div class="sub">The finale.</div>
-    <div class="note" style="font-size:13px;color:var(--text)">
-    1. Step out of view and press <b>B</b> to save the empty background.<br>
-    2. Step back in.<br>
-    3. Snap your fingers, or press <b>S</b>.<br>
-    4. Press <b>R</b> to come back.</div>
-    <div class="note">Background: ${van.plate ? "saved" : '<span class="warn">not saved (a blur will be used)</span>'} ·
-    Body detection: ${van.mask ? "ready" : "starting…"}</div>`);
-}
-function flash(title, sub, stay = false) {
-  toast.innerHTML = title + (sub ? `<small>${sub}</small>` : "");
-  toast.style.opacity = 1;
-  if (!stay) setTimeout(() => { if (!van.vanished) toast.style.opacity = 0; }, 1600);
+  setBody(header("Finale", "Vanish", "A bit of fun to finish. The camera learns the empty room, so when you snap, you dissolve into dust and the room shows through.") +
+    `<div class="small">Tip: before the snap, step to one side for a moment. The more of the room the camera sees, the cleaner the vanish.</div>`);
 }
 
-// ---------- modes ----------
+// =====================================================================
+// Modes, view switching, input
+// =====================================================================
 const MODES = {
-  tap:    { reset: tapReset,    update: tapUpdate,    draw: () => { drawSkeleton(); tapDraw(); }, panel: tapPanel, hint: "Space reset · H hide panels · F fullscreen" },
-  ribbon: { reset: ribbonReset, update: ribbonUpdate, draw: ribbonDraw, panel: ribbonPanel, hint: "Space reset · H hide panels · F fullscreen" },
-  write:  { reset: writeReset,  update: writeUpdate,  draw: writeDraw,  panel: writePanel,  hint: "Pinch to write · E empathy mode · Space clear" },
-  bloom:  { reset: bloomReset,  update: bloomUpdate,  draw: (n) => { drawSkeleton(0.25); bloomDraw(n); }, panel: bloomPanel, hint: "Open wide on the beat · Space reset" },
-  vanish: { reset: vanReset,    update: vanUpdate,    draw: () => {}, panel: vanPanel, hint: "B save background · S snap · R return · H hide panels" },
+  tap:    { reset: tapReset, begin: tapBegin, update: tapUpdate, draw: tapDraw, coach: tapCoach, panel: tapPanel, hasNums: true },
+  ribbon: { reset: ribReset, begin: ribBegin, update: ribUpdate, draw: ribDraw, coach: ribCoach, panel: ribPanel, hasNums: true },
+  write:  { reset: wrReset,  begin: wrBegin,  update: wrUpdate,  draw: wrDraw,  coach: wrCoach,  panel: wrPanel },
+  bloom:  { reset: blReset,  begin: blBegin,  update: blUpdate,  draw: blDraw,  coach: blCoach,  panel: blPanel },
+  vanish: { reset: vanReset, begin: () => {}, update: vanUpdate, draw: vanDraw, coach: vanCoach, panel: vanPanel },
 };
+const ORDER = ["tap", "ribbon", "write", "bloom", "vanish"];
 function setMode(m) {
-  mode = m;
+  mode = m; showNums = false;
   document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.mode === m));
-  MODES[m].reset();
-  hint.textContent = MODES[m].hint;
-  toast.style.opacity = 0;
-  MODES[m].panel();
+  $("thanks").style.opacity = 0;
+  MODES[m].reset(); renderActions(); MODES[m].panel();
 }
-document.getElementById("nav").addEventListener("click", (e) => {
-  const b = e.target.closest("button"); if (b) setMode(b.dataset.mode);
-});
+function setView(v) {
+  view = v;
+  document.querySelectorAll("#view button").forEach(b => b.classList.toggle("on", b.dataset.view === v));
+  renderActions(); MODES[mode].panel();
+}
+$("nav").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) setMode(b.dataset.mode); });
+$("view").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) setView(b.dataset.view); });
+function act(a) {
+  const now = performance.now();
+  if (a === "again") setMode(mode);
+  else if (a === "next") setMode(ORDER[(ORDER.indexOf(mode) + 1) % ORDER.length]);
+  else if (a === "nums") { showNums = !showNums; renderActions(); MODES[mode].panel(); }
+  else if (a === "empathy") wr.empathy = !wr.empathy;
+  else if (a === "wrdone") wrDone(now);
+  else if (a === "snap") snap(now);
+  else if (a === "back") { van.phase = "ready"; van.n = 0; $("thanks").style.opacity = 0; }
+}
+document.addEventListener("click", (e) => { const b = e.target.closest("[data-act]"); if (b) act(b.dataset.act); });
 addEventListener("keydown", (e) => {
   const k = e.key.toLowerCase();
-  const map = { "1": "tap", "2": "ribbon", "3": "write", "4": "bloom", "5": "vanish" };
-  if (map[k]) setMode(map[k]);
-  else if (k === " ") { e.preventDefault(); MODES[mode].reset(); }
+  if ("12345".includes(k) && k.length === 1) setMode(ORDER[+k - 1]);
+  else if (k === " ") { e.preventDefault(); setMode(mode); }
   else if (k === "h") document.body.classList.toggle("clean");
-  else if (k === "f") { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); }
-  else if (k === "e" && mode === "write") write.empathy = !write.empathy;
-  else if (k === "b" && mode === "vanish") capturePlate();
-  else if (k === "s" && mode === "vanish") snap(performance.now());
-  else if (k === "r" && mode === "vanish") vanReset();
+  else if (k === "f") document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+  else if (k === "v") setView(view === "patient" ? "doctor" : "patient");
+  else if (k === "e") act("empathy");
+  else if (k === "enter") act(mode === "write" ? "wrdone" : "next");
+  else if (k === "s" && mode === "vanish") act("snap");
+  else if (k === "r" && mode === "vanish") act("back");
 });
 
-// ---------- main loop ----------
-let lastAnalyse = 0;
+// =====================================================================
+// Main loop
+// =====================================================================
+let lastUi = 0;
 function loop() {
   const now = performance.now();
   if (video.readyState >= 2 && video.currentTime !== lastVideoTime) {
@@ -762,51 +902,38 @@ function loop() {
     if (mode === "vanish") segment(now);
     MODES[mode].update(now);
   }
-  if (mode === "vanish" && van.vanished) drawWithoutPerson();
-  else drawVideo(mode === "vanish" ? 0 : 0.35);
+  if (mode === "vanish" && van.phase === "gone") drawWithoutPerson();
+  else drawVideo(mode === "vanish" ? 0 : 0.45);
   MODES[mode].draw(now);
-  if (mode === "vanish") dustDraw(now);
-  if (now - lastAnalyse > 150) {
-    lastAnalyse = now;
-    if (mode === "ribbon") ribbonAnalyse();
-    MODES[mode].panel();
-  }
+  drawCountdown(now);
+  if (now - lastUi > 120) { lastUi = now; coach(MODES[mode].coach(now)); MODES[mode].panel(); }
   requestAnimationFrame(loop);
 }
 
-// ---------- start ----------
-document.getElementById("go").addEventListener("click", async () => {
-  const btn = document.getElementById("go");
-  btn.disabled = true;
+$("go").addEventListener("click", async () => {
+  const btn = $("go"); btn.disabled = true;
   try {
     audio = new (window.AudioContext || window.webkitAudioContext)();
-    statusEl.textContent = "Starting camera…";
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" }, audio: false });
-    video.srcObject = stream;
-    await video.play();
-    resize();
-    statusEl.textContent = "Loading hand tracking…";
+    $("status").textContent = "Starting your camera…";
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" }, audio: false });
+    video.srcObject = stream; await video.play(); resize();
+    $("status").textContent = "Loading hand tracking…";
     const files = await FilesetResolver.forVisionTasks(WASM);
-    hands = await HandLandmarker.createFromOptions(files, {
-      baseOptions: { modelAssetPath: HAND_MODEL, delegate: "GPU" }, runningMode: "VIDEO", numHands: 1 });
-    statusEl.textContent = "Loading body detection…";
-    segmenter = await ImageSegmenter.createFromOptions(files, {
-      baseOptions: { modelAssetPath: SEG_MODEL, delegate: "GPU" }, runningMode: "VIDEO",
+    hands = await HandLandmarker.createFromOptions(files, { baseOptions: { modelAssetPath: HAND_MODEL, delegate: "GPU" }, runningMode: "VIDEO", numHands: 1 });
+    $("status").textContent = "Loading body detection…";
+    segmenter = await ImageSegmenter.createFromOptions(files, { baseOptions: { modelAssetPath: SEG_MODEL, delegate: "GPU" }, runningMode: "VIDEO",
       outputConfidenceMasks: true, outputCategoryMask: false });
-    document.getElementById("start").remove();
-    setMode("tap");
-    loop();
+    $("start").remove(); setMode("tap"); loop();
   } catch (err) {
     console.error(err);
-    statusEl.innerHTML = `<span class="warn">Could not start: ${err.message}</span><br>Allow camera access and open this page over https or localhost.`;
+    $("status").innerHTML = `<span style="color:var(--rose)">Couldn't start: ${err.message}</span><br>Please allow camera access, then try again.`;
     btn.disabled = false;
   }
 });
 resize();
 if (new URLSearchParams(location.search).has("autostart")) {   // used for automated testing only
-  window.__mm = { van, snap, setMode };
-  document.getElementById("go").click();
+  window.__mm = { van, snap, setMode, setView, flow, tap, finish, MODES };
+  $("go").click();
 }
 </script>
 </body>
