@@ -4,122 +4,135 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Motion Mirror</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #04060c;
-    --glass: rgba(14, 18, 32, 0.62);
-    --glass-strong: rgba(14, 18, 32, 0.82);
-    --line: rgba(255, 255, 255, 0.10);
-    --text: #f2f5fb;
-    --muted: #a3adc2;
-    --cyan: #6ee7ff;
-    --violet: #a78bfa;
-    --gold: #ffd27a;
-    --rose: #ff8fa3;
-    --good: #7cf0b4;
-    --grad: linear-gradient(135deg, var(--cyan), var(--violet));
+    --bg: #070b14;
+    --surface: rgba(16, 22, 36, 0.72);
+    --surface-solid: #101624;
+    --line: rgba(255, 255, 255, 0.09);
+    --text: #f3f6fb;
+    --muted: #9aa5b8;
+    --accent: #5eead4;
+    --accent-2: #60a5fa;
+    --warm: #fbbf77;
+    --on-accent: #04131a;
+    --radius: 18px;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); overflow: hidden;
-    font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; }
-  canvas#stage { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
+    font-family: Inter, "Segoe UI", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  canvas#stage { position: fixed; inset: 0; width: 100vw; height: 100vh; }
   video { display: none; }
-  button { font: inherit; color: inherit; cursor: pointer; }
-  .glass { background: var(--glass); border: 1px solid var(--line); backdrop-filter: blur(14px) saturate(140%);
-    -webkit-backdrop-filter: blur(14px) saturate(140%); }
+  button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; }
+  svg.i { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .surface { background: var(--surface); border: 1px solid var(--line); backdrop-filter: blur(16px) saturate(140%); -webkit-backdrop-filter: blur(16px) saturate(140%); }
+  .hidden { display: none !important; }
+  body.clean .chrome { opacity: 0; pointer-events: none; }
+  .chrome { transition: opacity .3s; }
 
-  .ui { transition: opacity .4s; }
-  body.clean .ui { opacity: 0; pointer-events: none; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 48px; padding: 0 22px;
+    border-radius: 14px; font-weight: 700; font-size: 16px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: var(--on-accent); }
+  .btn.secondary { background: rgba(255,255,255,.07); color: var(--text); border: 1px solid var(--line); font-weight: 600; }
+  .btn.link { background: none; color: var(--muted); height: auto; padding: 6px 4px; font-weight: 600; font-size: 14px; }
+  .btn:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-  /* ---- top bar ---- */
-  header { position: fixed; top: 14px; left: 14px; right: 14px; display: flex; gap: 10px; align-items: center; }
-  .brand { font-weight: 800; font-size: 17px; padding: 9px 14px; border-radius: 14px; white-space: nowrap; }
-  .brand span { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  nav { display: flex; gap: 4px; padding: 5px; border-radius: 14px; overflow-x: auto; }
-  nav button { background: transparent; border: 0; border-radius: 10px; padding: 8px 12px; color: var(--muted);
-    font-size: 14px; white-space: nowrap; display: flex; gap: 7px; align-items: center; }
-  nav button .ic { font-size: 16px; }
-  nav button:hover { color: var(--text); }
-  nav button.on { color: var(--text); background: linear-gradient(135deg, rgba(110,231,255,.22), rgba(167,139,250,.22)); }
-  .spacer { flex: 1; }
-  .view { display: flex; padding: 4px; border-radius: 14px; }
-  .view button { border: 0; background: transparent; padding: 7px 12px; border-radius: 10px; color: var(--muted); font-size: 13px; }
-  .view button.on { background: var(--grad); color: #071018; font-weight: 700; }
+  /* top bar */
+  header { position: fixed; top: 16px; left: 16px; right: 16px; display: flex; align-items: center; gap: 12px; z-index: 3; }
+  .logo { display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 16px; border-radius: 14px; font-weight: 800; font-size: 16px; letter-spacing: -.2px; }
+  .logo svg { width: 24px; height: 24px; }
+  .stepper { display: flex; gap: 2px; padding: 4px; border-radius: 14px; }
+  .stepper button { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px; border-radius: 10px; color: var(--muted); font-size: 14px; font-weight: 600; }
+  .stepper button .n { font-size: 12px; opacity: .7; }
+  .stepper button.on { color: var(--text); background: rgba(94,234,212,.14); }
+  .stepper button.done { color: var(--accent); }
+  .grow { flex: 1; }
+  .seg { display: flex; padding: 4px; border-radius: 14px; }
+  .seg button { display: flex; align-items: center; gap: 7px; height: 40px; padding: 0 14px; border-radius: 10px; color: var(--muted); font-size: 14px; font-weight: 600; }
+  .seg button.on { background: rgba(255,255,255,.1); color: var(--text); }
+  .iconbtn { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; color: var(--muted); }
+  .iconbtn:hover { color: var(--text); }
 
-  /* ---- result panel ---- */
-  aside { position: fixed; right: 14px; top: 74px; width: 360px; max-width: calc(100vw - 28px);
-    max-height: calc(100vh - 210px); display: flex; flex-direction: column; border-radius: 20px; padding: 18px 20px 16px; }
-  #pbody { overflow-y: auto; min-height: 0; }
-  #pacts:empty { display: none; }
-  aside .kicker { font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--cyan); font-weight: 700; }
-  aside h2 { margin: 4px 0 6px; font-size: 22px; }
-  aside .what { color: var(--muted); font-size: 14px; line-height: 1.45; margin-bottom: 12px; }
-  .headline { font-size: 26px; font-weight: 800; line-height: 1.15; margin: 6px 0 8px; }
-  .headline.good { color: var(--good); } .headline.mid { color: var(--gold); } .headline.note { color: var(--rose); }
-  ul.plain { list-style: none; padding: 0; margin: 6px 0 10px; }
-  ul.plain li { padding: 9px 0 9px 26px; position: relative; font-size: 15px; line-height: 1.4; border-top: 1px solid var(--line); }
-  ul.plain li:first-child { border-top: 0; }
-  ul.plain li::before { content: ""; position: absolute; left: 4px; top: 15px; width: 10px; height: 10px; border-radius: 50%; background: var(--grad); }
-  table.m { width: 100%; border-collapse: collapse; font-size: 14px; margin: 6px 0 8px; }
-  table.m td { padding: 7px 0; border-top: 1px solid var(--line); }
+  /* instruction bar */
+  #hud { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 3; display: flex; align-items: center; gap: 14px;
+    min-height: 72px; padding: 12px 14px 12px 20px; border-radius: 22px; max-width: calc(100vw - 32px); }
+  #hud .ic { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: rgba(94,234,212,.12); color: var(--accent); flex: none; }
+  #hud .ic svg { width: 24px; height: 24px; }
+  #hudText { font-size: clamp(18px, 2.4vw, 24px); font-weight: 700; letter-spacing: -.2px; }
+  #hudSub { font-size: 14px; color: var(--muted); margin-top: 2px; }
+  #hudBar { height: 4px; border-radius: 4px; background: rgba(255,255,255,.08); margin-top: 8px; overflow: hidden; }
+  #hudBar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+  #hudBtns { display: flex; gap: 8px; }
+  #hudBtns:empty { display: none; }
+
+  /* cards (demo, results, summary, onboarding) */
+  .scrim { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; padding: 16px; background: rgba(4,7,13,.55); }
+  .card { width: min(520px, 100%); max-height: calc(100vh - 32px); overflow-y: auto; border-radius: 24px; padding: 28px; background: rgba(14,19,32,.92); border: 1px solid var(--line); box-shadow: 0 30px 80px rgba(0,0,0,.45); }
+  .eyebrow { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: var(--accent); }
+  .card h2 { font-size: 28px; line-height: 1.15; letter-spacing: -.5px; margin: 10px 0 8px; }
+  .card p.lead { font-size: 17px; color: var(--muted); line-height: 1.5; margin: 0 0 18px; }
+  .demo { width: 100%; aspect-ratio: 16 / 9; border-radius: 16px; background: radial-gradient(circle at 50% 40%, rgba(94,234,212,.08), rgba(255,255,255,.02)); border: 1px solid var(--line); display: block; margin-bottom: 20px; }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .row .grow { flex: 1; }
+  .points { list-style: none; margin: 0 0 18px; padding: 0; }
+  .points li { display: flex; gap: 12px; font-size: 17px; line-height: 1.45; padding: 10px 0; border-top: 1px solid var(--line); }
+  .points li:first-child { border-top: 0; }
+  .points li svg { color: var(--accent); margin-top: 2px; }
+  .details { border-top: 1px solid var(--line); margin-top: 6px; padding-top: 14px; }
+  table.m { width: 100%; border-collapse: collapse; font-size: 15px; }
+  table.m td { padding: 9px 0; border-top: 1px solid var(--line); }
+  table.m tr:first-child td { border-top: 0; }
   table.m td:last-child { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .bars { display: flex; align-items: flex-end; gap: 3px; height: 56px; margin: 8px 0 2px; }
-  .bars i { flex: 1; display: block; border-radius: 4px 4px 0 0; min-height: 3px; background: var(--grad); }
-  .bars i.hot { background: linear-gradient(180deg, var(--gold), var(--rose)); }
-  .axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
-  .live { display: flex; gap: 14px; margin: 4px 0 6px; }
-  .live div { flex: 1; }
-  .live .v { font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums; }
-  .live .k { font-size: 12px; color: var(--muted); }
-  .small { font-size: 12px; color: var(--muted); line-height: 1.5; margin-top: 8px; }
-  .chip { display: inline-block; font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); margin: 2px 4px 2px 0; }
-  .actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
-  .btn { border: 0; border-radius: 12px; padding: 10px 14px; font-size: 14px; font-weight: 700; background: var(--grad); color: #071018; }
-  .btn.ghost { background: rgba(255,255,255,.07); color: var(--text); border: 1px solid var(--line); font-weight: 600; }
+  .bars { display: flex; align-items: flex-end; gap: 4px; height: 64px; margin: 12px 0 4px; }
+  .bars i { flex: 1; display: block; min-height: 3px; border-radius: 4px 4px 0 0; background: linear-gradient(180deg, var(--accent), rgba(96,165,250,.6)); }
+  .bars i.hl { background: linear-gradient(180deg, var(--warm), rgba(251,191,119,.5)); }
+  .axis { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+  .why { margin-top: 16px; padding: 14px 16px; border-radius: 14px; background: rgba(255,255,255,.04); font-size: 14px; line-height: 1.55; color: var(--muted); }
+  .why b { color: var(--text); font-weight: 600; }
+  .why .src { display: block; margin-top: 6px; font-size: 12px; }
+  .fine { font-size: 13px; color: var(--muted); line-height: 1.5; margin-top: 14px; }
+  .dots { display: flex; gap: 6px; margin: 0 0 18px; }
+  .dots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.15); display: block; }
+  .dots i.on { background: var(--accent); width: 22px; border-radius: 8px; }
+  .tip { display: flex; gap: 16px; align-items: flex-start; }
+  .tip .big { width: 64px; height: 64px; border-radius: 18px; display: grid; place-items: center; background: rgba(94,234,212,.12); color: var(--accent); flex: none; }
+  .tip .big svg { width: 32px; height: 32px; }
+  .sum td:first-child { display: flex; align-items: center; gap: 10px; }
 
-  /* ---- coach bar ---- */
-  #coach { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); width: min(720px, calc(100vw - 28px));
-    border-radius: 22px; padding: 16px 22px; text-align: center; }
-  #coach .steps { display: flex; justify-content: center; gap: 6px; margin-bottom: 8px; }
-  #coach .steps i { width: 26px; height: 5px; border-radius: 5px; background: rgba(255,255,255,.15); display: block; }
-  #coach .steps i.on { background: var(--grad); }
-  #ctitle { font-size: clamp(20px, 3vw, 30px); font-weight: 800; line-height: 1.2; }
-  #csub { color: var(--muted); font-size: 15px; margin-top: 4px; }
-  #cbar { height: 6px; border-radius: 6px; background: rgba(255,255,255,.08); margin-top: 12px; overflow: hidden; display: none; }
-  #cbar i { display: block; height: 100%; width: 0; background: var(--grad); transition: width .15s linear; }
-  #cbtns { display: flex; justify-content: center; gap: 8px; margin-top: 12px; }
-  #cbtns:empty { display: none; }
+  /* center overlays */
+  #count { position: fixed; left: 50%; top: 45%; transform: translate(-50%, -50%); font-size: 140px; font-weight: 800; color: var(--text);
+    opacity: 0; pointer-events: none; text-shadow: 0 10px 50px rgba(0,0,0,.5); transition: opacity .15s; }
+  #thanks { position: fixed; left: 50%; top: 42%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; opacity: 0; transition: opacity 1.4s; }
+  #thanks div { font-size: 64px; font-weight: 800; letter-spacing: -1px; text-shadow: 0 6px 30px rgba(0,0,0,.6); }
+  #thanks small { display: block; margin-top: 8px; font-size: 18px; color: #e6ecf6; text-shadow: 0 2px 12px rgba(0,0,0,.8); }
 
-  #privacy { position: fixed; left: 14px; bottom: 14px; font-size: 11px; color: var(--muted); max-width: 210px; line-height: 1.45; }
+  #privacy { position: fixed; left: 16px; bottom: 16px; display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--muted); z-index: 2; }
 
-  /* ---- big center text ---- */
-  #center { position: fixed; left: 50%; top: 46%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; }
-  #count { font-size: 160px; font-weight: 900; line-height: 1; background: var(--grad); -webkit-background-clip: text; background-clip: text;
-    color: transparent; opacity: 0; transition: opacity .2s, transform .2s; }
-  #thanks { font-size: 72px; font-weight: 800; opacity: 0; transition: opacity 1.4s; text-shadow: 0 0 40px rgba(110,231,255,.5); }
-  #thanks small { display: block; font-size: 20px; font-weight: 500; color: #e6ecf7; margin-top: 6px; text-shadow: 0 2px 12px rgba(0,0,0,.8); }
-  #thanks { text-shadow: 0 0 40px rgba(110,231,255,.5), 0 4px 24px rgba(0,0,0,.6); }
+  /* start screen */
+  #start { position: fixed; inset: 0; z-index: 9; display: grid; place-items: center; padding: 24px;
+    background: radial-gradient(900px 500px at 20% 10%, rgba(94,234,212,.12), transparent 60%), radial-gradient(800px 500px at 90% 90%, rgba(96,165,250,.12), transparent 60%), var(--bg); }
+  #start .wrap { max-width: 620px; text-align: center; }
+  #start .mark { width: 64px; height: 64px; margin: 0 auto 18px; }
+  #start h1 { font-size: clamp(38px, 6vw, 56px); letter-spacing: -1.5px; margin: 0; }
+  #start p { font-size: 18px; color: var(--muted); line-height: 1.6; margin: 14px auto 28px; max-width: 520px; }
+  #start .feat { display: flex; justify-content: center; gap: 22px; flex-wrap: wrap; margin-top: 26px; color: var(--muted); font-size: 14px; }
+  #start .feat span { display: flex; align-items: center; gap: 8px; }
+  #status { margin-top: 16px; min-height: 22px; color: var(--muted); font-size: 14px; }
 
-  /* ---- start screen ---- */
-  #start { position: fixed; inset: 0; z-index: 9; display: grid; place-items: center; padding: 20px;
-    background: radial-gradient(circle at 30% 20%, rgba(110,231,255,.18), transparent 45%),
-                radial-gradient(circle at 75% 75%, rgba(167,139,250,.20), transparent 45%), var(--bg); }
-  #start .card { max-width: 640px; text-align: center; }
-  #start h1 { font-size: clamp(40px, 7vw, 64px); margin: 0; font-weight: 900; letter-spacing: -1px; }
-  #start h1 span { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  #start p { color: var(--muted); font-size: 17px; line-height: 1.6; margin: 14px auto 0; max-width: 520px; }
-  #start .tiles { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 24px 0 6px; }
-  #start .tile { border-radius: 14px; padding: 12px 6px; font-size: 13px; color: var(--muted); }
-  #start .tile b { display: block; font-size: 22px; margin-bottom: 4px; }
-  #go { margin-top: 20px; border: 0; border-radius: 999px; padding: 15px 34px; font-size: 18px; font-weight: 800;
-    background: var(--grad); color: #071018; box-shadow: 0 10px 40px rgba(110,231,255,.25); }
-  #status { margin-top: 14px; color: var(--muted); font-size: 14px; min-height: 20px; }
-
-  @media (max-width: 860px) {
-    nav button .lbl { display: none; }
-    aside { top: auto; bottom: 150px; left: 14px; width: auto; max-height: 34vh; }
+  #report { display: none; }
+  @media print {
+    body { background: #fff; color: #111; overflow: visible; }
+    body > *:not(#report) { display: none !important; }
+    #report { display: block; padding: 32px; font-family: Inter, sans-serif; }
+    #report h1 { font-size: 24px; margin: 0 0 4px; } #report .d { color: #555; margin-bottom: 20px; }
+    #report table { width: 100%; border-collapse: collapse; } #report td { border-top: 1px solid #ddd; padding: 8px 0; vertical-align: top; }
+    #report .n { color: #555; font-size: 12px; margin-top: 20px; }
+  }
+  @media (max-width: 900px) {
+    .stepper .lbl, .seg .lbl, .logo .lbl { display: none; }
     #privacy { display: none; }
-    #start .tiles { grid-template-columns: repeat(3, 1fr); }
   }
 </style>
 </head>
@@ -127,49 +140,42 @@
 <video id="video" playsinline muted></video>
 <canvas id="stage"></canvas>
 
-<header class="ui">
-  <div class="brand glass">Motion <span>Mirror</span></div>
-  <nav id="nav" class="glass">
-    <button data-mode="tap"><span class="ic">✋</span><span class="lbl">Tap</span></button>
-    <button data-mode="ribbon"><span class="ic">〰</span><span class="lbl">Steadiness</span></button>
-    <button data-mode="write"><span class="ic">✍</span><span class="lbl">Writing</span></button>
-    <button data-mode="bloom"><span class="ic">✿</span><span class="lbl">Bloom</span></button>
-    <button data-mode="vanish"><span class="ic">✨</span><span class="lbl">Vanish</span></button>
-  </nav>
-  <div class="spacer"></div>
-  <div class="view glass" id="view">
-    <button data-view="patient" class="on">For you</button>
-    <button data-view="doctor">For clinicians</button>
+<header class="chrome">
+  <div class="logo surface"><span id="logoMark"></span><span class="lbl">Motion Mirror</span></div>
+  <nav class="stepper surface" id="stepper"></nav>
+  <div class="grow"></div>
+  <div class="seg surface" id="audience">
+    <button data-view="patient" class="on"><span data-icon="user"></span><span class="lbl">Patient</span></button>
+    <button data-view="doctor"><span data-icon="clipboard"></span><span class="lbl">Clinician</span></button>
   </div>
+  <button class="iconbtn surface" id="soundBtn" aria-label="Sound"><span data-icon="volume"></span></button>
+  <button class="iconbtn surface" id="helpBtn" aria-label="Setup guide"><span data-icon="help"></span></button>
 </header>
 
-<aside class="ui glass" id="panel"><div id="pbody"></div><div class="actions" id="pacts"></div></aside>
-
-<div id="coach" class="ui glass">
-  <div class="steps" id="csteps"></div>
-  <div id="ctitle"></div>
-  <div id="csub"></div>
-  <div id="cbar"><i></i></div>
-  <div id="cbtns"></div>
+<div id="hud" class="surface chrome hidden">
+  <div class="ic" id="hudIcon"></div>
+  <div style="min-width:0"><div id="hudText"></div><div id="hudSub"></div><div id="hudBar"><i></i></div></div>
+  <div id="hudBtns"></div>
 </div>
 
-<div id="privacy" class="ui">A demo, not a medical test. Everything runs on this device: no video is recorded or sent anywhere.</div>
-
-<div id="center"><div id="count"></div><div id="thanks">Thank you<small>Motion Mirror · a demo by Fayek</small></div></div>
+<div id="privacy" class="chrome"><span data-icon="shield"></span>Runs on this device. Nothing is recorded or sent.</div>
+<div id="count"></div>
+<div id="thanks"><div>Thank you</div><small>Motion Mirror · Md Fayek Mubarrat Jamee</small></div>
+<div id="layer"></div>
+<div id="report"></div>
 
 <div id="start">
-  <div class="card">
-    <h1>Motion <span>Mirror</span></h1>
-    <p>Movement tests that doctors use for Parkinson's, turned into short activities you can try with your camera, and explained in plain words.</p>
-    <div class="tiles">
-      <div class="tile glass"><b>✋</b>Tap</div>
-      <div class="tile glass"><b>〰</b>Steadiness</div>
-      <div class="tile glass"><b>✍</b>Writing</div>
-      <div class="tile glass"><b>✿</b>Bloom</div>
-      <div class="tile glass"><b>✨</b>Vanish</div>
+  <div class="wrap">
+    <div class="mark" id="startMark"></div>
+    <h1>Motion Mirror</h1>
+    <p>Short movement activities based on the standard Parkinson's motor exam and on physiotherapy research, measured with an ordinary camera.</p>
+    <button class="btn" id="go"><span data-icon="camera"></span>Start</button>
+    <div id="status"></div>
+    <div class="feat">
+      <span><span data-icon="shield"></span>Private: runs on your device</span>
+      <span><span data-icon="clock"></span>About 3 minutes</span>
+      <span><span data-icon="info"></span>A demo, not a medical test</span>
     </div>
-    <button id="go">Start</button>
-    <div id="status">Your camera stays on this device. Nothing is recorded or uploaded.</div>
   </div>
 </div>
 
@@ -181,91 +187,108 @@ const WASM = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
 const HAND_MODEL = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
 const SEG_MODEL = "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite";
 
+// =====================================================================
+// Icons (24px line icons)
+// =====================================================================
+const ICONS = {
+  logo: '<circle cx="12" cy="12" r="9"/><path d="M7.5 12a4.5 4.5 0 0 1 9 0"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/>',
+  tap: '<circle cx="7" cy="16" r="2.5"/><circle cx="17" cy="8" r="2.5"/><path d="M9 14.5l6-5"/>',
+  steady: '<path d="M2 12h4l2-5 4 10 2-5h8"/>',
+  write: '<path d="M4 20h16"/><path d="M6 16l9.5-9.5a2.1 2.1 0 0 1 3 3L9 19l-4 1z"/>',
+  amplitude: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
+  finale: '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 17l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/>',
+  user: '<circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/>',
+  clipboard: '<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM9 12h6M9 16h4"/>',
+  volume: '<path d="M11 5L6 9H3v6h3l5 4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/>',
+  mute: '<path d="M11 5L6 9H3v6h3l5 4z"/><path d="M16 9l5 6M21 9l-5 6"/>',
+  help: '<circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 1 1 3.4 2.4c-.7.3-1 .8-1 1.5"/><path d="M12 16.8h.01"/>',
+  shield: '<path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/>',
+  camera: '<path d="M3 8a2 2 0 0 1 2-2h2l1.5-2h7L17 6h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="13" r="3.5"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  ruler: '<path d="M3 17L17 3l4 4L7 21z"/><path d="M7 13l2 2M10 10l2 2M13 7l2 2"/>',
+  hand: '<path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V11M11 10V4.5a1.5 1.5 0 0 1 3 0V11M14 10.5V6a1.5 1.5 0 0 1 3 0v7.5a6.5 6.5 0 0 1-6.5 6.5h-.6a6 6 0 0 1-4.5-2.1L3 14.3a1.6 1.6 0 0 1 2.3-2.2L8 14"/>',
+  play: '<path d="M7 5l12 7-12 7z"/>',
+  redo: '<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/>',
+  next: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7"/>',
+  doc: '<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h6"/>',
+  eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  printer: '<path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/>',
+};
+const icon = (n, cls = "i") => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n] || ""}</svg>`;
+function paintIcons(root = document) { root.querySelectorAll("[data-icon]").forEach(el => { el.innerHTML = icon(el.dataset.icon); el.removeAttribute("data-icon"); }); }
+
+// =====================================================================
+// State and helpers
+// =====================================================================
 const $ = (id) => document.getElementById(id);
 const video = $("video"), canvas = $("stage"), ctx = canvas.getContext("2d");
 let hands = null, segmenter = null, audio = null;
-let mode = "tap", view = "patient", showNums = false;
-let W = 0, H = 0;
-const rect = { x: 0, y: 0, w: 0, h: 0 };     // where the mirrored video is drawn
-let lm = null, handSize = 0, lastVideoTime = -1;
+const store = { get(k, d) { try { const v = localStorage.getItem("mm:" + k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+                set(k, v) { try { localStorage.setItem("mm:" + k, JSON.stringify(v)); } catch {} } };
+let view = store.get("view", "patient"), soundOn = store.get("sound", true), skipDemos = store.get("skipDemos", false);
+let W = 0, H = 0, lm = null, handSize = 0, lastVideoTime = -1;
+const rect = { x: 0, y: 0, w: 0, h: 0 };
+const results = {};     // per-activity results, for the session summary
 
-// =====================================================================
-// Layout and drawing helpers
-// =====================================================================
 function resize() {
   W = canvas.width = innerWidth; H = canvas.height = innerHeight;
-  const vw = video.videoWidth || 1280, vh = video.videoHeight || 720;
-  const s = Math.max(W / vw, H / vh);
+  const vw = video.videoWidth || 1280, vh = video.videoHeight || 720, s = Math.max(W / vw, H / vh);
   rect.w = vw * s; rect.h = vh * s; rect.x = (W - rect.w) / 2; rect.y = (H - rect.h) / 2;
 }
 addEventListener("resize", resize);
 const P = (l) => ({ x: rect.x + (1 - l.x) * rect.w, y: rect.y + l.y * rect.h });
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 const dLm = (i, j) => dist(P(lm[i]), P(lm[j]));
-function drawMirrored(c, src) {
-  c.save(); c.translate(rect.x + rect.w, rect.y); c.scale(-1, 1); c.drawImage(src, 0, 0, rect.w, rect.h); c.restore();
-}
+function drawMirrored(c, src) { c.save(); c.translate(rect.x + rect.w, rect.y); c.scale(-1, 1); c.drawImage(src, 0, 0, rect.w, rect.h); c.restore(); }
 function drawVideo(dim) {
   drawMirrored(ctx, video);
-  if (dim) {
-    const g = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.2, W / 2, H / 2, Math.max(W, H) * 0.75);
-    g.addColorStop(0, `rgba(4,6,12,${dim * 0.6})`); g.addColorStop(1, `rgba(4,6,12,${Math.min(0.9, dim * 1.8)})`);
-    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  }
+  if (!dim) return;
+  const g = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.25, W / 2, H / 2, Math.max(W, H) * 0.75);
+  g.addColorStop(0, `rgba(7,11,20,${dim * 0.5})`); g.addColorStop(1, `rgba(7,11,20,${Math.min(0.88, dim * 1.7)})`);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
 }
 const BONES = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
-function drawHand(alpha = 0.45) {
+function drawHand(alpha = 0.5) {
   if (!lm) return;
-  ctx.save(); ctx.lineCap = "round";
-  ctx.strokeStyle = `rgba(110,231,255,${alpha})`; ctx.lineWidth = 2.5; ctx.shadowBlur = 12; ctx.shadowColor = "rgba(110,231,255,.8)";
+  ctx.save(); ctx.lineCap = "round"; ctx.strokeStyle = `rgba(94,234,212,${alpha})`; ctx.lineWidth = 2.5;
   for (const [a, b] of BONES) { const p = P(lm[a]), q = P(lm[b]); ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y); ctx.stroke(); }
   ctx.fillStyle = `rgba(255,255,255,${alpha + 0.3})`;
-  for (const l of lm) { const p = P(l); ctx.beginPath(); ctx.arc(p.x, p.y, 3.2, 0, 7); ctx.fill(); }
+  for (const l of lm) { const p = P(l); ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, 7); ctx.fill(); }
   ctx.restore();
 }
-function ring(x, y, r, frac, color = "rgba(110,231,255,1)") {
-  ctx.save(); ctx.lineWidth = 7; ctx.lineCap = "round";
-  ctx.strokeStyle = "rgba(255,255,255,.12)"; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.stroke();
-  ctx.strokeStyle = color; ctx.shadowBlur = 20; ctx.shadowColor = color;
-  ctx.beginPath(); ctx.arc(x, y, r, -Math.PI / 2, -Math.PI / 2 + frac * Math.PI * 2); ctx.stroke();
+function ring(x, y, r, frac, color = "#5eead4") {
+  ctx.save(); ctx.lineWidth = 6; ctx.lineCap = "round";
+  ctx.strokeStyle = "rgba(255,255,255,.14)"; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.stroke();
+  ctx.strokeStyle = color; ctx.beginPath(); ctx.arc(x, y, r, -Math.PI / 2, -Math.PI / 2 + Math.min(1, frac) * Math.PI * 2); ctx.stroke();
   ctx.restore();
 }
 
-// =====================================================================
-// Signal helpers
-// =====================================================================
+// ---------- signal processing ----------
 function resample(hist, span, fs) {
   if (hist.length < 8) return null;
-  const tEnd = hist[hist.length - 1].t, tStart = Math.max(hist[0].t, tEnd - span);
-  const n = Math.floor((tEnd - tStart) / 1000 * fs);
+  const tEnd = hist[hist.length - 1].t, tStart = Math.max(hist[0].t, tEnd - span), n = Math.floor((tEnd - tStart) / 1000 * fs);
   if (n < 48) return null;
   const xs = new Float64Array(n), ys = new Float64Array(n);
   let j = 0;
   for (let i = 0; i < n; i++) {
     const t = tStart + i * 1000 / fs;
     while (j < hist.length - 2 && hist[j + 1].t < t) j++;
-    const a = hist[j], b = hist[j + 1] || a;
-    const u = b.t === a.t ? 0 : Math.min(1, Math.max(0, (t - a.t) / (b.t - a.t)));
+    const a = hist[j], b = hist[j + 1] || a, u = b.t === a.t ? 0 : Math.min(1, Math.max(0, (t - a.t) / (b.t - a.t)));
     xs[i] = a.x + (b.x - a.x) * u; ys[i] = a.y + (b.y - a.y) * u;
   }
   return { xs, ys, n };
 }
 function highpass(a, win) {
   const out = new Float64Array(a.length);
-  for (let i = 0; i < a.length; i++) {
-    let s = 0, c = 0;
-    for (let k = Math.max(0, i - win); k <= Math.min(a.length - 1, i + win); k++) { s += a[k]; c++; }
-    out[i] = a[i] - s / c;
-  }
+  for (let i = 0; i < a.length; i++) { let s = 0, c = 0; for (let k = Math.max(0, i - win); k <= Math.min(a.length - 1, i + win); k++) { s += a[k]; c++; } out[i] = a[i] - s / c; }
   return out;
 }
 function power(a, fs, f) {
   let re = 0, im = 0;
-  for (let i = 0; i < a.length; i++) {
-    const w = 0.5 - 0.5 * Math.cos(2 * Math.PI * i / (a.length - 1));
-    const ang = 2 * Math.PI * f * i / fs;
-    re += a[i] * w * Math.cos(ang); im -= a[i] * w * Math.sin(ang);
-  }
+  for (let i = 0; i < a.length; i++) { const w = 0.5 - 0.5 * Math.cos(2 * Math.PI * i / (a.length - 1)), ang = 2 * Math.PI * f * i / fs; re += a[i] * w * Math.cos(ang); im -= a[i] * w * Math.sin(ang); }
   return re * re + im * im;
 }
 function tremorOf(hist, span) {
@@ -274,486 +297,324 @@ function tremorOf(hist, span) {
   const hx = highpass(r.xs, 6), hy = highpass(r.ys, 6);
   const spec = []; let best = 0, bestF = 4, total = 0, band = 0;
   for (let f = 1; f <= 12; f++) {
-    let s = 0;
-    for (let sub = -0.4; sub <= 0.41; sub += 0.2) s += power(hx, fs, f + sub) + power(hy, fs, f + sub);
-    spec.push(s); total += s; if (f >= 4 && f <= 7) band += s;
-    if (f >= 3 && s > best) { best = s; bestF = f; }
+    let s = 0; for (let sub = -0.4; sub <= 0.41; sub += 0.2) s += power(hx, fs, f + sub) + power(hy, fs, f + sub);
+    spec.push(s); total += s; if (f >= 4 && f <= 7) band += s; if (f >= 3 && s > best) { best = s; bestF = f; }
   }
   let bp = 0, bf = bestF;
   for (let f = bestF - 0.5; f <= bestF + 0.5; f += 0.1) { const s = power(hx, fs, f) + power(hy, fs, f); if (s > bp) { bp = s; bf = f; } }
-  let rms = 0;
-  for (let i = 0; i < r.n; i++) rms += hx[i] * hx[i] + hy[i] * hy[i];
+  let rms = 0; for (let i = 0; i < r.n; i++) rms += hx[i] * hx[i] + hy[i] * hy[i];
   rms = Math.sqrt(rms / r.n) * 100;
   return { spec, amp: rms, peak: rms > 1.2 ? bf : null, bandShare: total ? band / total : 0 };
 }
 
-// =====================================================================
-// Sound
-// =====================================================================
-function tone(freq, dur = 0.12, type = "sine", gain = 0.12) {
-  if (!audio) return;
+// ---------- sound ----------
+function tone(freq, dur = 0.12, type = "sine", gain = 0.1) {
+  if (!audio || !soundOn) return;
   const o = audio.createOscillator(), g = audio.createGain();
-  o.type = type; o.frequency.value = freq;
-  g.gain.setValueAtTime(gain, audio.currentTime);
-  g.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + dur);
-  o.connect(g).connect(audio.destination); o.start(); o.stop(audio.currentTime + dur);
+  o.type = type; o.frequency.value = freq; g.gain.setValueAtTime(gain, audio.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + dur); o.connect(g).connect(audio.destination); o.start(); o.stop(audio.currentTime + dur);
 }
-function chord() { [523, 659, 784].forEach((f, i) => setTimeout(() => tone(f, 0.5, "sine", 0.08), i * 90)); }
+const chime = () => [523, 659, 784].forEach((f, i) => setTimeout(() => tone(f, 0.45, "sine", 0.07), i * 90));
 function whoosh() {
-  if (!audio) return;
+  if (!audio || !soundOn) return;
   const len = audio.sampleRate * 2.4, buf = audio.createBuffer(1, len, audio.sampleRate), d = buf.getChannelData(0);
   for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.2);
   const src = audio.createBufferSource(); src.buffer = buf;
-  const f = audio.createBiquadFilter(); f.type = "bandpass";
-  f.frequency.setValueAtTime(350, audio.currentTime); f.frequency.exponentialRampToValueAtTime(3200, audio.currentTime + 2.2);
-  const g = audio.createGain(); g.gain.value = 0.3;
-  src.connect(f).connect(g).connect(audio.destination); src.start();
+  const f = audio.createBiquadFilter(); f.type = "bandpass"; f.frequency.setValueAtTime(350, audio.currentTime); f.frequency.exponentialRampToValueAtTime(3200, audio.currentTime + 2.2);
+  const g = audio.createGain(); g.gain.value = 0.28; src.connect(f).connect(g).connect(audio.destination); src.start();
 }
 
 // =====================================================================
-// Guided flow shared by the tests: show hand -> 3-2-1 -> run -> result
+// Shared flow: demo -> show hand -> 3-2-1 -> run -> result
 // =====================================================================
-const flow = { phase: "intro", t0: 0, seen: 0 };
-function flowReset() { flow.phase = "intro"; flow.seen = 0; flow.t0 = 0; }
+const flow = { phase: "demo", t0: 0, seen: 0 };
 function flowTick(now, countdown = true) {
-  if (flow.phase === "intro") {
-    if (lm) { flow.seen ||= now; if (now - flow.seen > 700) { flow.phase = countdown ? "count" : "run"; flow.t0 = now; if (!countdown) MODES[mode].begin(now); } }
+  if (flow.phase === "ready") {
+    if (lm) { flow.seen ||= now; if (now - flow.seen > 600) { flow.phase = countdown ? "count" : "run"; flow.t0 = now; if (!countdown) A().begin(now); } }
     else flow.seen = 0;
-  } else if (flow.phase === "count" && now - flow.t0 >= 3000) {
-    flow.phase = "run"; flow.t0 = now; tone(880, 0.15); MODES[mode].begin(now);
-  }
+  } else if (flow.phase === "count" && now - flow.t0 >= 3000) { flow.phase = "run"; flow.t0 = now; tone(880, 0.15); A().begin(now); }
 }
-function finish(now) { flow.phase = "done"; flow.t0 = now; chord(); renderActions(); }
-let lastCount = "";
+let lastN = "";
 function drawCountdown(now) {
   const el = $("count");
-  if (flow.phase === "count") {
-    const n = String(3 - Math.floor((now - flow.t0) / 1000));
-    if (n !== lastCount) { lastCount = n; el.textContent = n; tone(440, 0.08, "triangle", 0.08); }
-    el.style.opacity = 1;
-  } else { el.style.opacity = 0; lastCount = ""; }
+  if (flow.phase === "count") { const n = String(3 - Math.floor((now - flow.t0) / 1000)); if (n !== lastN) { lastN = n; el.textContent = n; tone(440, 0.08, "triangle", 0.07); } el.style.opacity = 1; }
+  else { el.style.opacity = 0; lastN = ""; }
+}
+function finish(now, res) {
+  flow.phase = "result"; flow.t0 = now; results[A().key] = res; chime(); renderStepper(); showResult();
 }
 
 // =====================================================================
-// Panel and coach rendering
+// Activities
 // =====================================================================
-let lastBody = "", lastActs = "";
-function setBody(html) { if (html !== lastBody) { $("pbody").innerHTML = html; lastBody = html; } }
-function renderActions() {
-  let html = "";
-  if (flow.phase === "done") {
-    html = `<button class="btn" data-act="again">Try again</button><button class="btn ghost" data-act="next">Next activity →</button>`;
-    if (view === "patient" && MODES[mode].hasNums) html += `<button class="btn ghost" data-act="nums">${showNums ? "Hide" : "Show"} my numbers</button>`;
-  }
-  if (html !== lastActs) { $("pacts").innerHTML = html; lastActs = html; }
-}
-function coach(c) {
-  $("csteps").innerHTML = (c.steps || []).map((s, i) => `<i class="${i <= c.step ? "on" : ""}"></i>`).join("");
-  $("ctitle").textContent = c.title || "";
-  $("csub").textContent = c.sub || "";
-  $("cbar").style.display = c.progress == null ? "none" : "block";
-  $("cbar").firstElementChild.style.width = `${Math.round((c.progress || 0) * 100)}%`;
-  const b = c.buttons || "";
-  if ($("cbtns").dataset.k !== b) { $("cbtns").innerHTML = b; $("cbtns").dataset.k = b; }
-}
-const STEPS4 = ["hand", "count", "run", "done"];
-const stepIndex = () => ({ intro: 0, count: 1, run: 2, done: 3 })[flow.phase];
-const bars = (vals, hot = () => false) => {
-  const m = Math.max(1e-9, ...vals);
-  return `<div class="bars">${vals.map((v, i) => `<i class="${hot(i) ? "hot" : ""}" style="height:${Math.max(3, 100 * v / m)}%"></i>`).join("")}</div>`;
+const fmtPct = (v) => (v >= 0 ? "−" : "+") + Math.abs(v).toFixed(0) + "%";
+const SRC = {
+  updrs: "Goetz CG et al. MDS-UPDRS: scale presentation and clinimetric testing results. Movement Disorders, 2008.",
+  micro: "Nackaerts E et al. Training for micrographia alters neural connectivity in Parkinson's disease. Frontiers in Neuroscience, 2018.",
+  big: "Ebersbach G et al. Comparing exercise in Parkinson's disease: the Berlin LSVT BIG study. Movement Disorders, 2010.",
+  cue: "Nieuwboer A et al. Cueing training in the home improves gait-related mobility in Parkinson's disease (RESCUE trial). J Neurol Neurosurg Psychiatry, 2007.",
 };
-const disclaimer = `<div class="small">This is a demo, not a medical test. If you notice changes in how you move, talk to your doctor.</div>`;
-function header(kicker, title, what) { return `<div class="kicker">${kicker}</div><h2>${title}</h2><div class="what">${what}</div>`; }
-function table(rows) { return `<table class="m">${rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join("")}</table>`; }
 
-// =====================================================================
-// 1. TAP: finger tapping
-// =====================================================================
-const tap = { open: false, peak: 0, taps: [], res: null };
+// ---------- 1. Finger tapping ----------
+const tap = { open: false, peak: 0, taps: [] };
 const TAP_MAX = 10, TAP_TIME = 15000;
-function tapReset() { tap.open = false; tap.peak = 0; tap.taps = []; tap.res = null; flowReset(); }
-function tapBegin() { tap.taps = []; tap.open = false; tap.peak = 0; }
-function tapUpdate(now) {
-  flowTick(now);
-  if (flow.phase !== "run" || !lm || !handSize) return;
-  const d = dLm(4, 8) / handSize;
-  if (d > 0.45) { tap.open = true; tap.peak = Math.max(tap.peak, d); }
-  if (tap.open && d < 0.25) {
-    tap.taps.push({ t: now, amp: tap.peak }); tap.open = false; tap.peak = 0;
-    tone(500 + tap.taps.length * 45, 0.07, "triangle", 0.1);
-  }
-  if (tap.taps.length >= TAP_MAX || now - flow.t0 > TAP_TIME) { tap.res = tapResult(); finish(now); }
-}
-function tapResult() {
-  const t = tap.taps, n = t.length;
-  if (n < 3) return { n, short: true };
-  const amps = t.map(x => x.amp);
-  const rate = (n - 1) / ((t[n - 1].t - t[0].t) / 1000);
-  const k = Math.min(3, Math.floor(n / 2));
-  const first = amps.slice(0, k).reduce((a, b) => a + b, 0) / k, last = amps.slice(-k).reduce((a, b) => a + b, 0) / k;
-  const dec = 100 * (first - last) / first;
-  const iv = t.slice(1).map((x, i) => x.t - t[i].t), m = iv.reduce((a, b) => a + b, 0) / iv.length;
-  const cv = Math.sqrt(iv.reduce((s, v) => s + (v - m) ** 2, 0) / iv.length) / m;
-  return { n, amps, rate, dec, cv };
-}
-function tapDraw(now) {
-  drawHand();
-  if (!lm) return;
-  const a = P(lm[4]), b = P(lm[8]), closed = dLm(4, 8) / (handSize || 1) < 0.25;
-  ctx.save(); ctx.globalCompositeOperation = "lighter";
-  const col = closed ? "rgba(255,210,122,1)" : "rgba(110,231,255,1)";
-  ctx.strokeStyle = col; ctx.lineWidth = 6; ctx.shadowBlur = 30; ctx.shadowColor = col;
-  ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-  for (const p of [a, b]) { ctx.beginPath(); ctx.arc(p.x, p.y, 13, 0, 7); ctx.stroke(); }
-  ctx.restore();
-  if (flow.phase === "run") { const c = P(lm[9]); ring(c.x, c.y, handSize * 1.6, tap.taps.length / TAP_MAX); }
-}
-function tapCoach(now) {
-  const s = { steps: STEPS4, step: stepIndex() };
-  if (flow.phase === "intro") return { ...s, title: "Hold up your hand so the camera can see it", sub: "Palm towards the screen, fingers open" };
-  if (flow.phase === "count") return { ...s, title: "Get ready to tap", sub: "Thumb and index finger, as big and fast as you can" };
-  if (flow.phase === "run") return { ...s, title: `Tap! ${tap.taps.length} of ${TAP_MAX}`, sub: "Open wide, close fully", progress: tap.taps.length / TAP_MAX };
-  return { ...s, title: "All done. Here's what we saw", sub: "Your result is on the right" };
-}
-function tapPanel() {
-  const head = header("Activity 1", "Tap", "Checks how quickly and evenly you can tap your thumb and index finger together.");
-  if (flow.phase !== "done") {
-    const live = view === "doctor" ? `<div class="live"><div><div class="v">${tap.taps.length}</div><div class="k">taps</div></div>
-      <div><div class="v">${(tapResult().rate || 0).toFixed(1)}</div><div class="k">taps per second</div></div></div>${bars(tap.taps.map(x => x.amp).concat(tap.taps.length ? [] : [0]))}` : "";
-    return setBody(head + live + (view === "doctor" ? `<div class="small">Analogue of MDS-UPDRS item 3.4 (finger tapping), which a clinician scores 0–4 by eye.</div>` : ""));
-  }
-  const r = tap.res;
-  if (r.short) return setBody(head + `<div class="headline mid">We didn't catch enough taps</div><ul class="plain"><li>Keep your hand in view and open your fingers wide between taps.</li></ul>`);
-  if (view === "doctor") {
-    return setBody(head + table([["Taps (max 10 in 15 s)", r.n], ["Tapping rate", r.rate.toFixed(2) + " /s"],
-      ["Amplitude decrement, first→last 3", (r.dec >= 0 ? "−" : "+") + Math.abs(r.dec).toFixed(0) + "%"], ["Rhythm variability (CV of intervals)", r.cv.toFixed(2)]]) +
-      `<div class="k small">Amplitude per tap (thumb–index distance / hand size)</div>${bars(r.amps)}
-      <div class="small">Analogue of MDS-UPDRS 3.4. Amplitude is normalized to wrist–middle-knuckle length. Webcam at ~30 fps; not clinically validated.</div>`);
-  }
-  let headCls = "good", headTxt = "Steady and even";
-  const items = [];
-  if (r.dec <= 15) items.push("Your taps stayed about the same size from start to finish.");
-  else if (r.dec <= 30) { items.push("Your taps got a little smaller towards the end. Tired hands often do this."); headCls = "mid"; headTxt = "A little slowing at the end"; }
-  else { items.push("Your taps got noticeably smaller towards the end."); headCls = "note"; headTxt = "Your taps got smaller"; }
-  items.push(r.cv < 0.25 ? "Your rhythm was even." : "Your rhythm was a bit uneven.");
-  if (r.n < TAP_MAX) items.push(`You did ${r.n} taps in the time.`);
-  const nums = showNums ? table([["Taps per second", r.rate.toFixed(1)], ["Change in size", (r.dec >= 0 ? "−" : "+") + Math.abs(r.dec).toFixed(0) + "%"]]) : "";
-  setBody(head + `<div class="headline ${headCls}">${headTxt}</div><ul class="plain">${items.map(i => `<li>${i}</li>`).join("")}</ul>${nums}${disclaimer}`);
-}
-
-// =====================================================================
-// 2. STEADINESS: hold still (tremor), then free light-painting
-// =====================================================================
-const rib = { hist: [], trail: [], live: null, res: null };
-const RIB_TIME = 10000;
-function ribReset() { rib.hist = []; rib.trail = []; rib.live = null; rib.res = null; flowReset(); }
-function ribBegin() { rib.hist = []; }
-function ribUpdate(now) {
-  flowTick(now);
-  if (lm && handSize) {
-    const p = P(lm[8]);
-    rib.hist.push({ t: now, x: p.x / handSize, y: p.y / handSize });
-    rib.trail.push({ t: now, x: p.x, y: p.y });
-  }
-  while (rib.hist.length && now - rib.hist[0].t > 12000) rib.hist.shift();
-  while (rib.trail.length && now - rib.trail[0].t > 2200) rib.trail.shift();
-  if (flow.phase === "run" && now - flow.t0 >= RIB_TIME) {
-    rib.res = tremorOf(rib.hist.filter(h => h.t >= flow.t0), RIB_TIME) || { amp: 0, peak: null, spec: new Array(12).fill(0), bandShare: 0 };
-    finish(now);
-  }
-}
-let ribAnalyseT = 0;
-function ribAnalyse(now) {
-  if (now - ribAnalyseT < 200) return; ribAnalyseT = now;
-  rib.live = tremorOf(rib.hist, flow.phase === "run" ? Math.min(now - flow.t0, 4000) : 4000);
-}
-function ribDraw(now) {
-  ribAnalyse(now);
-  const tr = rib.trail;
-  const shaky = rib.live && rib.live.peak && rib.live.amp > 2;
-  if (tr.length > 1) {
-    ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.lineCap = "round"; ctx.lineJoin = "round";
-    for (let i = 1; i < tr.length; i++) {
-      const a = tr[i - 1], b = tr[i], age = (now - b.t) / 2200, sp = Math.hypot(b.x - a.x, b.y - a.y);
-      const hue = shaky ? 25 + 25 * Math.sin(i) : 190 + Math.min(80, sp * 2.5);
-      ctx.strokeStyle = `hsla(${hue},100%,66%,${Math.max(0, 1 - age)})`; ctx.lineWidth = 3 + 16 * (1 - age);
-      ctx.shadowBlur = 30; ctx.shadowColor = `hsla(${hue},100%,60%,1)`;
-      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-    }
-    if (shaky) {
-      const tip = tr[tr.length - 1];
-      for (let k = 0; k < 10; k++) {
-        const ang = Math.random() * 7, rr = 12 + Math.random() * 46;
-        ctx.fillStyle = `hsla(${30 + Math.random() * 30},100%,72%,${Math.random()})`;
-        ctx.beginPath(); ctx.arc(tip.x + Math.cos(ang) * rr, tip.y + Math.sin(ang) * rr, 1.5 + Math.random() * 2.5, 0, 7); ctx.fill();
-      }
-    }
+const TAP = {
+  key: "tap", name: "Finger tapping", icon: "tap",
+  title: "Finger tapping", lead: "Tap your thumb and index finger together, as big and as fast as you can, 10 times.",
+  why: "Finger tapping is part of the standard Parkinson's motor exam (MDS-UPDRS item 3.4). Clinicians watch the speed, the size of each tap, and whether taps get smaller as they repeat.", src: SRC.updrs,
+  reset() { tap.open = false; tap.peak = 0; tap.taps = []; },
+  begin() { tap.taps = []; tap.open = false; tap.peak = 0; },
+  update(now) {
+    flowTick(now);
+    if (flow.phase !== "run" || !lm || !handSize) return;
+    const d = dLm(4, 8) / handSize;
+    if (d > 0.45) { tap.open = true; tap.peak = Math.max(tap.peak, d); }
+    if (tap.open && d < 0.25) { tap.taps.push({ t: now, amp: tap.peak }); tap.open = false; tap.peak = 0; tone(500 + tap.taps.length * 45, 0.07, "triangle", 0.08); }
+    if (tap.taps.length >= TAP_MAX || now - flow.t0 > TAP_TIME) finish(now, TAP.analyse());
+  },
+  analyse() {
+    const t = tap.taps, n = t.length;
+    if (n < 4) return { n, short: true };
+    const amps = t.map(x => x.amp), rate = (n - 1) / ((t[n - 1].t - t[0].t) / 1000), k = Math.min(3, Math.floor(n / 2));
+    const first = amps.slice(0, k).reduce((a, b) => a + b) / k, last = amps.slice(-k).reduce((a, b) => a + b) / k, dec = 100 * (first - last) / first;
+    const iv = t.slice(1).map((x, i) => x.t - t[i].t), m = iv.reduce((a, b) => a + b) / iv.length;
+    const cv = Math.sqrt(iv.reduce((s, v) => s + (v - m) ** 2, 0) / iv.length) / m;
+    return { n, amps, rate, dec, cv };
+  },
+  draw(now) {
+    drawHand();
+    if (!lm) return;
+    const a = P(lm[4]), b = P(lm[8]), closed = dLm(4, 8) / (handSize || 1) < 0.25, col = closed ? "#fbbf77" : "#5eead4";
+    ctx.save(); ctx.strokeStyle = col; ctx.lineWidth = 5; ctx.shadowBlur = 22; ctx.shadowColor = col;
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    for (const p of [a, b]) { ctx.beginPath(); ctx.arc(p.x, p.y, 12, 0, 7); ctx.stroke(); }
     ctx.restore();
-  }
-  if (flow.phase === "run" && lm) { const c = P(lm[9]); ring(c.x, c.y, handSize * 1.7, (now - flow.t0) / RIB_TIME, shaky ? "rgba(255,210,122,1)" : "rgba(110,231,255,1)"); }
-}
-function ribCoach(now) {
-  const s = { steps: STEPS4, step: stepIndex() };
-  if (flow.phase === "intro") return { ...s, title: "Hold your hand up in front of you", sub: "Fingers open, palm towards the screen" };
-  if (flow.phase === "count") return { ...s, title: "Get ready to hold still", sub: "Keep your hand as still as you can for 10 seconds" };
-  if (flow.phase === "run") return { ...s, title: `Hold still… ${Math.max(0, Math.ceil((RIB_TIME - (now - flow.t0)) / 1000))}`, sub: "Breathe normally", progress: (now - flow.t0) / RIB_TIME };
-  return { ...s, title: "Done! Now draw in the air for fun", sub: "Move your index finger to paint with light. Shake it to see sparks." };
-}
-function ribPanel() {
-  const head = header("Activity 2", "Steadiness", "Checks for small, fast shaking (tremor) while you hold your hand still.");
-  const l = rib.live;
-  if (flow.phase !== "done") {
-    if (view !== "doctor" || !l) return setBody(head + (view === "doctor" ? `<div class="small">Analogue of postural tremor of the hands (MDS-UPDRS 3.15).</div>` : ""));
-    return setBody(head + `<div class="live"><div><div class="v">${l.peak ? l.peak.toFixed(1) + " Hz" : "–"}</div><div class="k">main frequency</div></div>
-      <div><div class="v">${l.amp.toFixed(1)}%</div><div class="k">size (% of hand)</div></div></div>${bars(l.spec, i => i + 1 >= 4 && i + 1 <= 7)}
-      <div class="axis"><span>1 Hz</span><span>4–7 Hz</span><span>12 Hz</span></div>`);
-  }
-  const r = rib.res;
-  if (view === "doctor") {
-    return setBody(head + table([["Peak frequency", r.peak ? r.peak.toFixed(1) + " Hz" : "none above noise"], ["RMS amplitude (index tip)", r.amp.toFixed(1) + "% hand size"],
-      ["Share of power in 4–7 Hz", Math.round(r.bandShare * 100) + "%"], ["Window", "10 s, outstretched hand"]]) + bars(r.spec, i => i + 1 >= 4 && i + 1 <= 7) +
-      `<div class="axis"><span>1 Hz</span><span>4–7 Hz</span><span>12 Hz</span></div>
-      <div class="small">Postural condition, analogue of MDS-UPDRS 3.15. Rest tremor needs a resting posture. Webcam landmark jitter sets a floor of about 1%. Not clinically validated.</div>`);
-  }
-  let headCls = "good", headTxt = "Your hand was steady";
-  const items = [];
-  if (!r.peak || r.amp < 1.5) items.push("We didn't pick up any clear shaking.");
-  else {
-    const size = r.amp < 3 ? "very small" : r.amp < 6 ? "small" : "noticeable";
-    headCls = r.amp < 3 ? "good" : "mid"; headTxt = r.amp < 3 ? "Mostly steady" : "Some shaking";
-    items.push(`We picked up ${size} shaking, about ${Math.round(r.peak)} times a second.`);
-    if (r.peak >= 4 && r.peak <= 7) items.push("Shaking at this speed is one of the things doctors look at, but tiredness, coffee and nerves can cause it too.");
-  }
-  items.push("Everyone's hand moves a little. A single test can't tell you much on its own.");
-  const nums = showNums ? table([["Shaking speed", r.peak ? r.peak.toFixed(1) + " per second" : "–"], ["Shaking size", r.amp.toFixed(1) + "% of hand size"]]) : "";
-  setBody(head + `<div class="headline ${headCls}">${headTxt}</div><ul class="plain">${items.map(i => `<li>${i}</li>`).join("")}</ul>${nums}${disclaimer}`);
-}
+    if (flow.phase === "run") { const c = P(lm[9]); ring(c.x, c.y, handSize * 1.6, tap.taps.length / TAP_MAX); }
+  },
+  hud(now) {
+    if (flow.phase === "ready") return { icon: "hand", text: "Show your hand", sub: "Palm towards the camera" };
+    if (flow.phase === "count") return { icon: "tap", text: "Get ready to tap" };
+    return { icon: "tap", text: `Tap  ${tap.taps.length} / ${TAP_MAX}`, sub: "Big and fast", bar: tap.taps.length / TAP_MAX };
+  },
+  summary(r) {
+    if (r.short) return { headline: "Not enough taps detected", points: ["Keep your hand in view and open your fingers wide between taps."] };
+    const p = [];
+    p.push(r.dec <= 15 ? "Your taps stayed about the same size from start to finish." : r.dec <= 30 ? "Your taps got a little smaller towards the end." : "Your taps got noticeably smaller towards the end.");
+    p.push(`You tapped about ${r.rate.toFixed(1)} times per second${r.cv < 0.25 ? ", with an even rhythm" : ", with an uneven rhythm"}.`);
+    return { headline: r.dec <= 15 ? "Taps stayed a similar size" : "Taps got smaller over time", points: p,
+      line: `${r.rate.toFixed(1)} taps/s · size ${fmtPct(r.dec)} · rhythm CV ${r.cv.toFixed(2)}` };
+  },
+  metrics(r) {
+    if (r.short) return "";
+    return table([["Taps (max 10 in 15 s)", r.n], ["Tapping rate", r.rate.toFixed(2) + " /s"], ["Amplitude change, first 3 → last 3", fmtPct(r.dec)], ["Inter-tap interval CV", r.cv.toFixed(2)]])
+      + `<div class="fine" style="margin:12px 0 0">Amplitude of each tap (thumb–index distance ÷ hand size)</div>${bars(r.amps)}`;
+  },
+};
 
-// =====================================================================
-// 3. WRITING: write between guide lines, check if writing shrinks
-// =====================================================================
-const wr = { strokes: [], pen: false, empathy: false, ink: 0, lastT: 0, lastInk: 0, res: null };
-function wrReset() { wr.strokes = []; wr.pen = false; wr.ink = 0; wr.lastInk = 0; wr.res = null; flowReset(); }
-function wrBegin() { wr.strokes = []; wr.ink = 0; wr.lastInk = 0; }
-function lanes() {
-  const mid = H * 0.5, h = Math.min(200, H * 0.22);
-  const right = document.body.classList.contains("clean") || W < 860 ? W * 0.95 : W - 400;
-  return { top: mid - h / 2, bot: mid + h / 2, mid, h, x0: W * 0.06, x1: right };
-}
-function wrUpdate(now) {
-  const dt = wr.lastT ? now - wr.lastT : 0; wr.lastT = now;
-  flowTick(now, false);
-  if (flow.phase !== "run") { wr.pen = false; return; }
-  if (!lm || !handSize) { wr.pen = false; }
-  else {
-    const pinch = dLm(4, 8) / handSize;
-    const down = wr.pen ? pinch < 0.42 : pinch < 0.28;
-    if (down && !wr.pen) wr.strokes.push([]);
-    wr.pen = down;
-    if (down) {
-      wr.ink += dt; wr.lastInk = now;
-      const a = P(lm[4]), b = P(lm[8]);
-      wr.strokes[wr.strokes.length - 1].push({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, k: wr.ink });
+// ---------- 2. Postural tremor ----------
+const rib = { hist: [], trail: [], live: null, at: 0 };
+const RIB_TIME = 10000;
+const STEADY = {
+  key: "steady", name: "Steadiness", icon: "steady",
+  title: "Steadiness", lead: "Hold your hand up in front of you, fingers spread, as still as you can for 10 seconds.",
+  why: "Tremor is a main motor sign of Parkinson's. Rest tremor is typically 4–6 Hz. This activity uses the outstretched-hand position, which matches postural tremor (MDS-UPDRS item 3.15).", src: SRC.updrs,
+  reset() { rib.hist = []; rib.trail = []; rib.live = null; },
+  begin() { rib.hist = []; },
+  update(now) {
+    flowTick(now);
+    if (lm && handSize) { const p = P(lm[8]); rib.hist.push({ t: now, x: p.x / handSize, y: p.y / handSize }); rib.trail.push({ t: now, x: p.x, y: p.y }); }
+    while (rib.hist.length && now - rib.hist[0].t > 12000) rib.hist.shift();
+    while (rib.trail.length && now - rib.trail[0].t > 1800) rib.trail.shift();
+    if (flow.phase === "run" && now - flow.t0 >= RIB_TIME)
+      finish(now, tremorOf(rib.hist.filter(h => h.t >= flow.t0), RIB_TIME) || { amp: 0, peak: null, spec: new Array(12).fill(0), bandShare: 0 });
+  },
+  draw(now) {
+    if (now - rib.at > 200) { rib.at = now; rib.live = tremorOf(rib.hist, 4000); }
+    drawHand(0.35);
+    const tr = rib.trail;
+    if (tr.length > 1) {
+      ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.lineCap = "round"; ctx.lineJoin = "round";
+      for (let i = 1; i < tr.length; i++) {
+        const a = tr[i - 1], b = tr[i], age = (now - b.t) / 1800;
+        ctx.strokeStyle = `rgba(94,234,212,${Math.max(0, 1 - age) * 0.9})`; ctx.lineWidth = 2 + 12 * (1 - age);
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      }
+      ctx.restore();
     }
-  }
-  const pts = wr.strokes.reduce((s, x) => s + x.length, 0);
-  if (pts > 60 && wr.lastInk && now - wr.lastInk > 3500) wrDone(now);
-}
-function wrDone(now) { if (flow.phase !== "run") return; wr.res = wrAnalyse(); finish(now); }
+    if (flow.phase === "run" && lm) { const c = P(lm[9]); ring(c.x, c.y, handSize * 1.7, (now - flow.t0) / RIB_TIME); }
+  },
+  hud(now) {
+    if (flow.phase === "ready") return { icon: "hand", text: "Show your hand", sub: "Fingers spread, palm towards the camera" };
+    if (flow.phase === "count") return { icon: "steady", text: "Get ready to hold still" };
+    return { icon: "steady", text: `Hold still  ${Math.max(0, Math.ceil((RIB_TIME - (now - flow.t0)) / 1000))}`, sub: "Breathe normally", bar: (now - flow.t0) / RIB_TIME };
+  },
+  summary(r) {
+    const p = [];
+    let headline = "No clear shaking detected";
+    if (!r.peak || r.amp < 1.5) p.push("Your hand was steady. We did not pick up any clear shaking.");
+    else {
+      headline = r.amp < 3 ? "Very small shaking detected" : "Some shaking detected";
+      p.push(`We picked up ${r.amp < 3 ? "very small" : r.amp < 6 ? "small" : "noticeable"} shaking, about ${Math.round(r.peak)} times per second.`);
+      if (r.peak >= 4 && r.peak <= 7) p.push("Shaking in this range can have many causes, including tiredness, caffeine and stress.");
+    }
+    return { headline, points: p, line: `${r.peak ? r.peak.toFixed(1) + " Hz" : "no peak"} · amplitude ${r.amp.toFixed(1)}% hand size` };
+  },
+  metrics(r) {
+    return table([["Peak frequency", r.peak ? r.peak.toFixed(1) + " Hz" : "none above noise floor"], ["RMS amplitude, index fingertip", r.amp.toFixed(1) + "% hand size"],
+      ["Power in 4–7 Hz band", Math.round(r.bandShare * 100) + "%"], ["Recording", "10 s, outstretched hand"]])
+      + bars(r.spec, i => i + 1 >= 4 && i + 1 <= 7) + `<div class="axis"><span>1 Hz</span><span>4–7 Hz</span><span>12 Hz</span></div>`;
+  },
+};
+
+// ---------- 3. Handwriting with visual cues ----------
+const wr = { strokes: [], pen: false, sim: false, ink: 0, lastT: 0, lastInk: 0 };
+function lanes() { const mid = H * 0.48, h = Math.min(200, H * 0.22); return { top: mid - h / 2, bot: mid + h / 2, mid, h, x0: W * 0.08, x1: W * 0.92 }; }
 function inkPoint(p) {
-  if (!wr.empathy) return p;
+  if (!wr.sim) return p;
   const L = lanes(), s = Math.max(0.35, 1 - p.k / 9000);
   return { x: p.x, y: L.mid + (p.y - L.mid) * s + 6 * Math.sin(2 * Math.PI * 5 * p.k / 1000) + (Math.random() - 0.5) * 3 };
 }
-function wrAnalyse() {
-  const pts = wr.strokes.flat().map(inkPoint);
-  if (pts.length < 40) return null;
-  const xs = pts.map(p => p.x), x0 = Math.min(...xs), x1 = Math.max(...xs);
-  if (x1 - x0 < 120) return null;
-  const third = (x1 - x0) / 3;
-  const ext = [0, 1, 2].map(k => {
-    const ys = pts.filter(p => p.x >= x0 + k * third && p.x <= x0 + (k + 1) * third).map(p => p.y).sort((a, b) => a - b);
-    return ys.length < 8 ? null : ys[Math.floor(ys.length * 0.9)] - ys[Math.floor(ys.length * 0.1)];
-  });
-  if (!ext[0] || !ext[2]) return null;
-  return { ext, ratio: ext[2] / ext[0], strokes: wr.strokes.length, secs: wr.ink / 1000 };
-}
-function wrDraw(now) {
-  const L = lanes(), res = flow.phase === "done" ? wr.res : null, small = res && res.ratio < 0.7;
-  ctx.save();
-  const lc = small ? "rgba(255,143,163,.85)" : "rgba(110,231,255,.75)";
-  ctx.fillStyle = "rgba(110,231,255,.05)"; ctx.fillRect(L.x0, L.top, L.x1 - L.x0, L.h);
-  for (const y of [L.top, L.bot]) {
-    ctx.strokeStyle = lc; ctx.lineWidth = 3; ctx.shadowBlur = 18; ctx.shadowColor = lc; ctx.setLineDash([20, 12]);
-    ctx.beginPath(); ctx.moveTo(L.x0, y); ctx.lineTo(L.x1, y); ctx.stroke();
-  }
-  ctx.setLineDash([]); ctx.globalCompositeOperation = "lighter"; ctx.lineCap = "round"; ctx.lineJoin = "round";
-  ctx.strokeStyle = wr.empathy ? "rgba(255,180,120,.95)" : "rgba(255,244,214,.95)"; ctx.shadowColor = "rgba(255,200,120,1)"; ctx.shadowBlur = 18; ctx.lineWidth = 6;
-  for (const s of wr.strokes) {
-    if (s.length < 2) continue;
-    ctx.beginPath(); s.forEach((p, i) => { const q = inkPoint(p); i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y); }); ctx.stroke();
-  }
-  ctx.restore();
-  if (lm) {
-    const a = P(lm[4]), b = P(lm[8]), c = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
-    ctx.save(); ctx.fillStyle = wr.pen ? "rgba(255,210,122,1)" : "rgba(110,231,255,.65)"; ctx.shadowBlur = 20; ctx.shadowColor = ctx.fillStyle;
-    ctx.beginPath(); ctx.arc(c.x, c.y, wr.pen ? 9 : 15, 0, 7); ctx.fill(); ctx.restore();
-  }
-}
-function wrCoach(now) {
-  const s = { steps: ["hand", "write", "done"], step: { intro: 0, run: 1, done: 2 }[flow.phase] ?? 0 };
-  const emp = `<button class="btn ghost" data-act="empathy">${wr.empathy ? "Turn off" : "Feel it:"} tremor simulation</button>`;
-  if (flow.phase === "intro") return { ...s, title: "Show your hand to the camera", sub: "You'll write with your fingertips, in the air" };
-  if (flow.phase === "run") return { ...s, title: "Pinch to write your name between the lines", sub: "Touch thumb and index finger to draw. Let go to lift the pen.",
-    buttons: `<button class="btn" data-act="wrdone">I'm done</button>${emp}` };
-  return { ...s, title: "Here's how your writing changed", sub: wr.empathy ? "With the simulation on, writing shrinks and shakes, as micrographia can feel." : "Try the simulation to feel what micrographia is like", buttons: emp };
-}
-function wrPanel() {
-  const head = header("Activity 3", "Writing", "Checks whether your writing gets smaller as you go, which is called micrographia.");
-  if (flow.phase !== "done") {
-    return setBody(head + (wr.empathy ? `<div class="headline mid">Simulation on</div><ul class="plain"><li>Your ink now shakes and gets smaller as you write.</li><li>This is a simulation. It doesn't show how every person with Parkinson's feels.</li></ul>` : "") +
-      (view === "doctor" ? `<div class="small">Handwriting with visual cues (guide lines) is used in micrographia training.</div>` : ""));
-  }
-  const r = wr.res;
-  if (!r) return setBody(head + `<div class="headline mid">We need a bit more writing</div><ul class="plain"><li>Write a few letters from left to right between the lines, then press I'm done.</li></ul>`);
-  const pct = Math.round(r.ratio * 100);
-  if (view === "doctor") {
-    return setBody(head + table([["Letter height, last third vs first third", pct + "%"], ["Strokes", r.strokes], ["Pen-down time", r.secs.toFixed(1) + " s"],
-      ["Simulation applied", wr.empathy ? "yes" : "no"]]) + bars(r.ext) + `<div class="axis"><span>start</span><span>middle</span><span>end</span></div>
-      <div class="small">Height = 10th–90th percentile vertical extent per third. In-air writing; not clinically validated.</div>`);
-  }
-  let cls = "good", txt = "Your writing stayed the same size", item = "Your letters were about the same height from start to finish.";
-  if (r.ratio < 0.7) { cls = "note"; txt = "Your writing got smaller"; item = `By the end, your letters were about ${pct}% of their starting size. Doctors call this micrographia.`; }
-  else if (r.ratio < 0.85) { cls = "mid"; txt = "A little smaller at the end"; item = "Your letters got a little smaller towards the end."; }
-  const items = [item, "Guide lines like these are used in handwriting training to help keep writing big."];
-  if (wr.empathy) items.unshift("The tremor simulation was on, so this shows the simulated effect.");
-  setBody(head + `<div class="headline ${cls}">${txt}</div><ul class="plain">${items.map(i => `<li>${i}</li>`).join("")}</ul>${disclaimer}`);
-}
+const WRITE = {
+  key: "write", name: "Handwriting", icon: "write",
+  title: "Handwriting", lead: "Pinch your thumb and index finger to write. Write your name between the two lines.",
+  why: "Writing that gets smaller as you go (micrographia) is common in Parkinson's. Handwriting training with visual guide lines is studied as a therapy, and changed brain connectivity in a placebo-controlled trial.", src: SRC.micro,
+  reset() { wr.strokes = []; wr.pen = false; wr.ink = 0; wr.lastInk = 0; },
+  begin() { wr.strokes = []; wr.ink = 0; wr.lastInk = 0; },
+  done(now) { if (flow.phase === "run") finish(now, WRITE.analyse()); },
+  update(now) {
+    const dt = wr.lastT ? now - wr.lastT : 0; wr.lastT = now;
+    flowTick(now, false);
+    if (flow.phase !== "run") { wr.pen = false; return; }
+    if (lm && handSize) {
+      const pinch = dLm(4, 8) / handSize, down = wr.pen ? pinch < 0.42 : pinch < 0.28;
+      if (down && !wr.pen) wr.strokes.push([]);
+      wr.pen = down;
+      if (down) { wr.ink += dt; wr.lastInk = now; const a = P(lm[4]), b = P(lm[8]); wr.strokes[wr.strokes.length - 1].push({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, k: wr.ink }); }
+    } else wr.pen = false;
+    if (wr.strokes.reduce((s, x) => s + x.length, 0) > 60 && wr.lastInk && now - wr.lastInk > 3500) WRITE.done(now);
+  },
+  analyse() {
+    const pts = wr.strokes.flat().map(inkPoint);
+    if (pts.length < 40) return { short: true };
+    const xs = pts.map(p => p.x), x0 = Math.min(...xs), x1 = Math.max(...xs);
+    if (x1 - x0 < 120) return { short: true };
+    const third = (x1 - x0) / 3;
+    const ext = [0, 1, 2].map(k => { const ys = pts.filter(p => p.x >= x0 + k * third && p.x <= x0 + (k + 1) * third).map(p => p.y).sort((a, b) => a - b); return ys.length < 8 ? 0 : ys[Math.floor(ys.length * 0.9)] - ys[Math.floor(ys.length * 0.1)]; });
+    if (!ext[0] || !ext[2]) return { short: true };
+    return { ext, ratio: ext[2] / ext[0], strokes: wr.strokes.length, secs: wr.ink / 1000, sim: wr.sim };
+  },
+  draw(now) {
+    const L = lanes();
+    ctx.save();
+    ctx.fillStyle = "rgba(94,234,212,.05)"; ctx.fillRect(L.x0, L.top, L.x1 - L.x0, L.h);
+    ctx.strokeStyle = "rgba(94,234,212,.7)"; ctx.lineWidth = 2.5; ctx.setLineDash([16, 10]);
+    for (const y of [L.top, L.bot]) { ctx.beginPath(); ctx.moveTo(L.x0, y); ctx.lineTo(L.x1, y); ctx.stroke(); }
+    ctx.setLineDash([]); ctx.lineCap = "round"; ctx.lineJoin = "round";
+    ctx.strokeStyle = wr.sim ? "#fbbf77" : "#f3f6fb"; ctx.lineWidth = 6; ctx.shadowBlur = 14; ctx.shadowColor = wr.sim ? "rgba(251,191,119,.8)" : "rgba(255,255,255,.6)";
+    for (const s of wr.strokes) { if (s.length < 2) continue; ctx.beginPath(); s.forEach((p, i) => { const q = inkPoint(p); i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y); }); ctx.stroke(); }
+    ctx.restore();
+    if (lm) { const a = P(lm[4]), b = P(lm[8]); ctx.save(); ctx.fillStyle = wr.pen ? "#fbbf77" : "rgba(94,234,212,.7)"; ctx.beginPath(); ctx.arc((a.x + b.x) / 2, (a.y + b.y) / 2, wr.pen ? 8 : 14, 0, 7); ctx.fill(); ctx.restore(); }
+  },
+  hud(now) {
+    if (flow.phase === "ready") return { icon: "hand", text: "Show your hand" };
+    const sim = `<button class="btn secondary" data-act="sim">${icon("eye")}${wr.sim ? "Simulation on" : "Simulate"}</button>`;
+    return { icon: "write", text: wr.pen ? "Writing…" : "Pinch to write", sub: "Stay between the lines", buttons: `${sim}<button class="btn" data-act="wrdone">${icon("check")}Done</button>` };
+  },
+  summary(r) {
+    if (r.short) return { headline: "We need a little more writing", points: ["Write a few letters from left to right between the lines, then press Done."] };
+    const pct = Math.round(r.ratio * 100), p = [];
+    if (r.sim) p.push("The micrographia simulation was on, so this shows its effect, not your own writing.");
+    p.push(r.ratio >= 0.85 ? "Your letters stayed about the same height from start to finish." : r.ratio >= 0.7 ? "Your letters got a little smaller towards the end." : `By the end, your letters were about ${pct}% of their starting height.`);
+    p.push("Guide lines like these are used in handwriting training to help keep writing large.");
+    return { headline: r.ratio >= 0.85 ? "Writing stayed a similar size" : "Writing got smaller", points: p, line: `end height ${pct}% of start${r.sim ? " (simulation)" : ""}` };
+  },
+  metrics(r) {
+    if (r.short) return "";
+    return table([["Letter height, last vs first third", Math.round(r.ratio * 100) + "%"], ["Strokes", r.strokes], ["Pen-down time", r.secs.toFixed(1) + " s"], ["Simulation", r.sim ? "on" : "off"]])
+      + bars(r.ext) + `<div class="axis"><span>start</span><span>middle</span><span>end</span></div>`;
+  },
+};
 
-// =====================================================================
-// 4. BLOOM: big movements on a beat (amplitude training with a cue)
-// =====================================================================
-const bl = { lo: 1.0, hi: 1.7, open: 0, peak: 0, next: 0, flowers: [], hits: 0, beats: 0, pulse: 0, res: null };
+// ---------- 4. Amplitude training with a rhythmic cue ----------
+const bl = { lo: 1.0, hi: 1.7, open: 0, peak: 0, next: 0, hits: 0, beats: 0, pulse: 0, marks: [] };
 const BL_BEATS = 12, BL_GAP = 1200;
-function blReset() { bl.flowers = []; bl.hits = 0; bl.beats = 0; bl.next = 0; bl.res = null; flowReset(); }
-function blBegin(now) { bl.hits = 0; bl.beats = 0; bl.flowers = []; bl.next = now + BL_GAP; bl.peak = 0; }
-function blUpdate(now) {
-  flowTick(now);
-  if (lm && handSize) {
-    const v = [8, 12, 16, 20].reduce((s, i) => s + dLm(i, 0), 0) / 4 / handSize;
-    bl.lo = Math.min(bl.lo * 0.999 + v * 0.001, v); bl.hi = Math.max(bl.hi * 0.999 + v * 0.001, v);
-    bl.open = Math.min(1, Math.max(0, (v - bl.lo) / Math.max(0.2, bl.hi - bl.lo)));
-    bl.peak = Math.max(bl.peak, bl.open);
-  }
-  if (flow.phase !== "run") return;
-  if (now >= bl.next) {
+const AMP = {
+  key: "amp", name: "Big movements", icon: "amplitude",
+  title: "Big movements", lead: "On every beat, open your hand as wide as you can. Close it between beats.",
+  why: "Practising large, exaggerated movements is the basis of LSVT BIG, an exercise programme for Parkinson's. External rhythmic cues are also used in physiotherapy to support movement.", src: SRC.big + " " + SRC.cue,
+  reset() { bl.hits = 0; bl.beats = 0; bl.next = 0; bl.marks = []; },
+  begin(now) { bl.hits = 0; bl.beats = 0; bl.next = now + BL_GAP; bl.peak = 0; bl.marks = []; },
+  update(now) {
+    flowTick(now);
+    if (lm && handSize) {
+      const v = [8, 12, 16, 20].reduce((s, i) => s + dLm(i, 0), 0) / 4 / handSize;
+      bl.lo = Math.min(bl.lo * 0.999 + v * 0.001, v); bl.hi = Math.max(bl.hi * 0.999 + v * 0.001, v);
+      bl.open = Math.min(1, Math.max(0, (v - bl.lo) / Math.max(0.2, bl.hi - bl.lo))); bl.peak = Math.max(bl.peak, bl.open);
+    }
+    if (flow.phase !== "run" || now < bl.next) return;
     bl.beats++;
-    if (bl.peak > 0.85 && lm) {
-      bl.hits++; const c = P(lm[9]);
-      bl.flowers.push({ x: c.x + (Math.random() - 0.5) * 420, y: c.y + (Math.random() - 0.5) * 300, r: 30 + Math.random() * 34, hue: Math.random() * 360, born: now });
-      tone(660 + (bl.hits % 5) * 110, 0.35, "sine", 0.1);
-    } else tone(220, 0.06, "square", 0.04);
+    const hit = bl.peak > 0.85 && lm;
+    bl.marks.push(hit ? 1 : 0);
+    if (hit) { bl.hits++; tone(660 + (bl.hits % 5) * 110, 0.3, "sine", 0.08); } else tone(220, 0.05, "square", 0.03);
     bl.peak = 0; bl.pulse = now; bl.next += BL_GAP;
-    if (bl.beats >= BL_BEATS) { bl.res = { hits: bl.hits, beats: bl.beats }; finish(now); }
-  }
-}
-function flower(x, y, r, hue, a) {
-  ctx.save(); ctx.translate(x, y); ctx.globalCompositeOperation = "lighter";
-  for (let i = 0; i < 8; i++) { ctx.rotate(Math.PI / 4); ctx.fillStyle = `hsla(${hue},90%,66%,${0.35 * a})`; ctx.beginPath(); ctx.ellipse(r * 0.55, 0, r * 0.55, r * 0.22, 0, 0, 7); ctx.fill(); }
-  ctx.fillStyle = `hsla(${hue + 40},100%,76%,${a})`; ctx.beginPath(); ctx.arc(0, 0, r * 0.18, 0, 7); ctx.fill(); ctx.restore();
-}
-function blDraw(now) {
-  drawHand(0.3);
-  for (const f of bl.flowers) flower(f.x, f.y, f.r * Math.min(1, (now - f.born) / 400), f.hue, 0.9);
-  if (!lm) return;
-  const c = P(lm[9]);
-  flower(c.x, c.y, 40 + bl.open * 170, 190 + bl.open * 120, 1);
-  const k = Math.max(0, 1 - (now - bl.pulse) / 600);
-  if (k > 0 && flow.phase === "run") { ctx.save(); ctx.strokeStyle = `rgba(255,210,122,${k})`; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(c.x, c.y, 230 + (1 - k) * 90, 0, 7); ctx.stroke(); ctx.restore(); }
-}
-function blCoach(now) {
-  const s = { steps: STEPS4, step: stepIndex() };
-  if (flow.phase === "intro") return { ...s, title: "Show your open hand to the camera", sub: "You'll make big movements to a beat" };
-  if (flow.phase === "count") return { ...s, title: "Open wide on every beat", sub: "Close your hand in between" };
-  if (flow.phase === "run") return { ...s, title: `Open BIG on the beat! ${bl.hits} flowers`, sub: `Beat ${bl.beats} of ${BL_BEATS}`, progress: bl.beats / BL_BEATS };
-  return { ...s, title: `You grew ${bl.res.hits} flowers`, sub: "Big, rhythmic movements are a core part of Parkinson's physiotherapy" };
-}
-function blPanel() {
-  const head = header("Activity 4", "Bloom", "An exercise, not a test: big hand movements timed to a beat, turned into a game.");
-  if (flow.phase !== "done") return setBody(head + (view === "doctor" ? `<div class="small">Amplitude-focused training (as in LSVT BIG) with an external rhythmic cue. Each beat counts as a hit if openness reaches 85% of the calibrated range.</div>` : ""));
-  const r = bl.res, share = r.hits / r.beats;
-  if (view === "doctor") return setBody(head + table([["Full-amplitude openings on the beat", `${r.hits} / ${r.beats}`], ["Hit rate", Math.round(share * 100) + "%"], ["Cue", "1 beat every 1.2 s"]]) +
-    `<div class="small">Openness = mean fingertip-to-wrist distance / hand size, scaled to a running min–max. Engagement metric, not a clinical score.</div>`);
-  const [cls, txt] = share >= 0.75 ? ["good", "Great rhythm, big movements"] : share >= 0.4 ? ["mid", "Nice work"] : ["mid", "Good start"];
-  setBody(head + `<div class="headline ${cls}">${txt}</div><ul class="plain"><li>You made ${r.hits} big openings out of ${r.beats} beats.</li>
-    <li>Practising big movements is used in Parkinson's physiotherapy, because movements can become smaller over time.</li></ul>${disclaimer}`);
-}
+    if (bl.beats >= BL_BEATS) finish(now, { hits: bl.hits, beats: bl.beats });
+  },
+  draw(now) {
+    drawHand(0.6);
+    if (!lm) return;
+    const c = P(lm[9]), r = handSize * (1.2 + bl.open * 1.2);
+    ctx.save(); ctx.strokeStyle = `rgba(94,234,212,${0.35 + bl.open * 0.5})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(c.x, c.y, r, 0, 7); ctx.stroke();
+    const k = Math.max(0, 1 - (now - bl.pulse) / 600);
+    if (k > 0 && flow.phase === "run") { ctx.strokeStyle = `rgba(251,191,119,${k})`; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(c.x, c.y, handSize * 2.6 + (1 - k) * 60, 0, 7); ctx.stroke(); }
+    ctx.restore();
+  },
+  hud(now) {
+    if (flow.phase === "ready") return { icon: "hand", text: "Show your open hand" };
+    if (flow.phase === "count") return { icon: "amplitude", text: "Open wide on the beat" };
+    return { icon: "amplitude", text: `Open wide  ${bl.hits} / ${bl.beats}`, sub: `Beat ${bl.beats} of ${BL_BEATS}`, bar: bl.beats / BL_BEATS };
+  },
+  summary(r) {
+    return { headline: `${r.hits} of ${r.beats} big movements on the beat`, points: ["This is an exercise, not a test. Practising big movements is used in Parkinson's physiotherapy because movements can become smaller over time."],
+      line: `${r.hits}/${r.beats} full-amplitude openings on cue` };
+  },
+  metrics(r) {
+    return table([["Full-amplitude openings on cue", `${r.hits} / ${r.beats}`], ["Cue", "1 beat every 1.2 s"], ["Hit criterion", "≥ 85% of calibrated range"]]);
+  },
+};
 
-// =====================================================================
-// 5. VANISH: learn the room, snap, dissolve into dust
-// =====================================================================
-const van = { mask: null, mw: 0, mh: 0, invert: false, phase: "learn", t0: 0, armT: 0, lastSnap: 0, learnFrames: 0,
-  n: 0, px: null, py: null, vx: null, vy: null, dl: null, col: null };
-const SC = 0.5;   // background model works at half resolution
-const mkCanvas = () => { const c = document.createElement("canvas"); return [c, c.getContext("2d", { willReadFrequently: true })]; };
-const [pMask, pMaskCtx] = mkCanvas();     // person (for hiding)
-const [bMask, bMaskCtx] = mkCanvas();     // background (for learning)
-const [bg, bgCtx] = mkCanvas();           // learned empty room, screen coords, half size
-const [fill, fillCtx] = mkCanvas();       // learned room with holes filled
-const [tmp, tmpCtx] = mkCanvas();
-const [fx, fxCtx] = mkCanvas();
-const [dust, dustCtx] = mkCanvas();
-const [grab, grabCtx] = mkCanvas();
-
-function vanReset() {
-  van.phase = "learn"; van.t0 = performance.now(); van.n = 0; van.learnFrames = 0;
-  $("thanks").style.opacity = 0;
-  bg.width = Math.round(W * SC); bg.height = Math.round(H * SC);   // clears the learned room
-}
+// ---------- 5. Finale: vanish ----------
+const van = { mask: null, mw: 0, mh: 0, invert: false, phase: "learn", t0: 0, armT: 0, lastSnap: 0, frames: 0, n: 0, px: null, py: null, vx: null, vy: null, dl: null, col: null };
+const SC = 0.5;
+const mk = () => { const c = document.createElement("canvas"); return [c, c.getContext("2d", { willReadFrequently: true })]; };
+const [pMask, pMaskCtx] = mk(), [bMask, bMaskCtx] = mk(), [bg, bgCtx] = mk(), [fill, fillCtx] = mk(), [tmp, tmpCtx] = mk(), [fx, fxCtx] = mk(), [dust, dustCtx] = mk(), [grab, grabCtx] = mk();
 function segment(now) {
   if (!segmenter) return;
   segmenter.segmentForVideo(video, now, (res) => {
     const m = res.confidenceMasks && res.confidenceMasks[0];
     if (!m || !m.width) return;
     van.mw = m.width; van.mh = m.height; van.mask = m.getAsFloat32Array().slice();
-    const c = van.mask[Math.floor(van.mh * 0.55) * van.mw + Math.floor(van.mw / 2)];
-    const e = (van.mask[0] + van.mask[van.mw - 1]) / 2;
+    const c = van.mask[Math.floor(van.mh * 0.55) * van.mw + Math.floor(van.mw / 2)], e = (van.mask[0] + van.mask[van.mw - 1]) / 2;
     van.invert = e > c;
   });
 }
 const personAt = (i) => van.invert ? 1 - van.mask[i] : van.mask[i];
-// Build two masks at quarter of the mask resolution: person (slightly grown) and safe background
 function buildMasks() {
   const s = 2, w = Math.floor(van.mw / s), h = Math.floor(van.mh / s);
   if (pMask.width !== w || pMask.height !== h) { pMask.width = bMask.width = w; pMask.height = bMask.height = h; }
   const pi = pMaskCtx.createImageData(w, h), bi = bMaskCtx.createImageData(w, h);
-  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-    const p = personAt(y * s * van.mw + x * s), k = (y * w + x) * 4 + 3;
-    pi.data[k] = p > 0.15 ? 255 : 0;       // generous: hide the whole person
-    bi.data[k] = p < 0.04 ? 255 : 0;       // strict: only learn pixels that are surely background
-  }
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const p = personAt(y * s * van.mw + x * s), k = (y * w + x) * 4 + 3; pi.data[k] = p > 0.15 ? 255 : 0; bi.data[k] = p < 0.04 ? 255 : 0; }
   pMaskCtx.putImageData(pi, 0, 0); bMaskCtx.putImageData(bi, 0, 0);
 }
-function drawMaskTo(c, m, scale, blur = 0) {
-  c.save(); c.scale(scale, scale);
-  if (blur) c.filter = `blur(${blur}px)`;
-  drawMirrored(c, m); c.restore();
-}
-// Keep learning what the room looks like wherever the person is not
+function maskTo(c, m, scale, blur = 0) { c.save(); c.scale(scale, scale); if (blur) c.filter = `blur(${blur}px)`; drawMirrored(c, m); c.restore(); }
 function learnBackground() {
   const w = Math.round(W * SC), h = Math.round(H * SC);
   if (bg.width !== w) { bg.width = w; bg.height = h; }
   if (tmp.width !== w) { tmp.width = w; tmp.height = h; }
-  tmpCtx.globalCompositeOperation = "source-over"; tmpCtx.clearRect(0, 0, w, h);
-  drawMaskTo(tmpCtx, bMask, SC);
-  tmpCtx.globalCompositeOperation = "source-in";
-  tmpCtx.save(); tmpCtx.scale(SC, SC); drawMirrored(tmpCtx, video); tmpCtx.restore();
+  tmpCtx.globalCompositeOperation = "source-over"; tmpCtx.clearRect(0, 0, w, h); maskTo(tmpCtx, bMask, SC);
+  tmpCtx.globalCompositeOperation = "source-in"; tmpCtx.save(); tmpCtx.scale(SC, SC); drawMirrored(tmpCtx, video); tmpCtx.restore();
   tmpCtx.globalCompositeOperation = "source-over";
-  bgCtx.globalAlpha = van.learnFrames < 5 ? 1 : 0.35;    // blend so lighting changes are followed
-  bgCtx.drawImage(tmp, 0, 0); bgCtx.globalAlpha = 1;
-  van.learnFrames++;
+  bgCtx.globalAlpha = van.frames < 5 ? 1 : 0.35; bgCtx.drawImage(tmp, 0, 0); bgCtx.globalAlpha = 1; van.frames++;
 }
-// Fill any spots the camera has never seen by spreading the colours around them
 function buildFill() {
   const w = bg.width, h = bg.height;
   if (fill.width !== w) { fill.width = w; fill.height = h; }
@@ -766,34 +627,28 @@ function drawWithoutPerson() {
   if (!van.mask) return;
   if (fx.width !== W) { fx.width = W; fx.height = H; }
   buildFill();
-  fxCtx.globalCompositeOperation = "source-over"; fxCtx.clearRect(0, 0, W, H);
-  drawMaskTo(fxCtx, pMask, 1, 3);                  // soft edge
-  fxCtx.globalCompositeOperation = "source-in";
-  fxCtx.drawImage(fill, 0, 0, W, H);
-  fxCtx.globalCompositeOperation = "source-over";
+  fxCtx.globalCompositeOperation = "source-over"; fxCtx.clearRect(0, 0, W, H); maskTo(fxCtx, pMask, 1, 3);
+  fxCtx.globalCompositeOperation = "source-in"; fxCtx.drawImage(fill, 0, 0, W, H); fxCtx.globalCompositeOperation = "source-over";
   ctx.drawImage(fx, 0, 0);
 }
 function snap(now) {
-  if (van.phase === "gone" || !van.mask || !van.mw || now - van.lastSnap < 1500) return;
+  if (van.phase !== "ready" || !van.mask || !van.mw || now - van.lastSnap < 1500) return;
   van.lastSnap = now;
   grab.width = W; grab.height = H; drawMirrored(grabCtx, video);
   const img = grabCtx.getImageData(0, 0, W, H).data, step = 4, list = [];
   for (let y = Math.max(0, Math.floor(rect.y)); y < Math.min(H, rect.y + rect.h); y += step)
     for (let x = Math.max(0, Math.floor(rect.x)); x < Math.min(W, rect.x + rect.w); x += step) {
-      const u = 1 - (x - rect.x) / rect.w, v = (y - rect.y) / rect.h;
-      const mi = Math.min(van.mh - 1, Math.floor(v * van.mh)) * van.mw + Math.min(van.mw - 1, Math.floor(u * van.mw));
+      const u = 1 - (x - rect.x) / rect.w, v = (y - rect.y) / rect.h, mi = Math.min(van.mh - 1, Math.floor(v * van.mh)) * van.mw + Math.min(van.mw - 1, Math.floor(u * van.mw));
       if (personAt(mi) > 0.5) list.push(x, y);
     }
   const n = list.length / 2;
-  van.n = n; van.px = new Float32Array(n); van.py = new Float32Array(n); van.vx = new Float32Array(n); van.vy = new Float32Array(n);
-  van.dl = new Float32Array(n); van.col = new Uint8ClampedArray(n * 3);
+  van.n = n; van.px = new Float32Array(n); van.py = new Float32Array(n); van.vx = new Float32Array(n); van.vy = new Float32Array(n); van.dl = new Float32Array(n); van.col = new Uint8ClampedArray(n * 3);
   for (let i = 0; i < n; i++) {
     const x = list[i * 2], y = list[i * 2 + 1], k = (y * W + x) * 4;
-    van.px[i] = x; van.py[i] = y; van.vx[i] = 0.6 + Math.random() * 2.6; van.vy[i] = -Math.random() * 1.6;
-    van.dl[i] = Math.random() * 1500 + (y - rect.y) / rect.h * 300;
+    van.px[i] = x; van.py[i] = y; van.vx[i] = 0.6 + Math.random() * 2.6; van.vy[i] = -Math.random() * 1.6; van.dl[i] = Math.random() * 1500 + (y - rect.y) / rect.h * 300;
     van.col[i * 3] = img[k]; van.col[i * 3 + 1] = img[k + 1]; van.col[i * 3 + 2] = img[k + 2];
   }
-  van.phase = "gone"; van.t0 = now; whoosh();
+  van.phase = "gone"; van.t0 = now; whoosh(); hud(null);
 }
 function dustDraw(now) {
   if (!van.n) return;
@@ -808,84 +663,204 @@ function dustDraw(now) {
     const x = van.px[i] | 0, y = van.py[i] | 0;
     if (x < 0 || y < 0 || x >= W - 4 || y >= H - 4) continue;
     const s = local > 0 ? 2 : 4;
-    for (let yy = 0; yy < s; yy++) for (let xx = 0; xx < s; xx++) {
-      const k = ((y + yy) * W + x + xx) * 4;
-      d[k] = van.col[i * 3]; d[k + 1] = van.col[i * 3 + 1]; d[k + 2] = van.col[i * 3 + 2]; d[k + 3] = a * 255;
-    }
+    for (let yy = 0; yy < s; yy++) for (let xx = 0; xx < s; xx++) { const k = ((y + yy) * W + x + xx) * 4; d[k] = van.col[i * 3]; d[k + 1] = van.col[i * 3 + 1]; d[k + 2] = van.col[i * 3 + 2]; d[k + 3] = a * 255; }
   }
   dustCtx.putImageData(img, 0, 0); ctx.drawImage(dust, 0, 0);
   if (!alive) van.n = 0;
 }
-function vanUpdate(now) {
-  if (van.mask && van.mw) {
-    buildMasks();
-    learnBackground();          // keeps learning, even after you vanish
-  }
-  if (van.phase === "learn" && now - van.t0 > 2500 && van.learnFrames > 20) van.phase = "ready";
-  if (van.phase === "gone" && now - van.t0 > 2400) $("thanks").style.opacity = 1;
-  if (!lm || !handSize) return;
-  const tm = dLm(4, 12) / handSize, fold = dLm(12, 0) / handSize;
-  if (tm < 0.25) van.armT = now;
-  else if (van.armT && now - van.armT < 350 && tm > 0.45 && fold < 1.3) { van.armT = 0; if (van.phase === "ready") snap(now); }
-}
-function vanDraw(now) { dustDraw(now); }
-function vanCoach(now) {
-  const steps = ["learn", "snap", "gone"], step = { learn: 0, ready: 1, gone: 2 }[van.phase];
-  if (van.phase === "learn") return { steps, step, title: "Learning the room…", sub: "Move around a little so the camera can see behind you", progress: Math.min(1, (now - van.t0) / 2500) };
-  if (van.phase === "ready") return { steps, step, title: "Snap your fingers to vanish", sub: "Or press the button", buttons: `<button class="btn" data-act="snap">✨ Vanish</button>` };
-  return { steps, step, title: "", sub: "", buttons: `<button class="btn ghost" data-act="back">Come back</button>` };
-}
-function vanPanel() {
-  setBody(header("Finale", "Vanish", "A bit of fun to finish. The camera learns the empty room, so when you snap, you dissolve into dust and the room shows through.") +
-    `<div class="small">Tip: before the snap, step to one side for a moment. The more of the room the camera sees, the cleaner the vanish.</div>`);
-}
+const FINALE = {
+  key: "finale", name: "Finale", icon: "finale", noDemo: true, noResult: true,
+  reset() { van.phase = "learn"; van.t0 = performance.now(); van.n = 0; van.frames = 0; $("thanks").style.opacity = 0; bg.width = Math.round(W * SC); bg.height = Math.round(H * SC); },
+  begin() {},
+  update(now) {
+    if (van.mask && van.mw) { buildMasks(); learnBackground(); }
+    if (van.phase === "learn" && now - van.t0 > 2500 && van.frames > 20) van.phase = "ready";
+    if (van.phase === "gone" && now - van.t0 > 2400) $("thanks").style.opacity = 1;
+    if (!lm || !handSize) return;
+    const tm = dLm(4, 12) / handSize, fold = dLm(12, 0) / handSize;
+    if (tm < 0.25) van.armT = now;
+    else if (van.armT && now - van.armT < 350 && tm > 0.45 && fold < 1.3) { van.armT = 0; snap(now); }
+  },
+  draw(now) { dustDraw(now); },
+  hud(now) {
+    if (van.phase === "learn") return { icon: "eye", text: "Learning the room", sub: "Step aside for a moment if you can", bar: Math.min(1, (now - van.t0) / 2500) };
+    if (van.phase === "ready") return { icon: "finale", text: "Snap your fingers", sub: "or use the button", buttons: `<button class="btn" data-act="snap">${icon("finale")}Vanish</button>` };
+    return null;
+  },
+};
+
+const ACTS = [TAP, STEADY, WRITE, AMP, FINALE];
+let current = 0;
+const A = () => ACTS[current];
 
 // =====================================================================
-// Modes, view switching, input
+// UI: stepper, hud, cards
 // =====================================================================
-const MODES = {
-  tap:    { reset: tapReset, begin: tapBegin, update: tapUpdate, draw: tapDraw, coach: tapCoach, panel: tapPanel, hasNums: true },
-  ribbon: { reset: ribReset, begin: ribBegin, update: ribUpdate, draw: ribDraw, coach: ribCoach, panel: ribPanel, hasNums: true },
-  write:  { reset: wrReset,  begin: wrBegin,  update: wrUpdate,  draw: wrDraw,  coach: wrCoach,  panel: wrPanel },
-  bloom:  { reset: blReset,  begin: blBegin,  update: blUpdate,  draw: blDraw,  coach: blCoach,  panel: blPanel },
-  vanish: { reset: vanReset, begin: () => {}, update: vanUpdate, draw: vanDraw, coach: vanCoach, panel: vanPanel },
-};
-const ORDER = ["tap", "ribbon", "write", "bloom", "vanish"];
-function setMode(m) {
-  mode = m; showNums = false;
-  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.mode === m));
+function renderStepper() {
+  $("stepper").innerHTML = ACTS.map((a, i) => `<button data-go="${i}" class="${i === current ? "on" : ""} ${results[a.key] ? "done" : ""}">
+    ${results[a.key] ? icon("check") : icon(a.icon)}<span class="lbl">${a.name}</span></button>`).join("");
+}
+let hudKey = "";
+function hud(h) {
+  const el = $("hud");
+  if (!h) { el.classList.add("hidden"); hudKey = ""; return; }
+  el.classList.remove("hidden");
+  const key = h.icon + "|" + (h.buttons || "");
+  if (key !== hudKey) { $("hudIcon").innerHTML = icon(h.icon); $("hudBtns").innerHTML = h.buttons || ""; hudKey = key; }
+  $("hudText").textContent = h.text; $("hudSub").textContent = h.sub || "";
+  $("hudBar").style.display = h.bar == null ? "none" : "block"; $("hudBar").firstElementChild.style.width = Math.round(Math.min(1, h.bar || 0) * 100) + "%";
+}
+const table = (rows) => `<table class="m">${rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join("")}</table>`;
+const bars = (vals, hl = () => false) => { const m = Math.max(1e-9, ...vals); return `<div class="bars">${vals.map((v, i) => `<i class="${hl(i) ? "hl" : ""}" style="height:${Math.max(3, 100 * v / m)}%"></i>`).join("")}</div>`; };
+function layer(html) { $("layer").innerHTML = html ? `<div class="scrim"><div class="card">${html}</div></div>` : ""; paintIcons($("layer")); }
+const whyBox = (a) => `<div class="why"><b>Why this activity</b><br>${a.why}<span class="src">Source: ${a.src}</span></div>`;
+
+let demoAnim = 0;
+function showDemo() {
+  const a = A();
+  layer(`<div class="eyebrow">${icon(a.icon)}Activity ${current + 1} of 4</div><h2>${a.title}</h2><p class="lead">${a.lead}</p>
+    <canvas class="demo" id="demo" width="640" height="360"></canvas>
+    <div class="row"><button class="btn" data-act="start">${icon("play")}Start</button><div class="grow"></div>
+    <button class="btn link" data-act="skipdemos">Skip demos next time</button></div>`);
+  cancelAnimationFrame(demoAnim);
+  const c = $("demo"), g = c.getContext("2d"), t0 = performance.now();
+  const loopDemo = () => { if (!document.body.contains(c)) return; drawDemo(g, a.key, (performance.now() - t0) / 1000); demoAnim = requestAnimationFrame(loopDemo); };
+  loopDemo();
+}
+// Simple stylised hand used in the demo animations
+function glyph(g, cx, cy, s, open, pinch = null) {
+  g.save(); g.lineCap = "round"; g.strokeStyle = "rgba(243,246,251,.9)"; g.lineWidth = s * 0.09;
+  g.beginPath(); g.arc(cx, cy, s * 0.32, 0, 7); g.stroke();
+  const fingers = [-70, -35, 0, 32];
+  fingers.forEach((deg, i) => {
+    const a = (deg - 90) * Math.PI / 180, L = s * (0.35 + 0.55 * open) * (i === 1 || i === 2 ? 1 : 0.85);
+    const x0 = cx + Math.cos(a) * s * 0.3, y0 = cy + Math.sin(a) * s * 0.3;
+    g.beginPath(); g.moveTo(x0, y0); g.lineTo(x0 + Math.cos(a) * L, y0 + Math.sin(a) * L); g.stroke();
+  });
+  const ta = (pinch !== null ? -150 + pinch * 40 : -150) * Math.PI / 180, TL = s * (0.3 + 0.35 * open);
+  const tx = cx + Math.cos(ta) * s * 0.3, ty = cy + Math.sin(ta) * s * 0.3;
+  g.beginPath(); g.moveTo(tx, ty); g.lineTo(tx + Math.cos(ta) * TL, ty + Math.sin(ta) * TL); g.stroke();
+  g.restore();
+}
+function drawDemo(g, key, t) {
+  const w = 640, h = 360; g.clearRect(0, 0, w, h);
+  g.fillStyle = "#5eead4"; g.strokeStyle = "#5eead4";
+  if (key === "tap") {
+    const o = (Math.sin(t * Math.PI * 2 * 1.2) + 1) / 2;
+    const cx = 320, cy = 190, thumb = { x: cx - 30 - o * 60, y: cy + 10 + o * 20 }, index = { x: cx + 10 + o * 40, y: cy - 40 - o * 70 };
+    g.lineWidth = 6; g.lineCap = "round"; g.strokeStyle = o < 0.15 ? "#fbbf77" : "#5eead4";
+    g.beginPath(); g.moveTo(thumb.x, thumb.y); g.lineTo(index.x, index.y); g.stroke();
+    for (const p of [thumb, index]) { g.beginPath(); g.arc(p.x, p.y, 14, 0, 7); g.stroke(); }
+    label(g, o < 0.15 ? "Close" : "Open wide", w, h);
+  } else if (key === "steady") {
+    glyph(g, 320, 210, 150, 1);
+    const f = (t % 3) / 3; g.lineWidth = 6; g.strokeStyle = "rgba(255,255,255,.12)"; g.beginPath(); g.arc(320, 180, 150, 0, 7); g.stroke();
+    g.strokeStyle = "#5eead4"; g.beginPath(); g.arc(320, 180, 150, -Math.PI / 2, -Math.PI / 2 + f * Math.PI * 2); g.stroke();
+    label(g, "Hold still", w, h);
+  } else if (key === "write") {
+    const top = 120, bot = 230; g.setLineDash([14, 9]); g.lineWidth = 2.5; g.strokeStyle = "rgba(94,234,212,.7)";
+    for (const y of [top, bot]) { g.beginPath(); g.moveTo(60, y); g.lineTo(580, y); g.stroke(); }
+    g.setLineDash([]); const p = (t % 4) / 3.4, xEnd = 80 + Math.min(1, p) * 480;
+    g.strokeStyle = "#f3f6fb"; g.lineWidth = 5; g.lineCap = "round"; g.beginPath();
+    for (let x = 80; x <= xEnd; x += 3) { const y = 175 - 45 * Math.sin((x - 80) * 0.06) * (0.6 + 0.4 * Math.sin((x - 80) * 0.013)); x === 80 ? g.moveTo(x, y) : g.lineTo(x, y); }
+    g.stroke(); label(g, "Pinch and write", w, h);
+  } else if (key === "amp") {
+    const beat = t % 1.2, o = beat < 0.45 ? beat / 0.45 : Math.max(0, 1 - (beat - 0.45) / 0.6);
+    glyph(g, 320, 215, 160, o);
+    const k = Math.max(0, 1 - beat / 0.5); g.strokeStyle = `rgba(251,191,119,${k})`; g.lineWidth = 4; g.beginPath(); g.arc(320, 180, 160 + (1 - k) * 30, 0, 7); g.stroke();
+    label(g, o > 0.8 ? "Open wide" : "Close", w, h);
+  }
+}
+function label(g, text, w, h) { g.fillStyle = "rgba(243,246,251,.85)"; g.font = "600 22px Inter, sans-serif"; g.textAlign = "center"; g.fillText(text, w / 2, h - 22); }
+
+let detailsOpen = false, whyOpen = false;
+function showResult() {
+  const a = A(), r = results[a.key], s = a.summary(r);
+  const doctor = view === "doctor";
+  const last = current === 3;
+  const body = doctor ? a.metrics(r) : `<ul class="points">${s.points.map(p => `<li><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="currentColor"/></svg><span>${p}</span></li>`).join("")}</ul>`;
+  const details = !doctor && detailsOpen ? `<div class="details">${a.metrics(r)}</div>` : "";
+  layer(`<div class="eyebrow">${icon(a.icon)}${a.name} · Result</div><h2>${s.headline}</h2>${body}${details}${whyOpen ? whyBox(a) : ""}
+    <div class="fine">${doctor ? "Demo thresholds, not validated clinical cut-offs. Webcam at about 30 frames per second; amplitudes are normalised to hand size." : "A demo, not a medical test. If you notice changes in how you move, talk to your doctor."}</div>
+    <div class="row" style="margin-top:18px"><button class="btn" data-act="${last ? "summary" : "next"}">${last ? "See summary" : "Next activity"}${icon("next")}</button>
+    <button class="btn secondary" data-act="again">${icon("redo")}Try again</button><div class="grow"></div></div>
+    <div class="row" style="margin-top:6px">${doctor ? "" : `<button class="btn link" data-act="details">${detailsOpen ? "Hide" : "Show"} numbers</button>`}
+    <button class="btn link" data-act="why">${icon("info")}${whyOpen ? "Hide" : "Why this activity"}</button></div>`);
+}
+function showSummary() {
+  hud(null);
+  const rows = ACTS.slice(0, 4).map(a => { const r = results[a.key]; const s = r ? a.summary(r) : null;
+    return `<tr><td>${icon(a.icon)}${a.name}</td><td>${s ? (view === "doctor" ? (s.line || s.headline) : s.headline) : "Not done"}</td></tr>`; }).join("");
+  layer(`<div class="eyebrow">${icon("doc")}Session summary</div><h2>Your results</h2><table class="m sum">${rows}</table>
+    <div class="fine">A demo, not a medical test. Nothing was recorded; these results disappear when you close the page.</div>
+    <div class="row" style="margin-top:18px"><button class="btn" data-act="finale">${icon("finale")}Finale</button>
+    <button class="btn secondary" data-act="print">${icon("printer")}Print or save as PDF</button></div>`);
+  const date = new Date().toLocaleString();
+  $("report").innerHTML = `<h1>Motion Mirror: session summary</h1><div class="d">${date}</div><table>${ACTS.slice(0, 4).map(a => { const r = results[a.key]; const s = r ? a.summary(r) : null;
+    return `<tr><td><b>${a.name}</b></td><td>${s ? s.headline + (s.line ? "<br><small>" + s.line + "</small>" : "") : "Not done"}</td></tr>`; }).join("")}</table>
+    <div class="n">Research demo, not a medical device. Thresholds are illustrative, not clinically validated. Measured with a webcam on the user's own device; no video was stored.</div>`;
+}
+
+// ---------- onboarding ----------
+const TIPS = [
+  { icon: "sun", title: "Find good light", text: "Face a window or a lamp. Avoid bright light behind you." },
+  { icon: "ruler", title: "Sit about an arm's length away", text: "Keep your hand and shoulders inside the picture." },
+  { icon: "shield", title: "Your camera stays private", text: "Everything runs on this device. Nothing is recorded or sent." },
+];
+let tipIdx = 0;
+function showGuide() {
+  const t = TIPS[tipIdx];
+  layer(`<div class="dots">${TIPS.map((_, i) => `<i class="${i === tipIdx ? "on" : ""}"></i>`).join("")}</div>
+    <div class="tip"><div class="big">${icon(t.icon)}</div><div><div class="eyebrow">Setup ${tipIdx + 1} of ${TIPS.length}</div><h2 style="margin-top:6px">${t.title}</h2><p class="lead">${t.text}</p></div></div>
+    <div class="row"><button class="btn" data-act="tipnext">${tipIdx < TIPS.length - 1 ? "Next" : "Begin"}${icon("next")}</button><div class="grow"></div>
+    <button class="btn link" data-act="tipskip">Skip</button></div>`);
+}
+
+// ---------- navigation ----------
+function goTo(i) {
+  current = i; detailsOpen = false; whyOpen = false;
+  ACTS.forEach(a => a.reset());
   $("thanks").style.opacity = 0;
-  MODES[m].reset(); renderActions(); MODES[m].panel();
+  renderStepper();
+  if (A().noDemo) { flow.phase = "run"; layer(""); return; }
+  if (skipDemos) { flow.phase = "ready"; flow.seen = 0; layer(""); }
+  else { flow.phase = "demo"; showDemo(); }
 }
-function setView(v) {
-  view = v;
-  document.querySelectorAll("#view button").forEach(b => b.classList.toggle("on", b.dataset.view === v));
-  renderActions(); MODES[mode].panel();
-}
-$("nav").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) setMode(b.dataset.mode); });
-$("view").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) setView(b.dataset.view); });
 function act(a) {
   const now = performance.now();
-  if (a === "again") setMode(mode);
-  else if (a === "next") setMode(ORDER[(ORDER.indexOf(mode) + 1) % ORDER.length]);
-  else if (a === "nums") { showNums = !showNums; renderActions(); MODES[mode].panel(); }
-  else if (a === "empathy") wr.empathy = !wr.empathy;
-  else if (a === "wrdone") wrDone(now);
+  if (a === "start") { flow.phase = "ready"; flow.seen = 0; layer(""); }
+  else if (a === "skipdemos") { skipDemos = true; store.set("skipDemos", true); act("start"); }
+  else if (a === "next") goTo(Math.min(current + 1, ACTS.length - 1));
+  else if (a === "again") { delete results[A().key]; goTo(current); }
+  else if (a === "details") { detailsOpen = !detailsOpen; showResult(); }
+  else if (a === "why") { whyOpen = !whyOpen; showResult(); }
+  else if (a === "summary") showSummary();
+  else if (a === "finale") goTo(4);
+  else if (a === "print") window.print();
+  else if (a === "sim") wr.sim = !wr.sim, hudKey = "";
+  else if (a === "wrdone") WRITE.done(now);
   else if (a === "snap") snap(now);
-  else if (a === "back") { van.phase = "ready"; van.n = 0; $("thanks").style.opacity = 0; }
+  else if (a === "tipnext") { if (tipIdx < TIPS.length - 1) { tipIdx++; showGuide(); } else { store.set("guided", true); goTo(current); } }
+  else if (a === "tipskip") { store.set("guided", true); goTo(current); }
 }
-document.addEventListener("click", (e) => { const b = e.target.closest("[data-act]"); if (b) act(b.dataset.act); });
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-act]"); if (b) return act(b.dataset.act);
+  const s = e.target.closest("[data-go]"); if (s) goTo(+s.dataset.go);
+  const v = e.target.closest("[data-view]"); if (v) setView(v.dataset.view);
+});
+function setView(v) {
+  view = v; store.set("view", v);
+  document.querySelectorAll("#audience button").forEach(b => b.classList.toggle("on", b.dataset.view === v));
+  if (flow.phase === "result") showResult();
+}
+$("soundBtn").addEventListener("click", () => { soundOn = !soundOn; store.set("sound", soundOn); $("soundBtn").innerHTML = icon(soundOn ? "volume" : "mute"); });
+$("helpBtn").addEventListener("click", () => { tipIdx = 0; flow.phase = "demo"; hud(null); showGuide(); });
 addEventListener("keydown", (e) => {
   const k = e.key.toLowerCase();
-  if ("12345".includes(k) && k.length === 1) setMode(ORDER[+k - 1]);
-  else if (k === " ") { e.preventDefault(); setMode(mode); }
-  else if (k === "h") document.body.classList.toggle("clean");
+  if (k === "h") document.body.classList.toggle("clean");
   else if (k === "f") document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
-  else if (k === "v") setView(view === "patient" ? "doctor" : "patient");
-  else if (k === "e") act("empathy");
-  else if (k === "enter") act(mode === "write" ? "wrdone" : "next");
-  else if (k === "s" && mode === "vanish") act("snap");
-  else if (k === "r" && mode === "vanish") act("back");
+  else if (k === "s" && current === 4) act("snap");
+  else if (k === "r" && current === 4) goTo(4);
 });
 
 // =====================================================================
@@ -899,17 +874,21 @@ function loop() {
     const res = hands.detectForVideo(video, now);
     lm = res.landmarks && res.landmarks.length ? res.landmarks[0] : null;
     handSize = lm ? dLm(0, 9) : 0;
-    if (mode === "vanish") segment(now);
-    MODES[mode].update(now);
+    if (current === 4) segment(now);
+    if (flow.phase !== "demo" && flow.phase !== "result") A().update(now);
   }
-  if (mode === "vanish" && van.phase === "gone") drawWithoutPerson();
-  else drawVideo(mode === "vanish" ? 0 : 0.45);
-  MODES[mode].draw(now);
+  if (current === 4 && van.phase === "gone") drawWithoutPerson(); else drawVideo(current === 4 ? 0 : 0.45);
+  if (flow.phase !== "demo") A().draw(now);
   drawCountdown(now);
-  if (now - lastUi > 120) { lastUi = now; coach(MODES[mode].coach(now)); MODES[mode].panel(); }
+  if (now - lastUi > 100) { lastUi = now; hud(flow.phase === "demo" || flow.phase === "result" ? null : A().hud(now)); }
   requestAnimationFrame(loop);
 }
 
+paintIcons();
+$("logoMark").innerHTML = icon("logo"); $("startMark").innerHTML = icon("logo", "i mark");
+$("startMark").querySelector("svg").style.cssText = "width:64px;height:64px;color:#5eead4";
+$("soundBtn").innerHTML = icon(soundOn ? "volume" : "mute");
+document.querySelectorAll("#audience button").forEach(b => b.classList.toggle("on", b.dataset.view === view));
 $("go").addEventListener("click", async () => {
   const btn = $("go"); btn.disabled = true;
   try {
@@ -921,18 +900,18 @@ $("go").addEventListener("click", async () => {
     const files = await FilesetResolver.forVisionTasks(WASM);
     hands = await HandLandmarker.createFromOptions(files, { baseOptions: { modelAssetPath: HAND_MODEL, delegate: "GPU" }, runningMode: "VIDEO", numHands: 1 });
     $("status").textContent = "Loading body detection…";
-    segmenter = await ImageSegmenter.createFromOptions(files, { baseOptions: { modelAssetPath: SEG_MODEL, delegate: "GPU" }, runningMode: "VIDEO",
-      outputConfidenceMasks: true, outputCategoryMask: false });
-    $("start").remove(); setMode("tap"); loop();
+    segmenter = await ImageSegmenter.createFromOptions(files, { baseOptions: { modelAssetPath: SEG_MODEL, delegate: "GPU" }, runningMode: "VIDEO", outputConfidenceMasks: true, outputCategoryMask: false });
+    $("start").remove(); renderStepper(); loop();
+    if (store.get("guided", false)) goTo(0); else { flow.phase = "demo"; showGuide(); }
   } catch (err) {
     console.error(err);
-    $("status").innerHTML = `<span style="color:var(--rose)">Couldn't start: ${err.message}</span><br>Please allow camera access, then try again.`;
+    $("status").innerHTML = `Couldn't start the camera: ${err.message}. Please allow camera access and try again.`;
     btn.disabled = false;
   }
 });
 resize();
-if (new URLSearchParams(location.search).has("autostart")) {   // used for automated testing only
-  window.__mm = { van, snap, setMode, setView, flow, tap, finish, MODES };
+if (new URLSearchParams(location.search).has("autostart")) {   // automated testing only
+  window.__mm = { van, snap, goTo, act, setView, flow, results, finish, ACTS, showSummary, get current() { return current; } };
   $("go").click();
 }
 </script>
