@@ -1,0 +1,813 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Motion Mirror</title>
+<style>
+  :root {
+    --bg: #05070d;
+    --panel: rgba(10, 14, 24, 0.78);
+    --line: rgba(255, 255, 255, 0.12);
+    --text: #eef2f8;
+    --muted: #9aa6b8;
+    --accent: #7ee0ff;
+    --gold: #ffd27a;
+    --warn: #ff8a7a;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif; overflow: hidden; }
+  canvas#stage { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
+  video { display: none; }
+
+  .ui { transition: opacity .4s; }
+  body.clean .ui { opacity: 0; pointer-events: none; }
+
+  header { position: fixed; top: 16px; left: 16px; right: 16px; display: flex; gap: 12px;
+    align-items: center; flex-wrap: wrap; }
+  .brand { font-weight: 700; letter-spacing: .3px; font-size: 18px; padding: 8px 14px;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
+  .brand span { color: var(--accent); }
+  nav { display: flex; gap: 6px; flex-wrap: wrap; background: var(--panel);
+    border: 1px solid var(--line); border-radius: 12px; padding: 5px; }
+  nav button { background: transparent; color: var(--muted); border: 0; border-radius: 8px;
+    padding: 7px 12px; font: inherit; font-size: 14px; cursor: pointer; }
+  nav button:hover { color: var(--text); }
+  nav button.on { background: rgba(126, 224, 255, .16); color: var(--text); }
+  nav kbd { font-size: 11px; opacity: .6; margin-right: 6px; }
+
+  aside { position: fixed; right: 16px; top: 76px; width: 330px; max-width: calc(100vw - 32px);
+    max-height: calc(100vh - 140px); overflow-y: auto;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px;
+    backdrop-filter: blur(8px); }
+  aside h2 { margin: 0 0 4px; font-size: 20px; }
+  aside .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+  .compare { display: grid; grid-template-columns: 1fr; gap: 6px; margin-bottom: 14px; font-size: 13px; }
+  .compare div { padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); }
+  .compare b { display: block; font-size: 11px; letter-spacing: .6px; text-transform: uppercase; color: var(--muted); }
+  .compare .now b { color: var(--gold); }
+  .big { font-size: 38px; font-weight: 700; line-height: 1.05; }
+  .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .6px; }
+  .row { display: flex; gap: 18px; margin: 8px 0 10px; }
+  .row > div { flex: 1; }
+  .bars { display: flex; align-items: flex-end; gap: 3px; height: 64px; margin-top: 8px; }
+  .bars i { flex: 1; background: var(--accent); border-radius: 3px 3px 0 0; min-height: 2px; display: block; }
+  .bars i.hot { background: var(--gold); }
+  .axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 3px; }
+  .note { font-size: 12px; color: var(--muted); margin-top: 10px; line-height: 1.45; }
+  .warn { color: var(--warn); }
+
+  footer { position: fixed; left: 16px; bottom: 14px; right: 16px; display: flex; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+  footer .pill { background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; }
+
+  #start { position: fixed; inset: 0; display: grid; place-items: center; z-index: 5;
+    background: radial-gradient(circle at 50% 40%, #13213a 0%, var(--bg) 65%); }
+  #start .card { text-align: center; max-width: 560px; padding: 24px; }
+  #start h1 { font-size: 44px; margin: 0 0 8px; }
+  #start h1 span { color: var(--accent); }
+  #start p { color: var(--muted); line-height: 1.55; }
+  #start button { margin-top: 18px; font: inherit; font-size: 18px; padding: 14px 28px; border-radius: 999px; border: 0;
+    background: var(--accent); color: #04121a; font-weight: 700; cursor: pointer; }
+  #start .status { margin-top: 14px; font-size: 14px; color: var(--muted); min-height: 20px; }
+
+  #toast { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 64px; font-weight: 700;
+    opacity: 0; pointer-events: none; transition: opacity 1.2s; text-shadow: 0 0 30px rgba(126, 224, 255, .6); text-align: center; }
+  #toast small { display: block; font-size: 20px; font-weight: 400; color: var(--muted); margin-top: 8px; }
+
+  @media (max-width: 760px) {
+    aside { top: auto; bottom: 56px; width: auto; left: 16px; }
+    .big { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+<video id="video" playsinline muted></video>
+<canvas id="stage"></canvas>
+
+<header class="ui">
+  <div class="brand">Motion <span>Mirror</span></div>
+  <nav id="nav">
+    <button data-mode="tap"><kbd>1</kbd>Tap Test</button>
+    <button data-mode="ribbon"><kbd>2</kbd>Light Ribbon</button>
+    <button data-mode="write"><kbd>3</kbd>Writing Lanes</button>
+    <button data-mode="bloom"><kbd>4</kbd>Bloom</button>
+    <button data-mode="vanish"><kbd>5</kbd>Vanish</button>
+  </nav>
+</header>
+
+<aside class="ui" id="panel"></aside>
+
+<footer class="ui">
+  <div class="pill">Prototype, not a medical test · Runs on this device · No video is stored or sent</div>
+  <div class="pill" id="hint">Space reset · H hide panels · F fullscreen</div>
+</footer>
+
+<div id="toast"></div>
+
+<div id="start">
+  <div class="card">
+    <h1>Motion <span>Mirror</span></h1>
+    <p>Parkinson's movement tests, rebuilt as augmented reality.<br>
+      Your camera stays on this device: nothing is recorded or uploaded.</p>
+    <button id="go">Start camera</button>
+    <div class="status" id="status"></div>
+  </div>
+</div>
+
+<script type="module">
+import { FilesetResolver, HandLandmarker, ImageSegmenter }
+  from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
+
+const WASM = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm";
+const HAND_MODEL = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
+const SEG_MODEL = "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite";
+
+const video = document.getElementById("video");
+const canvas = document.getElementById("stage");
+const ctx = canvas.getContext("2d");
+const panel = document.getElementById("panel");
+const hint = document.getElementById("hint");
+const toast = document.getElementById("toast");
+const statusEl = document.getElementById("status");
+
+let hands = null, segmenter = null, audio = null;
+let mode = "tap";
+let W = 0, H = 0;
+let rect = { x: 0, y: 0, w: 0, h: 0 };   // where the (mirrored) video is drawn
+let lm = null;                           // latest hand landmarks (normalized)
+let handSize = 0;                        // wrist to middle knuckle, in pixels
+let lastVideoTime = -1;
+
+// ---------- layout ----------
+function resize() {
+  W = canvas.width = innerWidth;
+  H = canvas.height = innerHeight;
+  layoutVideo();
+}
+function layoutVideo() {
+  const vw = video.videoWidth || 1280, vh = video.videoHeight || 720;
+  const s = Math.max(W / vw, H / vh);
+  rect.w = vw * s; rect.h = vh * s;
+  rect.x = (W - rect.w) / 2; rect.y = (H - rect.h) / 2;
+}
+addEventListener("resize", resize);
+
+// Normalized landmark -> screen point (mirrored like a mirror)
+const P = (l) => ({ x: rect.x + (1 - l.x) * rect.w, y: rect.y + l.y * rect.h });
+const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+function dLm(i, j) { return dist(P(lm[i]), P(lm[j])); }
+
+function drawVideo(dim = 0.35) {
+  ctx.save();
+  ctx.translate(rect.x + rect.w, rect.y);
+  ctx.scale(-1, 1);
+  ctx.drawImage(video, 0, 0, rect.w, rect.h);
+  ctx.restore();
+  if (dim > 0) { ctx.fillStyle = `rgba(3,5,10,${dim})`; ctx.fillRect(0, 0, W, H); }
+}
+
+const BONES = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],
+  [9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
+function drawSkeleton(alpha = 0.35) {
+  if (!lm) return;
+  ctx.save();
+  ctx.strokeStyle = `rgba(126,224,255,${alpha})`;
+  ctx.lineWidth = 2;
+  for (const [a, b] of BONES) {
+    const p = P(lm[a]), q = P(lm[b]);
+    ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y); ctx.stroke();
+  }
+  ctx.fillStyle = `rgba(255,255,255,${alpha + 0.2})`;
+  for (const l of lm) { const p = P(l); ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, 7); ctx.fill(); }
+  ctx.restore();
+}
+
+// ---------- signal helpers ----------
+// Resample a history of {t, x, y} to a uniform rate over the last `span` ms
+function resample(hist, span, fs) {
+  if (hist.length < 8) return null;
+  const tEnd = hist[hist.length - 1].t, tStart = tEnd - span;
+  if (hist[0].t > tStart + span * 0.25) return null;
+  const n = Math.floor(span / 1000 * fs);
+  const xs = new Float64Array(n), ys = new Float64Array(n);
+  let j = 0;
+  for (let i = 0; i < n; i++) {
+    const t = tStart + i * 1000 / fs;
+    while (j < hist.length - 2 && hist[j + 1].t < t) j++;
+    const a = hist[j], b = hist[j + 1] || a;
+    const u = b.t === a.t ? 0 : Math.min(1, Math.max(0, (t - a.t) / (b.t - a.t)));
+    xs[i] = a.x + (b.x - a.x) * u;
+    ys[i] = a.y + (b.y - a.y) * u;
+  }
+  return { xs, ys, n };
+}
+// Remove slow, voluntary movement so only fast shaking remains
+function highpass(a, win) {
+  const out = new Float64Array(a.length);
+  for (let i = 0; i < a.length; i++) {
+    let s = 0, c = 0;
+    for (let k = Math.max(0, i - win); k <= Math.min(a.length - 1, i + win); k++) { s += a[k]; c++; }
+    out[i] = a[i] - s / c;
+  }
+  return out;
+}
+function power(a, fs, f) {
+  let re = 0, im = 0;
+  for (let i = 0; i < a.length; i++) {
+    const w = 0.5 - 0.5 * Math.cos(2 * Math.PI * i / (a.length - 1));   // Hann window
+    const ang = 2 * Math.PI * f * i / fs;
+    re += a[i] * w * Math.cos(ang); im -= a[i] * w * Math.sin(ang);
+  }
+  return re * re + im * im;
+}
+// SPARC smoothness of a speed profile (closer to zero = smoother)
+function sparc(speed, fs, fc = 10, ampTh = 0.05, pad = 4) {
+  const n = speed.length;
+  if (n < 16) return null;
+  const nfft = 2 ** (Math.ceil(Math.log2(n)) + pad);
+  const df = fs / nfft;
+  const kMax = Math.floor(fc / df);
+  const mag = new Float64Array(kMax + 1);
+  let peak = 0;
+  for (let k = 0; k <= kMax; k++) {
+    let re = 0, im = 0;
+    for (let i = 0; i < n; i++) {
+      const ang = 2 * Math.PI * k * i / nfft;
+      re += speed[i] * Math.cos(ang); im -= speed[i] * Math.sin(ang);
+    }
+    mag[k] = Math.hypot(re, im);
+    if (mag[k] > peak) peak = mag[k];
+  }
+  if (peak === 0) return null;
+  let last = 0;
+  for (let k = 0; k <= kMax; k++) { mag[k] /= peak; if (mag[k] >= ampTh) last = k; }
+  if (last < 2) return null;
+  const fmax = last * df;
+  let len = 0;
+  for (let k = 1; k <= last; k++) len += Math.hypot(df / fmax, mag[k] - mag[k - 1]);
+  return -len;
+}
+
+// ---------- audio ----------
+function tone(freq, dur = 0.12, type = "sine", gain = 0.15) {
+  if (!audio) return;
+  const o = audio.createOscillator(), g = audio.createGain();
+  o.type = type; o.frequency.value = freq;
+  g.gain.setValueAtTime(gain, audio.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + dur);
+  o.connect(g).connect(audio.destination);
+  o.start(); o.stop(audio.currentTime + dur);
+}
+function whoosh() {
+  if (!audio) return;
+  const len = audio.sampleRate * 2.2;
+  const buf = audio.createBuffer(1, len, audio.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2);
+  const src = audio.createBufferSource(); src.buffer = buf;
+  const f = audio.createBiquadFilter(); f.type = "bandpass";
+  f.frequency.setValueAtTime(400, audio.currentTime);
+  f.frequency.exponentialRampToValueAtTime(3000, audio.currentTime + 2);
+  const g = audio.createGain(); g.gain.value = 0.35;
+  src.connect(f).connect(g).connect(audio.destination);
+  src.start();
+}
+
+// ---------- panel ----------
+let panelTimer = 0;
+function setPanel(html) { panel.innerHTML = html; }
+const compare = (clinic, here) =>
+  `<div class="compare"><div class="now"><b>In the clinic today</b>${clinic}</div><div><b>Here</b>${here}</div></div>`;
+function barsHtml(values, hot = () => false, max = null) {
+  const m = max ?? Math.max(1e-9, ...values);
+  return `<div class="bars">${values.map((v, i) =>
+    `<i class="${hot(i) ? "hot" : ""}" style="height:${Math.max(2, 100 * v / m)}%"></i>`).join("")}</div>`;
+}
+
+// =====================================================================
+// MODE 1: Tap Test (finger tapping)
+// =====================================================================
+const tap = { open: false, peak: 0, taps: [], start: 0 };
+function tapReset() { tap.open = false; tap.peak = 0; tap.taps = []; tap.start = 0; }
+function tapUpdate(now) {
+  if (!lm || !handSize) return;
+  const d = dLm(4, 8) / handSize;
+  if (d > 0.45) { tap.open = true; tap.peak = Math.max(tap.peak, d); }
+  if (tap.open && d < 0.25 && tap.taps.length < 10) {
+    if (!tap.start) tap.start = now;
+    tap.taps.push({ t: now, amp: tap.peak });
+    tap.open = false; tap.peak = 0;
+    tone(520 + tap.taps.length * 40, 0.08, "triangle", 0.12);
+    if (tap.taps.length === 10) tone(880, 0.4, "sine", 0.15);
+  }
+}
+function tapDraw() {
+  if (!lm) return;
+  const a = P(lm[4]), b = P(lm[8]);
+  const d = dLm(4, 8) / (handSize || 1);
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  ctx.strokeStyle = d < 0.25 ? "rgba(255,210,122,0.95)" : "rgba(126,224,255,0.9)";
+  ctx.lineWidth = 6; ctx.shadowBlur = 25; ctx.shadowColor = ctx.strokeStyle;
+  ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+  for (const p of [a, b]) { ctx.beginPath(); ctx.arc(p.x, p.y, 14, 0, 7); ctx.stroke(); }
+  ctx.restore();
+}
+function tapPanel() {
+  const n = tap.taps.length;
+  const amps = tap.taps.map(t => t.amp);
+  let rate = "–", dec = "–", decClass = "";
+  if (n >= 2) rate = ((n - 1) / ((tap.taps[n - 1].t - tap.taps[0].t) / 1000)).toFixed(1);
+  if (n >= 6) {
+    const first = (amps[0] + amps[1] + amps[2]) / 3, last = (amps[n - 3] + amps[n - 2] + amps[n - 1]) / 3;
+    const pct = Math.round(100 * (first - last) / first);
+    dec = (pct > 0 ? "−" : "+") + Math.abs(pct) + "%";
+    if (pct > 20) decClass = "warn";
+  }
+  setPanel(`<h2>Tap Test</h2><div class="sub">Tap thumb and index finger, as big and fast as you can, 10 times.</div>
+    ${compare("A neurologist watches finger tapping and gives a score from 0 to 4.", "Every tap is measured: speed, size, and whether it shrinks.")}
+    <div class="row"><div><div class="label">Taps</div><div class="big">${n}/10</div></div>
+    <div><div class="label">Taps per second</div><div class="big">${rate}</div></div></div>
+    <div class="label">Size of each tap</div>${barsHtml(amps.length ? amps : [0], i => false)}
+    <div class="row"><div><div class="label">Change, first 3 → last 3</div><div class="big ${decClass}">${dec}</div></div></div>
+    <div class="note">Shrinking taps (decrement) are one of the signs a clinician looks for. Press Space to try again.</div>`);
+}
+
+// =====================================================================
+// MODE 2: Light Ribbon (tremor + smoothness)
+// =====================================================================
+const ribbon = { hist: [], trail: [], spectrum: new Array(12).fill(0), peakHz: null, amp: 0, sparc: null };
+function ribbonReset() { ribbon.hist = []; ribbon.trail = []; ribbon.peakHz = null; ribbon.amp = 0; ribbon.sparc = null; }
+function ribbonUpdate(now) {
+  if (lm && handSize) {
+    const p = P(lm[8]);
+    ribbon.hist.push({ t: now, x: p.x / handSize, y: p.y / handSize });
+    ribbon.trail.push({ t: now, x: p.x, y: p.y });
+  }
+  while (ribbon.hist.length && now - ribbon.hist[0].t > 5000) ribbon.hist.shift();
+  while (ribbon.trail.length && now - ribbon.trail[0].t > 2200) ribbon.trail.shift();
+}
+function ribbonAnalyse() {
+  const fs = 30, r = resample(ribbon.hist, 4000, fs);
+  if (!r) return;
+  const hx = highpass(r.xs, 6), hy = highpass(r.ys, 6);
+  const spec = [];
+  let best = 0, bestF = null;
+  for (let f = 1; f <= 12; f++) {
+    let s = 0;
+    for (let sub = -0.4; sub <= 0.4; sub += 0.2) s += power(hx, fs, f + sub) + power(hy, fs, f + sub);
+    spec.push(s);
+    if (f >= 3 && s > best) { best = s; bestF = f; }
+  }
+  // refine the peak within the winning 1 Hz bin
+  if (bestF) {
+    let bp = 0, bf = bestF;
+    for (let f = bestF - 0.5; f <= bestF + 0.5; f += 0.1) {
+      const s = power(hx, fs, f) + power(hy, fs, f);
+      if (s > bp) { bp = s; bf = f; }
+    }
+    bestF = bf;
+  }
+  let rms = 0;
+  for (let i = 0; i < r.n; i++) rms += hx[i] * hx[i] + hy[i] * hy[i];
+  rms = Math.sqrt(rms / r.n);
+  ribbon.spectrum = spec;
+  ribbon.amp = rms * 100;                       // % of hand size
+  ribbon.peakHz = ribbon.amp > 1.2 ? bestF : null;
+  // smoothness of the last 3 s of movement
+  const speed = [];
+  for (let i = 1; i < r.n; i++) speed.push(Math.hypot(r.xs[i] - r.xs[i - 1], r.ys[i] - r.ys[i - 1]) * fs);
+  const recent = speed.slice(-90);
+  const mean = recent.reduce((a, b) => a + b, 0) / (recent.length || 1);
+  ribbon.sparc = mean > 0.4 ? sparc(recent, fs) : null;
+}
+function ribbonDraw(now) {
+  const tr = ribbon.trail;
+  if (tr.length < 2) return;
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  ctx.lineCap = "round"; ctx.lineJoin = "round";
+  const shaky = ribbon.peakHz !== null && ribbon.amp > 2;
+  for (let i = 1; i < tr.length; i++) {
+    const a = tr[i - 1], b = tr[i];
+    const age = (now - b.t) / 2200;
+    const sp = Math.hypot(b.x - a.x, b.y - a.y);
+    const hue = shaky ? 20 + 30 * Math.sin(i * 0.9) : 190 + Math.min(70, sp * 2);
+    ctx.strokeStyle = `hsla(${hue}, 100%, ${shaky ? 62 : 68}%, ${Math.max(0, 1 - age)})`;
+    ctx.lineWidth = 3 + 16 * (1 - age);
+    ctx.shadowBlur = 30; ctx.shadowColor = `hsla(${hue},100%,60%,1)`;
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+  }
+  if (shaky) {   // sparks when tremor is present
+    const tip = tr[tr.length - 1];
+    for (let k = 0; k < 8; k++) {
+      const ang = Math.random() * 7, rr = 10 + Math.random() * 40;
+      ctx.fillStyle = `hsla(${30 + Math.random() * 30},100%,70%,${Math.random()})`;
+      ctx.beginPath(); ctx.arc(tip.x + Math.cos(ang) * rr, tip.y + Math.sin(ang) * rr, 2 + Math.random() * 2, 0, 7); ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+function ribbonPanel() {
+  const hz = ribbon.peakHz ? ribbon.peakHz.toFixed(1) + " Hz" : "–";
+  const sp = ribbon.sparc !== null ? ribbon.sparc.toFixed(2) : "–";
+  setPanel(`<h2>Light Ribbon</h2><div class="sub">Draw a slow spiral in the air with your index finger. Then try shaking.</div>
+    ${compare("Tremor is rated by eye, from 0 to 4.", "Shaking is split into frequencies, live. Parkinson's rest tremor is usually 4–6 Hz.")}
+    <div class="row"><div><div class="label">Main shaking frequency</div><div class="big">${hz}</div></div>
+    <div><div class="label">Shake size</div><div class="big">${ribbon.amp.toFixed(1)}%</div></div></div>
+    <div class="label">Shaking by frequency (1–12 Hz)</div>
+    ${barsHtml(ribbon.spectrum, i => i + 1 >= 4 && i + 1 <= 6)}
+    <div class="axis"><span>1 Hz</span><span>4–6 Hz band</span><span>12 Hz</span></div>
+    <div class="row"><div><div class="label">Smoothness (SPARC)</div><div class="big">${sp}</div></div></div>
+    <div class="note">SPARC: closer to zero means smoother. Shake size is a % of your hand size.</div>`);
+}
+
+// =====================================================================
+// MODE 3: Writing Lanes (micrographia)
+// =====================================================================
+const write = { strokes: [], penDown: false, empathy: false, inkTime: 0, lastT: 0 };
+function writeReset() { write.strokes = []; write.penDown = false; write.inkTime = 0; }
+function lane() {
+  const mid = H * 0.52, h = Math.min(220, H * 0.24);
+  const panelLeft = document.body.classList.contains("clean") || W < 760 ? W : W - 362;   // keep lanes clear of the panel
+  return { top: mid - h / 2, bot: mid + h / 2, mid, h, x0: W * 0.05, x1: Math.min(W * 0.95, panelLeft - 24) };
+}
+function writeUpdate(now) {
+  const dt = write.lastT ? now - write.lastT : 0;
+  write.lastT = now;
+  if (!lm || !handSize) { write.penDown = false; return; }
+  const pinch = dLm(4, 8) / handSize;
+  const down = write.penDown ? pinch < 0.42 : pinch < 0.28;   // hysteresis
+  if (down && !write.penDown) write.strokes.push([]);
+  write.penDown = down;
+  if (down) {
+    write.inkTime += dt;
+    const a = P(lm[4]), b = P(lm[8]);
+    write.strokes[write.strokes.length - 1].push({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, k: write.inkTime });
+  }
+}
+// What the ink looks like: real, or with simulated micrographia + tremor
+function inkPoint(p) {
+  if (!write.empathy) return p;
+  const L = lane();
+  const s = Math.max(0.35, 1 - p.k / 9000);                  // writing shrinks over time
+  const trem = 6 * Math.sin(2 * Math.PI * 5 * p.k / 1000) + (Math.random() - 0.5) * 3;
+  return { x: p.x, y: L.mid + (p.y - L.mid) * s + trem };
+}
+function writeAnalyse() {
+  const pts = write.strokes.flat().map(inkPoint);
+  if (pts.length < 40) return null;
+  const xs = pts.map(p => p.x), x0 = Math.min(...xs), x1 = Math.max(...xs);
+  if (x1 - x0 < 120) return null;
+  const third = (x1 - x0) / 3;
+  const ext = [0, 1, 2].map(k => {
+    const ys = pts.filter(p => p.x >= x0 + k * third && p.x <= x0 + (k + 1) * third).map(p => p.y).sort((a, b) => a - b);
+    if (ys.length < 8) return null;
+    return ys[Math.floor(ys.length * 0.9)] - ys[Math.floor(ys.length * 0.1)];
+  });
+  if (!ext[0] || !ext[2]) return null;
+  return { ext, ratio: ext[2] / ext[0] };
+}
+function writeDraw() {
+  const L = lane();
+  const res = writeAnalyse();
+  const small = res && res.ratio < 0.7;
+  ctx.save();
+  // guide lanes
+  for (const y of [L.top, L.bot]) {
+    ctx.strokeStyle = small ? "rgba(255,138,122,0.8)" : "rgba(126,224,255,0.7)";
+    ctx.lineWidth = 3; ctx.shadowBlur = 20; ctx.shadowColor = ctx.strokeStyle;
+    ctx.setLineDash([18, 12]);
+    ctx.beginPath(); ctx.moveTo(L.x0, y); ctx.lineTo(L.x1, y); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  // ink
+  ctx.globalCompositeOperation = "lighter";
+  ctx.lineCap = "round"; ctx.lineJoin = "round";
+  ctx.strokeStyle = write.empathy ? "rgba(255,190,120,0.95)" : "rgba(255,240,200,0.95)";
+  ctx.shadowColor = "rgba(255,200,120,1)"; ctx.shadowBlur = 18; ctx.lineWidth = 6;
+  for (const s of write.strokes) {
+    if (s.length < 2) continue;
+    ctx.beginPath();
+    s.forEach((p, i) => { const q = inkPoint(p); i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y); });
+    ctx.stroke();
+  }
+  // pen indicator
+  if (lm) {
+    const a = P(lm[4]), b = P(lm[8]);
+    ctx.fillStyle = write.penDown ? "rgba(255,210,122,1)" : "rgba(126,224,255,0.6)";
+    ctx.beginPath(); ctx.arc((a.x + b.x) / 2, (a.y + b.y) / 2, write.penDown ? 9 : 14, 0, 7); ctx.fill();
+  }
+  ctx.restore();
+}
+function writePanel() {
+  const res = writeAnalyse();
+  let size = "–", cls = "";
+  if (res) { const pct = Math.round(res.ratio * 100); size = pct + "%"; if (pct < 70) cls = "warn"; }
+  setPanel(`<h2>Writing Lanes</h2><div class="sub">Pinch thumb and index finger to write. Write your name between the lines, left to right.</div>
+    ${compare("Handwriting training with guide lines helped micrographia in a small trial.", "Glowing lanes guide size, and the camera tracks whether your writing shrinks.")}
+    <div class="row"><div><div class="label">Size at the end vs. the start</div><div class="big ${cls}">${size}</div></div>
+    <div><div class="label">Empathy mode</div><div class="big">${write.empathy ? "On" : "Off"}</div></div></div>
+    ${res ? barsHtml(res.ext.map(v => v || 0)) + '<div class="axis"><span>start</span><span>middle</span><span>end</span></div>' : ""}
+    <div class="note">Press <b>E</b> for empathy mode: your writing gets a 5 Hz tremor and shrinks, like micrographia.
+    ${write.empathy ? '<br><span class="warn">This is a simulation. It does not show how every person with Parkinson\'s feels.</span>' : ""}
+    Space clears the page.</div>`);
+}
+
+// =====================================================================
+// MODE 4: Bloom (amplitude training with a rhythmic cue)
+// =====================================================================
+const bloom = { lo: 1.0, hi: 1.7, open: 0, peakInBeat: 0, nextBeat: 0, flowers: [], hits: 0, beats: 0, pulse: 0 };
+function bloomReset() { bloom.flowers = []; bloom.hits = 0; bloom.beats = 0; bloom.nextBeat = 0; }
+function bloomUpdate(now) {
+  if (lm && handSize) {
+    const v = [8, 12, 16, 20].reduce((s, i) => s + dLm(i, 0), 0) / 4 / handSize;
+    bloom.lo = Math.min(bloom.lo * 0.999 + v * 0.001, v); bloom.hi = Math.max(bloom.hi * 0.999 + v * 0.001, v);
+    bloom.open = Math.min(1, Math.max(0, (v - bloom.lo) / Math.max(0.2, bloom.hi - bloom.lo)));
+    bloom.peakInBeat = Math.max(bloom.peakInBeat, bloom.open);
+  }
+  if (!bloom.nextBeat) bloom.nextBeat = now + 1200;
+  if (now >= bloom.nextBeat) {
+    bloom.beats++;
+    if (bloom.peakInBeat > 0.85 && lm) {
+      bloom.hits++;
+      const c = P(lm[9]);
+      bloom.flowers.push({ x: c.x + (Math.random() - 0.5) * 400, y: c.y + (Math.random() - 0.5) * 300,
+        r: 30 + Math.random() * 30, hue: Math.random() * 360, born: now });
+      tone(660 + (bloom.hits % 5) * 110, 0.35, "sine", 0.12);
+    } else tone(220, 0.06, "square", 0.05);
+    bloom.peakInBeat = 0; bloom.pulse = now; bloom.nextBeat += 1200;
+  }
+}
+function flower(x, y, r, hue, alpha) {
+  ctx.save(); ctx.translate(x, y);
+  ctx.globalCompositeOperation = "lighter";
+  for (let i = 0; i < 8; i++) {
+    ctx.rotate(Math.PI / 4);
+    ctx.fillStyle = `hsla(${hue},90%,65%,${0.35 * alpha})`;
+    ctx.beginPath(); ctx.ellipse(r * 0.55, 0, r * 0.55, r * 0.22, 0, 0, 7); ctx.fill();
+  }
+  ctx.fillStyle = `hsla(${hue + 40},100%,75%,${alpha})`;
+  ctx.beginPath(); ctx.arc(0, 0, r * 0.18, 0, 7); ctx.fill();
+  ctx.restore();
+}
+function bloomDraw(now) {
+  for (const f of bloom.flowers) flower(f.x, f.y, f.r * Math.min(1, (now - f.born) / 400), f.hue, 0.9);
+  if (!lm) return;
+  const c = P(lm[9]);
+  flower(c.x, c.y, 40 + bloom.open * 160, 190 + bloom.open * 120, 1);
+  const k = Math.max(0, 1 - (now - bloom.pulse) / 600);
+  if (k > 0) {
+    ctx.save(); ctx.strokeStyle = `rgba(255,210,122,${k})`; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.arc(c.x, c.y, 220 + (1 - k) * 80, 0, 7); ctx.stroke(); ctx.restore();
+  }
+}
+function bloomPanel() {
+  setPanel(`<h2>Bloom</h2><div class="sub">On every beat, open your hand as wide as you can. Close it between beats.</div>
+    ${compare("Physiotherapy uses big, exaggerated movements (amplitude training, such as LSVT BIG) and rhythmic cues.", "Each big movement on the beat grows a flower. The camera checks the size of every opening.")}
+    <div class="row"><div><div class="label">Big movements on the beat</div><div class="big">${bloom.hits}/${bloom.beats}</div></div>
+    <div><div class="label">Hand openness</div><div class="big">${Math.round(bloom.open * 100)}%</div></div></div>
+    <div class="note">Exercise as a game, with a measure built in. Space resets the garden.</div>`);
+}
+
+// =====================================================================
+// MODE 5: Vanish (snap and dissolve into dust)
+// =====================================================================
+const van = { mask: null, mw: 0, mh: 0, invert: false, plate: null, armT: 0, vanished: false, t0: 0,
+  n: 0, px: null, py: null, vx: null, vy: null, dl: null, col: null, lastSnap: 0 };
+const maskCanvas = document.createElement("canvas"), maskCtx = maskCanvas.getContext("2d");
+const fx = document.createElement("canvas"), fxCtx = fx.getContext("2d");
+const dust = document.createElement("canvas"), dustCtx = dust.getContext("2d");
+const grab = document.createElement("canvas"), grabCtx = grab.getContext("2d", { willReadFrequently: true });
+
+function vanReset() {
+  van.vanished = false; van.n = 0;
+  toast.style.opacity = 0;
+}
+function segment(now) {
+  if (!segmenter) return;
+  segmenter.segmentForVideo(video, now, (res) => {
+    const m = res.confidenceMasks && res.confidenceMasks[0];
+    if (!m) return;
+    van.mw = m.width; van.mh = m.height;
+    van.mask = m.getAsFloat32Array().slice();
+    // Work out which side is "person": the centre of the frame vs. the corners
+    const c = van.mask[Math.floor(van.mh * 0.55) * van.mw + Math.floor(van.mw / 2)];
+    const e = (van.mask[0] + van.mask[van.mw - 1]) / 2;
+    van.invert = e > c;
+  });
+}
+const personAt = (i) => van.invert ? 1 - van.mask[i] : van.mask[i];
+
+function updateMaskCanvas() {
+  if (!van.mask) return;
+  if (maskCanvas.width !== van.mw) { maskCanvas.width = van.mw; maskCanvas.height = van.mh; }
+  const img = maskCtx.createImageData(van.mw, van.mh);
+  for (let i = 0; i < van.mw * van.mh; i++) {
+    const p = personAt(i);
+    img.data[i * 4 + 3] = p > 0.35 ? Math.min(255, (p - 0.35) / 0.3 * 255) : 0;
+  }
+  maskCtx.putImageData(img, 0, 0);
+}
+function drawMirrored(c, src) {
+  c.save(); c.translate(rect.x + rect.w, rect.y); c.scale(-1, 1); c.drawImage(src, 0, 0, rect.w, rect.h); c.restore();
+}
+function capturePlate() {
+  const pl = document.createElement("canvas"); pl.width = W; pl.height = H;
+  drawMirrored(pl.getContext("2d"), video);
+  van.plate = pl;
+  flash("Background saved", "Now step back in, then snap");
+}
+function snap(now) {
+  if (van.vanished || !van.mask || now - van.lastSnap < 1500) return;
+  van.lastSnap = now;
+  // Freeze the current frame and turn every person pixel into a particle
+  grab.width = W; grab.height = H;
+  drawMirrored(grabCtx, video);
+  const img = grabCtx.getImageData(0, 0, W, H).data;
+  const step = 4, list = [];
+  for (let y = Math.max(0, Math.floor(rect.y)); y < Math.min(H, rect.y + rect.h); y += step) {
+    for (let x = Math.max(0, Math.floor(rect.x)); x < Math.min(W, rect.x + rect.w); x += step) {
+      const u = 1 - (x - rect.x) / rect.w, v = (y - rect.y) / rect.h;   // un-mirror to mask coords
+      const mi = Math.min(van.mh - 1, Math.floor(v * van.mh)) * van.mw + Math.min(van.mw - 1, Math.floor(u * van.mw));
+      if (personAt(mi) > 0.5) list.push(x, y);
+    }
+  }
+  const n = list.length / 2;
+  van.n = n;
+  van.px = new Float32Array(n); van.py = new Float32Array(n);
+  van.vx = new Float32Array(n); van.vy = new Float32Array(n);
+  van.dl = new Float32Array(n); van.col = new Uint8ClampedArray(n * 3);
+  for (let i = 0; i < n; i++) {
+    const x = list[i * 2], y = list[i * 2 + 1];
+    van.px[i] = x; van.py[i] = y;
+    van.vx[i] = 0.6 + Math.random() * 2.6; van.vy[i] = -Math.random() * 1.6;
+    van.dl[i] = Math.random() * 1500 + (y - rect.y) / rect.h * 300;
+    const k = (y * W + x) * 4;
+    van.col[i * 3] = img[k]; van.col[i * 3 + 1] = img[k + 1]; van.col[i * 3 + 2] = img[k + 2];
+  }
+  van.vanished = true; van.t0 = now;
+  whoosh();
+}
+// Draw the live room, with the person painted over by the empty background
+function drawWithoutPerson() {
+  drawVideo(0);
+  if (!van.mask) return;
+  updateMaskCanvas();
+  if (fx.width !== W) { fx.width = W; fx.height = H; }
+  fxCtx.clearRect(0, 0, W, H);
+  fxCtx.globalCompositeOperation = "source-over";
+  drawMirrored(fxCtx, maskCanvas);
+  fxCtx.globalCompositeOperation = "source-in";
+  if (van.plate) fxCtx.drawImage(van.plate, 0, 0);
+  else { fxCtx.filter = "blur(40px) brightness(0.8)"; drawMirrored(fxCtx, video); fxCtx.filter = "none"; }
+  fxCtx.globalCompositeOperation = "source-over";
+  ctx.drawImage(fx, 0, 0);
+}
+function dustDraw(now) {
+  if (!van.n) return;
+  if (dust.width !== W) { dust.width = W; dust.height = H; }
+  const img = dustCtx.createImageData(W, H), d = img.data;
+  const t = now - van.t0;
+  let alive = 0;
+  for (let i = 0; i < van.n; i++) {
+    const local = t - van.dl[i];
+    let a = 1;
+    if (local > 0) {
+      van.vx[i] += (Math.random() - 0.45) * 0.25; van.vy[i] += (Math.random() - 0.6) * 0.12;
+      van.px[i] += van.vx[i]; van.py[i] += van.vy[i];
+      a = 1 - local / 1600;
+    }
+    if (a <= 0) continue;
+    alive++;
+    const x = van.px[i] | 0, y = van.py[i] | 0;
+    if (x < 0 || y < 0 || x >= W - 2 || y >= H - 2) continue;
+    const s = local > 0 ? 2 : 4;   // solid before dissolving, fine dust after
+    for (let yy = 0; yy < s; yy++) for (let xx = 0; xx < s; xx++) {
+      const k = ((y + yy) * W + x + xx) * 4;
+      d[k] = van.col[i * 3]; d[k + 1] = van.col[i * 3 + 1]; d[k + 2] = van.col[i * 3 + 2]; d[k + 3] = a * 255;
+    }
+  }
+  dustCtx.putImageData(img, 0, 0);
+  ctx.drawImage(dust, 0, 0);
+  if (!alive) van.n = 0;
+  if (t > 2400 && toast.style.opacity !== "1") flash("Thank you", "", true);
+}
+function vanUpdate(now) {
+  // Snap: thumb and middle fingertip touch, then the middle finger snaps down to the palm
+  if (!lm || !handSize) return;
+  const tm = dLm(4, 12) / handSize, fold = dLm(12, 0) / handSize;
+  if (tm < 0.25) van.armT = now;
+  else if (van.armT && now - van.armT < 350 && tm > 0.45 && fold < 1.3) { van.armT = 0; snap(now); }
+}
+function vanPanel() {
+  setPanel(`<h2>Vanish</h2><div class="sub">The finale.</div>
+    <div class="note" style="font-size:13px;color:var(--text)">
+    1. Step out of view and press <b>B</b> to save the empty background.<br>
+    2. Step back in.<br>
+    3. Snap your fingers, or press <b>S</b>.<br>
+    4. Press <b>R</b> to come back.</div>
+    <div class="note">Background: ${van.plate ? "saved" : '<span class="warn">not saved (a blur will be used)</span>'} ·
+    Body detection: ${van.mask ? "ready" : "starting…"}</div>`);
+}
+function flash(title, sub, stay = false) {
+  toast.innerHTML = title + (sub ? `<small>${sub}</small>` : "");
+  toast.style.opacity = 1;
+  if (!stay) setTimeout(() => { if (!van.vanished) toast.style.opacity = 0; }, 1600);
+}
+
+// ---------- modes ----------
+const MODES = {
+  tap:    { reset: tapReset,    update: tapUpdate,    draw: () => { drawSkeleton(); tapDraw(); }, panel: tapPanel, hint: "Space reset · H hide panels · F fullscreen" },
+  ribbon: { reset: ribbonReset, update: ribbonUpdate, draw: ribbonDraw, panel: ribbonPanel, hint: "Space reset · H hide panels · F fullscreen" },
+  write:  { reset: writeReset,  update: writeUpdate,  draw: writeDraw,  panel: writePanel,  hint: "Pinch to write · E empathy mode · Space clear" },
+  bloom:  { reset: bloomReset,  update: bloomUpdate,  draw: (n) => { drawSkeleton(0.25); bloomDraw(n); }, panel: bloomPanel, hint: "Open wide on the beat · Space reset" },
+  vanish: { reset: vanReset,    update: vanUpdate,    draw: () => {}, panel: vanPanel, hint: "B save background · S snap · R return · H hide panels" },
+};
+function setMode(m) {
+  mode = m;
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.mode === m));
+  MODES[m].reset();
+  hint.textContent = MODES[m].hint;
+  toast.style.opacity = 0;
+  MODES[m].panel();
+}
+document.getElementById("nav").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (b) setMode(b.dataset.mode);
+});
+addEventListener("keydown", (e) => {
+  const k = e.key.toLowerCase();
+  const map = { "1": "tap", "2": "ribbon", "3": "write", "4": "bloom", "5": "vanish" };
+  if (map[k]) setMode(map[k]);
+  else if (k === " ") { e.preventDefault(); MODES[mode].reset(); }
+  else if (k === "h") document.body.classList.toggle("clean");
+  else if (k === "f") { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); }
+  else if (k === "e" && mode === "write") write.empathy = !write.empathy;
+  else if (k === "b" && mode === "vanish") capturePlate();
+  else if (k === "s" && mode === "vanish") snap(performance.now());
+  else if (k === "r" && mode === "vanish") vanReset();
+});
+
+// ---------- main loop ----------
+let lastAnalyse = 0;
+function loop() {
+  const now = performance.now();
+  if (video.readyState >= 2 && video.currentTime !== lastVideoTime) {
+    lastVideoTime = video.currentTime;
+    const res = hands.detectForVideo(video, now);
+    lm = res.landmarks && res.landmarks.length ? res.landmarks[0] : null;
+    handSize = lm ? dLm(0, 9) : 0;
+    if (mode === "vanish") segment(now);
+    MODES[mode].update(now);
+  }
+  if (mode === "vanish" && van.vanished) drawWithoutPerson();
+  else drawVideo(mode === "vanish" ? 0 : 0.35);
+  MODES[mode].draw(now);
+  if (mode === "vanish") dustDraw(now);
+  if (now - lastAnalyse > 150) {
+    lastAnalyse = now;
+    if (mode === "ribbon") ribbonAnalyse();
+    MODES[mode].panel();
+  }
+  requestAnimationFrame(loop);
+}
+
+// ---------- start ----------
+document.getElementById("go").addEventListener("click", async () => {
+  const btn = document.getElementById("go");
+  btn.disabled = true;
+  try {
+    audio = new (window.AudioContext || window.webkitAudioContext)();
+    statusEl.textContent = "Starting camera…";
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" }, audio: false });
+    video.srcObject = stream;
+    await video.play();
+    resize();
+    statusEl.textContent = "Loading hand tracking…";
+    const files = await FilesetResolver.forVisionTasks(WASM);
+    hands = await HandLandmarker.createFromOptions(files, {
+      baseOptions: { modelAssetPath: HAND_MODEL, delegate: "GPU" }, runningMode: "VIDEO", numHands: 1 });
+    statusEl.textContent = "Loading body detection…";
+    segmenter = await ImageSegmenter.createFromOptions(files, {
+      baseOptions: { modelAssetPath: SEG_MODEL, delegate: "GPU" }, runningMode: "VIDEO",
+      outputConfidenceMasks: true, outputCategoryMask: false });
+    document.getElementById("start").remove();
+    setMode("tap");
+    loop();
+  } catch (err) {
+    console.error(err);
+    statusEl.innerHTML = `<span class="warn">Could not start: ${err.message}</span><br>Allow camera access and open this page over https or localhost.`;
+    btn.disabled = false;
+  }
+});
+resize();
+if (new URLSearchParams(location.search).has("autostart")) {   // used for automated testing only
+  window.__mm = { van, snap, setMode };
+  document.getElementById("go").click();
+}
+</script>
+</body>
+</html>
