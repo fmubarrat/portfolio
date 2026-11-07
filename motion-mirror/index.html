@@ -68,12 +68,25 @@
   #hudBtns:empty { display: none; }
 
   /* cards (demo, results, summary, onboarding) */
-  .scrim { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; padding: 16px; background: rgba(4,7,13,.55); }
+  .cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 0 18px; }
+  .cmp div { padding: 12px 14px; border-radius: 14px; background: rgba(255,255,255,.04); border: 1px solid var(--line); font-size: 15px; line-height: 1.45; }
+  .cmp b { display: flex; gap: 6px; align-items: center; font-size: 12px; letter-spacing: .5px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .cmp .mm { border-color: rgba(94,234,212,.35); background: rgba(94,234,212,.06); }
+  .cmp .mm b { color: var(--accent); }
+  table.map { width: 100%; border-collapse: collapse; font-size: 15px; margin: 4px 0 18px; }
+  table.map th { text-align: left; font-size: 12px; letter-spacing: .5px; text-transform: uppercase; color: var(--muted); padding: 0 10px 8px 0; }
+  table.map td { padding: 12px 10px 12px 0; border-top: 1px solid var(--line); vertical-align: top; line-height: 1.45; }
+  table.map td:first-child { color: var(--muted); }
+  table.map .k { color: var(--text); font-weight: 600; display: flex; gap: 8px; align-items: center; margin-bottom: 2px; }
+  .card.wide { width: min(760px, 100%); }
+  .card .stick { position: sticky; bottom: -28px; margin: 0 -28px -28px; padding: 14px 28px 20px; background: rgba(14,19,32,.97); border-top: 1px solid var(--line); }
+  .card { padding-bottom: 28px; }
+  .scrim { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 16px; background: rgba(4,7,13,.55); }
   .card { width: min(520px, 100%); max-height: calc(100vh - 32px); overflow-y: auto; border-radius: 24px; padding: 28px; background: rgba(14,19,32,.92); border: 1px solid var(--line); box-shadow: 0 30px 80px rgba(0,0,0,.45); }
   .eyebrow { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: var(--accent); }
   .card h2 { font-size: 28px; line-height: 1.15; letter-spacing: -.5px; margin: 10px 0 8px; }
   .card p.lead { font-size: 17px; color: var(--muted); line-height: 1.5; margin: 0 0 18px; }
-  .demo { width: 100%; aspect-ratio: 16 / 9; border-radius: 16px; background: radial-gradient(circle at 50% 40%, rgba(94,234,212,.08), rgba(255,255,255,.02)); border: 1px solid var(--line); display: block; margin-bottom: 20px; }
+  .demo { width: 100%; aspect-ratio: 2 / 1; border-radius: 16px; background: radial-gradient(circle at 50% 40%, rgba(94,234,212,.08), rgba(255,255,255,.02)); border: 1px solid var(--line); display: block; margin-bottom: 20px; }
   .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
   .row .grow { flex: 1; }
   .points { list-style: none; margin: 0 0 18px; padding: 0; }
@@ -169,7 +182,8 @@
     <div class="mark" id="startMark"></div>
     <h1>Motion Mirror</h1>
     <p>Short movement activities based on the standard Parkinson's motor exam and on physiotherapy research, measured with an ordinary camera.</p>
-    <button class="btn" id="go"><span data-icon="camera"></span>Start</button>
+    <div class="row" style="justify-content:center"><button class="btn" id="go"><span data-icon="camera"></span>Start</button>
+    <button class="btn secondary" data-act="map"><span data-icon="clipboard"></span>How it maps to the clinic</button></div>
     <div id="status"></div>
     <div class="feat">
       <span><span data-icon="shield"></span>Private: runs on your device</span>
@@ -195,6 +209,9 @@ const ICONS = {
   tap: '<circle cx="7" cy="16" r="2.5"/><circle cx="17" cy="8" r="2.5"/><path d="M9 14.5l6-5"/>',
   steady: '<path d="M2 12h4l2-5 4 10 2-5h8"/>',
   write: '<path d="M4 20h16"/><path d="M6 16l9.5-9.5a2.1 2.1 0 0 1 3 3L9 19l-4 1z"/>',
+  spiral: '<path d="M12 12a1.5 1.5 0 0 1 1.5 1.5A3 3 0 0 1 10.5 16 4.5 4.5 0 0 1 6 11.5 6 6 0 0 1 12 5.5a7.5 7.5 0 0 1 7.5 7.5"/>',
+  flower: '<circle cx="12" cy="9" r="2.2"/><path d="M12 6.8a2.6 2.6 0 1 1 2.6-2.6M14.2 9a2.6 2.6 0 1 1 2.6 2.6M12 11.2a2.6 2.6 0 1 1-2.6 2.6M9.8 9a2.6 2.6 0 1 1-2.6-2.6"/><path d="M12 11.5V21M12 17c-2 0-3.5-1-4-3M12 18c2 0 3.5-1 4-3"/>',
+  close: '<path d="M6 6l12 12M18 6L6 18"/>',
   amplitude: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
   finale: '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 17l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/>',
   user: '<circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/>',
@@ -353,6 +370,7 @@ const SRC = {
   micro: "Nackaerts E et al. Training for micrographia alters neural connectivity in Parkinson's disease. Frontiers in Neuroscience, 2018.",
   big: "Ebersbach G et al. Comparing exercise in Parkinson's disease: the Berlin LSVT BIG study. Movement Disorders, 2010.",
   cue: "Nieuwboer A et al. Cueing training in the home improves gait-related mobility in Parkinson's disease (RESCUE trial). J Neurol Neurosurg Psychiatry, 2007.",
+  spiral: "Bain PG, Findley LJ et al. Assessing tremor severity. J Neurol Neurosurg Psychiatry, 1993.",
 };
 
 // ---------- 1. Finger tapping ----------
@@ -362,6 +380,7 @@ const TAP = {
   key: "tap", name: "Finger tapping", icon: "tap",
   title: "Finger tapping", lead: "Tap your thumb and index finger together, as big and as fast as you can, 10 times.",
   why: "Finger tapping is part of the standard Parkinson's motor exam (MDS-UPDRS item 3.4). Clinicians watch the speed, the size of each tap, and whether taps get smaller as they repeat.", src: SRC.updrs,
+  clinic: "A neurologist watches 10 taps and gives a score from 0 to 4.", here: "The camera measures the speed and size of every tap.",
   reset() { tap.open = false; tap.peak = 0; tap.taps = []; },
   begin() { tap.taps = []; tap.open = false; tap.peak = 0; },
   update(now) {
@@ -418,6 +437,7 @@ const STEADY = {
   key: "steady", name: "Steadiness", icon: "steady",
   title: "Steadiness", lead: "Hold your hand up in front of you, fingers spread, as still as you can for 10 seconds.",
   why: "Tremor is a main motor sign of Parkinson's. Rest tremor is typically 4–6 Hz. This activity uses the outstretched-hand position, which matches postural tremor (MDS-UPDRS item 3.15).", src: SRC.updrs,
+  clinic: "The patient holds their hands out. A clinician scores the tremor from 0 to 4 by eye.", here: "The camera measures how fast and how much the hand shakes.",
   reset() { rib.hist = []; rib.trail = []; rib.live = null; },
   begin() { rib.hist = []; },
   update(now) {
@@ -466,83 +486,111 @@ const STEADY = {
   },
 };
 
-// ---------- 3. Handwriting with visual cues ----------
-const wr = { strokes: [], pen: false, sim: false, ink: 0, lastT: 0, lastInk: 0 };
-function lanes() { const mid = H * 0.48, h = Math.min(200, H * 0.22); return { top: mid - h / 2, bot: mid + h / 2, mid, h, x0: W * 0.08, x1: W * 0.92 }; }
-function inkPoint(p) {
-  if (!wr.sim) return p;
-  const L = lanes(), s = Math.max(0.35, 1 - p.k / 9000);
-  return { x: p.x, y: L.mid + (p.y - L.mid) * s + 6 * Math.sin(2 * Math.PI * 5 * p.k / 1000) + (Math.random() - 0.5) * 3 };
+// ---------- 3. Spiral tracing (follow the light) ----------
+// Replaces pen-and-paper spiral drawing: the person only follows a slow light with a fingertip.
+const sp = { pts: [], cum: [], len: 0, R: 0, tol: 0, pos: 0, touch: 0, lastT: 0, hist: [], trail: [], on: 0, total: 0, devSum: 0, paused: false };
+const SP_TIME = 18000;          // a slow, comfortable pace
+function spiralBuild() {
+  const cx = W / 2, cy = H * 0.46, R = Math.min(W, H) * 0.3, turns = 2.25, n = 700;
+  sp.pts = []; sp.cum = [0]; sp.R = R; sp.tol = Math.max(34, Math.min(W, H) * 0.06);
+  for (let i = 0; i <= n; i++) {
+    const f = i / n, th = f * turns * Math.PI * 2, r = R * (0.1 + 0.9 * f);
+    sp.pts.push({ x: cx + r * Math.cos(th), y: cy + r * Math.sin(th) });
+    if (i) sp.cum.push(sp.cum[i - 1] + dist(sp.pts[i], sp.pts[i - 1]));
+  }
+  sp.len = sp.cum[n];
 }
-const WRITE = {
-  key: "write", name: "Handwriting", icon: "write",
-  title: "Handwriting", lead: "Pinch your thumb and index finger to write. Write your name between the two lines.",
-  why: "Writing that gets smaller as you go (micrographia) is common in Parkinson's. Handwriting training with visual guide lines is studied as a therapy, and changed brain connectivity in a placebo-controlled trial.", src: SRC.micro,
-  reset() { wr.strokes = []; wr.pen = false; wr.ink = 0; wr.lastInk = 0; },
-  begin() { wr.strokes = []; wr.ink = 0; wr.lastInk = 0; },
-  done(now) { if (flow.phase === "run") finish(now, WRITE.analyse()); },
+function spiralAt(s) {
+  let i = 1; while (i < sp.cum.length - 1 && sp.cum[i] < s) i++;
+  const a = sp.pts[i - 1], b = sp.pts[i], u = (s - sp.cum[i - 1]) / Math.max(1e-6, sp.cum[i] - sp.cum[i - 1]);
+  return { x: a.x + (b.x - a.x) * u, y: a.y + (b.y - a.y) * u };
+}
+function nearestDev(p) { let m = 1e9; for (let i = 0; i < sp.pts.length; i += 2) { const d = dist(p, sp.pts[i]); if (d < m) m = d; } return m; }
+const SPIRAL = {
+  key: "spiral", name: "Spiral", icon: "spiral",
+  title: "Trace the spiral", lead: "Put your index finger on the light, then follow it slowly as it moves along the spiral.",
+  why: "Drawing an Archimedean spiral is a common clinical way to assess tremor and movement control. It is usually done on paper and rated by eye on a 0–10 scale.", src: SRC.spiral,
+  clinic: "The patient draws a spiral on paper. A clinician rates it by eye from 0 to 10.", here: "You follow a slow light in the air. The camera measures accuracy and shaking.",
+  reset() { spiralBuild(); sp.pos = 0; sp.touch = 0; sp.hist = []; sp.trail = []; sp.on = 0; sp.total = 0; sp.devSum = 0; sp.lastT = 0; sp.paused = false; },
+  begin() {},
+  tip() { return lm ? P(lm[8]) : null; },
   update(now) {
-    const dt = wr.lastT ? now - wr.lastT : 0; wr.lastT = now;
-    flowTick(now, false);
-    if (flow.phase !== "run") { wr.pen = false; return; }
-    if (lm && handSize) {
-      const pinch = dLm(4, 8) / handSize, down = wr.pen ? pinch < 0.42 : pinch < 0.28;
-      if (down && !wr.pen) wr.strokes.push([]);
-      wr.pen = down;
-      if (down) { wr.ink += dt; wr.lastInk = now; const a = P(lm[4]), b = P(lm[8]); wr.strokes[wr.strokes.length - 1].push({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, k: wr.ink }); }
-    } else wr.pen = false;
-    if (wr.strokes.reduce((s, x) => s + x.length, 0) > 60 && wr.lastInk && now - wr.lastInk > 3500) WRITE.done(now);
-  },
-  analyse() {
-    const pts = wr.strokes.flat().map(inkPoint);
-    if (pts.length < 40) return { short: true };
-    const xs = pts.map(p => p.x), x0 = Math.min(...xs), x1 = Math.max(...xs);
-    if (x1 - x0 < 120) return { short: true };
-    const third = (x1 - x0) / 3;
-    const ext = [0, 1, 2].map(k => { const ys = pts.filter(p => p.x >= x0 + k * third && p.x <= x0 + (k + 1) * third).map(p => p.y).sort((a, b) => a - b); return ys.length < 8 ? 0 : ys[Math.floor(ys.length * 0.9)] - ys[Math.floor(ys.length * 0.1)]; });
-    if (!ext[0] || !ext[2]) return { short: true };
-    return { ext, ratio: ext[2] / ext[0], strokes: wr.strokes.length, secs: wr.ink / 1000, sim: wr.sim };
+    const dt = sp.lastT ? Math.min(80, now - sp.lastT) : 0; sp.lastT = now;
+    const tip = SPIRAL.tip();
+    if (tip) { sp.trail.push({ t: now, x: tip.x, y: tip.y }); }
+    while (sp.trail.length && now - sp.trail[0].t > 2500) sp.trail.shift();
+    if (flow.phase === "ready") {           // wait until the finger rests on the start light
+      const near = tip && dist(tip, sp.pts[0]) < sp.tol * 1.4;
+      if (near) { sp.touch ||= now; if (now - sp.touch > 700) { flow.phase = "run"; flow.t0 = now; tone(880, 0.15); } } else sp.touch = 0;
+      return;
+    }
+    if (flow.phase !== "run") return;
+    const pacer = spiralAt(sp.pos);
+    sp.paused = !tip || dist(tip, pacer) > sp.tol * 2.6;      // the light waits for you
+    if (!sp.paused) sp.pos += sp.len / SP_TIME * dt;
+    if (tip && handSize) {
+      const dev = nearestDev(tip);
+      sp.total++; sp.devSum += dev; if (dev < sp.tol) sp.on++;
+      sp.hist.push({ t: now, x: tip.x / handSize, y: tip.y / handSize });
+    }
+    if (sp.pos >= sp.len) {
+      const tr = tremorOf(sp.hist, 60000) || { amp: 0, peak: null, spec: new Array(12).fill(0), bandShare: 0 };
+      finish(now, { onTrack: sp.total ? sp.on / sp.total : 0, meanDev: sp.total ? sp.devSum / sp.total / sp.R : 0, tr, secs: (now - flow.t0) / 1000 });
+    }
   },
   draw(now) {
-    const L = lanes();
-    ctx.save();
-    ctx.fillStyle = "rgba(94,234,212,.05)"; ctx.fillRect(L.x0, L.top, L.x1 - L.x0, L.h);
-    ctx.strokeStyle = "rgba(94,234,212,.7)"; ctx.lineWidth = 2.5; ctx.setLineDash([16, 10]);
-    for (const y of [L.top, L.bot]) { ctx.beginPath(); ctx.moveTo(L.x0, y); ctx.lineTo(L.x1, y); ctx.stroke(); }
-    ctx.setLineDash([]); ctx.lineCap = "round"; ctx.lineJoin = "round";
-    ctx.strokeStyle = wr.sim ? "#fbbf77" : "#f3f6fb"; ctx.lineWidth = 6; ctx.shadowBlur = 14; ctx.shadowColor = wr.sim ? "rgba(251,191,119,.8)" : "rgba(255,255,255,.6)";
-    for (const s of wr.strokes) { if (s.length < 2) continue; ctx.beginPath(); s.forEach((p, i) => { const q = inkPoint(p); i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y); }); ctx.stroke(); }
+    if (!sp.pts.length) spiralBuild();
+    ctx.save(); ctx.lineCap = "round"; ctx.lineJoin = "round";
+    ctx.strokeStyle = "rgba(94,234,212,.10)"; ctx.lineWidth = sp.tol * 2;   // the "lane" you can stay within
+    ctx.beginPath(); sp.pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke();
+    ctx.strokeStyle = "rgba(94,234,212,.55)"; ctx.lineWidth = 2; ctx.setLineDash([10, 10]);
+    ctx.beginPath(); sp.pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke(); ctx.setLineDash([]);
+    // your fingertip trail
+    const tr = sp.trail;
+    for (let i = 1; i < tr.length; i++) {
+      const a = tr[i - 1], b = tr[i], age = (now - b.t) / 2500;
+      ctx.strokeStyle = `rgba(243,246,251,${Math.max(0, 1 - age) * 0.9})`; ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    }
+    // the light to follow
+    const p = flow.phase === "ready" ? sp.pts[0] : spiralAt(sp.pos);
+    const pulse = 1 + 0.15 * Math.sin(now / 180);
+    ctx.fillStyle = "rgba(251,191,119,.25)"; ctx.beginPath(); ctx.arc(p.x, p.y, sp.tol * 1.2 * pulse, 0, 7); ctx.fill();
+    ctx.fillStyle = "#fbbf77"; ctx.shadowBlur = 30; ctx.shadowColor = "#fbbf77"; ctx.beginPath(); ctx.arc(p.x, p.y, 14, 0, 7); ctx.fill();
     ctx.restore();
-    if (lm) { const a = P(lm[4]), b = P(lm[8]); ctx.save(); ctx.fillStyle = wr.pen ? "#fbbf77" : "rgba(94,234,212,.7)"; ctx.beginPath(); ctx.arc((a.x + b.x) / 2, (a.y + b.y) / 2, wr.pen ? 8 : 14, 0, 7); ctx.fill(); ctx.restore(); }
+    const tip = SPIRAL.tip();
+    if (tip) { ctx.save(); ctx.strokeStyle = "#5eead4"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(tip.x, tip.y, 16, 0, 7); ctx.stroke(); ctx.restore(); }
+    if (flow.phase === "ready" && sp.touch) ring(sp.pts[0].x, sp.pts[0].y, sp.tol * 1.6, (now - sp.touch) / 700, "#fbbf77");
   },
   hud(now) {
-    if (flow.phase === "ready") return { icon: "hand", text: "Show your hand" };
-    const sim = `<button class="btn secondary" data-act="sim">${icon("eye")}${wr.sim ? "Simulation on" : "Simulate"}</button>`;
-    return { icon: "write", text: wr.pen ? "Writing…" : "Pinch to write", sub: "Stay between the lines", buttons: `${sim}<button class="btn" data-act="wrdone">${icon("check")}Done</button>` };
+    if (flow.phase === "ready") return { icon: "hand", text: "Put your finger on the light", sub: "Use your index finger" };
+    return { icon: "spiral", text: sp.paused ? "Catch up with the light" : "Follow the light", sub: sp.paused ? "It will wait for you" : "Slow and steady", bar: sp.pos / sp.len };
   },
   summary(r) {
-    if (r.short) return { headline: "We need a little more writing", points: ["Write a few letters from left to right between the lines, then press Done."] };
-    const pct = Math.round(r.ratio * 100), p = [];
-    if (r.sim) p.push("The micrographia simulation was on, so this shows its effect, not your own writing.");
-    p.push(r.ratio >= 0.85 ? "Your letters stayed about the same height from start to finish." : r.ratio >= 0.7 ? "Your letters got a little smaller towards the end." : `By the end, your letters were about ${pct}% of their starting height.`);
-    p.push("Guide lines like these are used in handwriting training to help keep writing large.");
-    return { headline: r.ratio >= 0.85 ? "Writing stayed a similar size" : "Writing got smaller", points: p, line: `end height ${pct}% of start${r.sim ? " (simulation)" : ""}` };
+    const pct = Math.round(r.onTrack * 100), t = r.tr, p = [];
+    p.push(`You stayed on the path ${pct}% of the time.`);
+    if (!t.peak || t.amp < 1.5) p.push("We did not pick up any clear shaking while you traced.");
+    else p.push(`We picked up ${t.amp < 3 ? "very small" : "some"} shaking while you traced, about ${Math.round(t.peak)} times per second.`);
+    return { headline: pct >= 80 ? "You followed the spiral closely" : pct >= 50 ? "You followed most of the spiral" : "The spiral was hard to follow", points: p,
+      line: `on path ${pct}% · mean deviation ${(r.meanDev * 100).toFixed(1)}% of radius · ${t.peak ? t.peak.toFixed(1) + " Hz" : "no tremor peak"}` };
   },
   metrics(r) {
-    if (r.short) return "";
-    return table([["Letter height, last vs first third", Math.round(r.ratio * 100) + "%"], ["Strokes", r.strokes], ["Pen-down time", r.secs.toFixed(1) + " s"], ["Simulation", r.sim ? "on" : "off"]])
-      + bars(r.ext) + `<div class="axis"><span>start</span><span>middle</span><span>end</span></div>`;
+    const t = r.tr;
+    return table([["Time on path (within lane)", Math.round(r.onTrack * 100) + "%"], ["Mean deviation from spiral", (r.meanDev * 100).toFixed(1) + "% of radius"],
+      ["Tremor peak while tracing", t.peak ? t.peak.toFixed(1) + " Hz" : "none above noise floor"], ["Tremor amplitude", t.amp.toFixed(1) + "% hand size"], ["Duration (pacer waits if needed)", r.secs.toFixed(0) + " s"]])
+      + bars(t.spec, i => i + 1 >= 4 && i + 1 <= 7) + `<div class="axis"><span>1 Hz</span><span>4–7 Hz</span><span>12 Hz</span></div>`;
   },
 };
 
-// ---------- 4. Amplitude training with a rhythmic cue ----------
-const bl = { lo: 1.0, hi: 1.7, open: 0, peak: 0, next: 0, hits: 0, beats: 0, pulse: 0, marks: [] };
-const BL_BEATS = 12, BL_GAP = 1200;
+// ---------- 4. Big movements (amplitude training with a rhythmic cue) ----------
+const bl = { lo: 1.0, hi: 1.7, open: 0, peak: 0, next: 0, hits: 0, beats: 0, pulse: 0, marks: [], missAt: 0 };
+const BL_BEATS = 10, BL_GAP = 1800;     // slow tempo, suitable for older adults
 const AMP = {
-  key: "amp", name: "Big movements", icon: "amplitude",
-  title: "Big movements", lead: "On every beat, open your hand as wide as you can. Close it between beats.",
-  why: "Practising large, exaggerated movements is the basis of LSVT BIG, an exercise programme for Parkinson's. External rhythmic cues are also used in physiotherapy to support movement.", src: SRC.big + " " + SRC.cue,
-  reset() { bl.hits = 0; bl.beats = 0; bl.next = 0; bl.marks = []; },
+  key: "amp", name: "Big movements", icon: "flower",
+  title: "Big movements", lead: "On each beat, open your hand wide until the flower reaches the ring. Then close it.",
+  why: "Practising large, exaggerated movements is the basis of LSVT BIG, an exercise programme for Parkinson's. A steady rhythm (external cueing) is also used in physiotherapy to support movement.", src: SRC.big + " " + SRC.cue,
+  clinic: "A therapist coaches big, repeated movements, often to a rhythm (LSVT BIG).", here: "A slow beat and a growing garden coach big movements at home.",
+  reset() { bl.hits = 0; bl.beats = 0; bl.next = 0; bl.marks = []; bl.missAt = 0; },
   begin(now) { bl.hits = 0; bl.beats = 0; bl.next = now + BL_GAP; bl.peak = 0; bl.marks = []; },
   update(now) {
     flowTick(now);
@@ -555,32 +603,50 @@ const AMP = {
     bl.beats++;
     const hit = bl.peak > 0.85 && lm;
     bl.marks.push(hit ? 1 : 0);
-    if (hit) { bl.hits++; tone(660 + (bl.hits % 5) * 110, 0.3, "sine", 0.08); } else tone(220, 0.05, "square", 0.03);
+    if (hit) { bl.hits++; tone(523 + (bl.hits % 5) * 98, 0.35, "sine", 0.08); } else { tone(220, 0.05, "square", 0.03); bl.missAt = now; }
     bl.peak = 0; bl.pulse = now; bl.next += BL_GAP;
     if (bl.beats >= BL_BEATS) finish(now, { hits: bl.hits, beats: bl.beats });
   },
   draw(now) {
-    drawHand(0.6);
+    // garden along the bottom: one spot per repetition
+    const gy = H - 150, gx0 = W * 0.18, gx1 = W * 0.82;
+    for (let i = 0; i < BL_BEATS; i++) {
+      const x = gx0 + (gx1 - gx0) * (i / (BL_BEATS - 1));
+      if (bl.marks[i] === 1) bloom(x, gy, 26, 150 + i * 22, 1);
+      else { ctx.save(); ctx.fillStyle = bl.marks[i] === 0 ? "rgba(255,255,255,.18)" : "rgba(255,255,255,.08)"; ctx.beginPath(); ctx.arc(x, gy, 6, 0, 7); ctx.fill(); ctx.restore(); }
+    }
     if (!lm) return;
-    const c = P(lm[9]), r = handSize * (1.2 + bl.open * 1.2);
-    ctx.save(); ctx.strokeStyle = `rgba(94,234,212,${0.35 + bl.open * 0.5})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(c.x, c.y, r, 0, 7); ctx.stroke();
-    const k = Math.max(0, 1 - (now - bl.pulse) / 600);
-    if (k > 0 && flow.phase === "run") { ctx.strokeStyle = `rgba(251,191,119,${k})`; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(c.x, c.y, handSize * 2.6 + (1 - k) * 60, 0, 7); ctx.stroke(); }
-    ctx.restore();
+    const c = P(lm[9]), target = handSize * 2.6, big = bl.open > 0.85;
+    ctx.save();
+    ctx.strokeStyle = big ? "#fbbf77" : "rgba(255,255,255,.35)"; ctx.lineWidth = big ? 5 : 3; ctx.setLineDash(big ? [] : [10, 10]);
+    if (big) { ctx.shadowBlur = 24; ctx.shadowColor = "#fbbf77"; }
+    ctx.beginPath(); ctx.arc(c.x, c.y, target, 0, 7); ctx.stroke(); ctx.restore();
+    bloom(c.x, c.y, handSize * (0.7 + 1.9 * bl.open), 170 + bl.open * 40, 0.9);
+    const k = Math.max(0, 1 - (now - bl.pulse) / 700);
+    if (k > 0 && flow.phase === "run") { ctx.save(); ctx.strokeStyle = `rgba(94,234,212,${k})`; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(c.x, c.y, target + 14 + (1 - k) * 40, 0, 7); ctx.stroke(); ctx.restore(); }
+    if (now - bl.missAt < 800 && flow.phase === "run") {
+      ctx.save(); ctx.font = "800 40px Inter, sans-serif"; ctx.textAlign = "center"; ctx.fillStyle = "#fbbf77"; ctx.shadowBlur = 12; ctx.shadowColor = "rgba(0,0,0,.6)";
+      ctx.fillText("Bigger!", c.x, c.y - target - 24); ctx.restore();
+    }
   },
   hud(now) {
     if (flow.phase === "ready") return { icon: "hand", text: "Show your open hand" };
-    if (flow.phase === "count") return { icon: "amplitude", text: "Open wide on the beat" };
-    return { icon: "amplitude", text: `Open wide  ${bl.hits} / ${bl.beats}`, sub: `Beat ${bl.beats} of ${BL_BEATS}`, bar: bl.beats / BL_BEATS };
+    if (flow.phase === "count") return { icon: "flower", text: "Open wide on each beat" };
+    return { icon: "flower", text: "Open wide to the ring", sub: `${bl.hits} flowers · ${bl.beats} of ${BL_BEATS}`, bar: bl.beats / BL_BEATS };
   },
   summary(r) {
-    return { headline: `${r.hits} of ${r.beats} big movements on the beat`, points: ["This is an exercise, not a test. Practising big movements is used in Parkinson's physiotherapy because movements can become smaller over time."],
+    return { headline: `You grew ${r.hits} of ${r.beats} flowers`, points: [`${r.hits} of your ${r.beats} movements were big enough to reach the ring.`, "Practising big movements is part of Parkinson's physiotherapy, because movements can become smaller over time."],
       line: `${r.hits}/${r.beats} full-amplitude openings on cue` };
   },
   metrics(r) {
-    return table([["Full-amplitude openings on cue", `${r.hits} / ${r.beats}`], ["Cue", "1 beat every 1.2 s"], ["Hit criterion", "≥ 85% of calibrated range"]]);
+    return table([["Full-amplitude openings on cue", `${r.hits} / ${r.beats}`], ["Cue", "1 beat every 1.8 s"], ["Target", "≥ 85% of calibrated hand-opening range"]]);
   },
 };
+function bloom(x, y, r, hue, a) {
+  ctx.save(); ctx.translate(x, y);
+  for (let i = 0; i < 6; i++) { ctx.rotate(Math.PI / 3); ctx.fillStyle = `hsla(${hue},70%,68%,${0.55 * a})`; ctx.beginPath(); ctx.ellipse(r * 0.5, 0, r * 0.5, r * 0.26, 0, 0, 7); ctx.fill(); }
+  ctx.fillStyle = `rgba(251,191,119,${a})`; ctx.beginPath(); ctx.arc(0, 0, r * 0.2, 0, 7); ctx.fill(); ctx.restore();
+}
 
 // ---------- 5. Finale: vanish ----------
 const van = { mask: null, mw: 0, mh: 0, invert: false, phase: "learn", t0: 0, armT: 0, lastSnap: 0, frames: 0, n: 0, px: null, py: null, vx: null, vy: null, dl: null, col: null };
@@ -689,7 +755,7 @@ const FINALE = {
   },
 };
 
-const ACTS = [TAP, STEADY, WRITE, AMP, FINALE];
+const ACTS = [TAP, STEADY, SPIRAL, AMP, FINALE];
 let current = 0;
 const A = () => ACTS[current];
 
@@ -720,7 +786,8 @@ function showDemo() {
   const a = A();
   layer(`<div class="eyebrow">${icon(a.icon)}Activity ${current + 1} of 4</div><h2>${a.title}</h2><p class="lead">${a.lead}</p>
     <canvas class="demo" id="demo" width="640" height="360"></canvas>
-    <div class="row"><button class="btn" data-act="start">${icon("play")}Start</button><div class="grow"></div>
+    <div class="cmp"><div><b>${icon("clipboard")}In the clinic today</b>${a.clinic}</div><div class="mm"><b>${icon("logo")}With Motion Mirror</b>${a.here}</div></div>
+    <div class="row stick"><button class="btn" data-act="start">${icon("play")}Start</button><div class="grow"></div>
     <button class="btn link" data-act="skipdemos">Skip demos next time</button></div>`);
   cancelAnimationFrame(demoAnim);
   const c = $("demo"), g = c.getContext("2d"), t0 = performance.now();
@@ -764,11 +831,21 @@ function drawDemo(g, key, t) {
     g.strokeStyle = "#f3f6fb"; g.lineWidth = 5; g.lineCap = "round"; g.beginPath();
     for (let x = 80; x <= xEnd; x += 3) { const y = 175 - 45 * Math.sin((x - 80) * 0.06) * (0.6 + 0.4 * Math.sin((x - 80) * 0.013)); x === 80 ? g.moveTo(x, y) : g.lineTo(x, y); }
     g.stroke(); label(g, "Pinch and write", w, h);
+  } else if (key === "spiral") {
+    const cx = 320, cy = 170, R = 125, turns = 2.25, n = 300, pts = [];
+    for (let i = 0; i <= n; i++) { const f = i / n, th = f * turns * Math.PI * 2, r = R * (0.1 + 0.9 * f); pts.push([cx + r * Math.cos(th), cy + r * Math.sin(th)]); }
+    g.lineCap = "round"; g.strokeStyle = "rgba(94,234,212,.12)"; g.lineWidth = 34; g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(...p) : g.moveTo(...p)); g.stroke();
+    const k = Math.floor(((t % 6) / 5.4) * n), upto = Math.min(n, k);
+    g.strokeStyle = "rgba(243,246,251,.9)"; g.lineWidth = 4; g.beginPath(); pts.slice(0, upto + 1).forEach((p, i) => i ? g.lineTo(...p) : g.moveTo(...p)); g.stroke();
+    const p = pts[upto]; g.fillStyle = "#fbbf77"; g.beginPath(); g.arc(p[0], p[1], 10, 0, 7); g.fill();
+    label(g, "Follow the light", w, h);
   } else if (key === "amp") {
-    const beat = t % 1.2, o = beat < 0.45 ? beat / 0.45 : Math.max(0, 1 - (beat - 0.45) / 0.6);
-    glyph(g, 320, 215, 160, o);
-    const k = Math.max(0, 1 - beat / 0.5); g.strokeStyle = `rgba(251,191,119,${k})`; g.lineWidth = 4; g.beginPath(); g.arc(320, 180, 160 + (1 - k) * 30, 0, 7); g.stroke();
-    label(g, o > 0.8 ? "Open wide" : "Close", w, h);
+    const beat = t % 1.8, o = beat < 0.6 ? beat / 0.6 : Math.max(0, 1 - (beat - 0.6) / 0.9);
+    g.strokeStyle = o > 0.85 ? "#fbbf77" : "rgba(255,255,255,.35)"; g.lineWidth = 4; g.setLineDash(o > 0.85 ? [] : [10, 10]);
+    g.beginPath(); g.arc(320, 170, 120, 0, 7); g.stroke(); g.setLineDash([]);
+    for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3, r = 30 + 90 * o; g.save(); g.translate(320, 170); g.rotate(a); g.fillStyle = "rgba(167,220,200,.55)"; g.beginPath(); g.ellipse(r * 0.5, 0, r * 0.5, r * 0.25, 0, 0, 7); g.fill(); g.restore(); }
+    g.fillStyle = "#fbbf77"; g.beginPath(); g.arc(320, 170, 12, 0, 7); g.fill();
+    label(g, o > 0.85 ? "Reach the ring" : "Close", w, h);
   }
 }
 function label(g, text, w, h) { g.fillStyle = "rgba(243,246,251,.85)"; g.font = "600 22px Inter, sans-serif"; g.textAlign = "center"; g.fillText(text, w / 2, h - 22); }
@@ -782,10 +859,10 @@ function showResult() {
   const details = !doctor && detailsOpen ? `<div class="details">${a.metrics(r)}</div>` : "";
   layer(`<div class="eyebrow">${icon(a.icon)}${a.name} · Result</div><h2>${s.headline}</h2>${body}${details}${whyOpen ? whyBox(a) : ""}
     <div class="fine">${doctor ? "Demo thresholds, not validated clinical cut-offs. Webcam at about 30 frames per second; amplitudes are normalised to hand size." : "A demo, not a medical test. If you notice changes in how you move, talk to your doctor."}</div>
-    <div class="row" style="margin-top:18px"><button class="btn" data-act="${last ? "summary" : "next"}">${last ? "See summary" : "Next activity"}${icon("next")}</button>
-    <button class="btn secondary" data-act="again">${icon("redo")}Try again</button><div class="grow"></div></div>
-    <div class="row" style="margin-top:6px">${doctor ? "" : `<button class="btn link" data-act="details">${detailsOpen ? "Hide" : "Show"} numbers</button>`}
-    <button class="btn link" data-act="why">${icon("info")}${whyOpen ? "Hide" : "Why this activity"}</button></div>`);
+    <div class="row" style="margin-top:10px">${doctor ? "" : `<button class="btn link" data-act="details">${detailsOpen ? "Hide" : "Show"} numbers</button>`}
+    <button class="btn link" data-act="why">${icon("info")}${whyOpen ? "Hide" : "Why this activity"}</button></div>
+    <div class="row stick" style="margin-top:14px"><button class="btn" data-act="${last ? "summary" : "next"}">${last ? "See summary" : "Next activity"}${icon("next")}</button>
+    <button class="btn secondary" data-act="again">${icon("redo")}Try again</button><div class="grow"></div></div>`);
 }
 function showSummary() {
   hud(null);
@@ -816,6 +893,17 @@ function showGuide() {
     <button class="btn link" data-act="tipskip">Skip</button></div>`);
 }
 
+// ---------- clinic mapping (for presentations) ----------
+let started = false;
+function showMap() {
+  const rows = ACTS.slice(0, 4).map(a => `<tr><td>${a.clinic}</td><td><div class="k">${icon(a.icon)}${a.title}</div>${a.here}</td></tr>`).join("");
+  $("layer").innerHTML = `<div class="scrim"><div class="card wide"><div class="eyebrow">${icon("clipboard")}How it maps to the clinic</div>
+    <h2>Today's tests and therapy, at home</h2>
+    <table class="map"><tr><th>In the clinic today</th><th>With Motion Mirror</th></tr>${rows}</table>
+    <div class="fine">Activities 1–3 replicate parts of the standard motor exam (MDS-UPDRS) and spiral drawing. Activity 4 replicates amplitude-based physiotherapy (LSVT BIG) with rhythmic cueing. Sources are listed under "Why this activity" in each result.</div>
+    <div class="row stick" style="margin-top:18px"><button class="btn" data-act="closemap">${icon("close")}Close</button></div></div></div>`;
+}
+
 // ---------- navigation ----------
 function goTo(i) {
   current = i; detailsOpen = false; whyOpen = false;
@@ -837,11 +925,11 @@ function act(a) {
   else if (a === "summary") showSummary();
   else if (a === "finale") goTo(4);
   else if (a === "print") window.print();
-  else if (a === "sim") wr.sim = !wr.sim, hudKey = "";
-  else if (a === "wrdone") WRITE.done(now);
   else if (a === "snap") snap(now);
   else if (a === "tipnext") { if (tipIdx < TIPS.length - 1) { tipIdx++; showGuide(); } else { store.set("guided", true); goTo(current); } }
   else if (a === "tipskip") { store.set("guided", true); goTo(current); }
+  else if (a === "map") showMap();
+  else if (a === "closemap") { if (started) goTo(current); else layer(""); }
 }
 document.addEventListener("click", (e) => {
   const b = e.target.closest("[data-act]"); if (b) return act(b.dataset.act);
@@ -901,7 +989,7 @@ $("go").addEventListener("click", async () => {
     hands = await HandLandmarker.createFromOptions(files, { baseOptions: { modelAssetPath: HAND_MODEL, delegate: "GPU" }, runningMode: "VIDEO", numHands: 1 });
     $("status").textContent = "Loading body detection…";
     segmenter = await ImageSegmenter.createFromOptions(files, { baseOptions: { modelAssetPath: SEG_MODEL, delegate: "GPU" }, runningMode: "VIDEO", outputConfidenceMasks: true, outputCategoryMask: false });
-    $("start").remove(); renderStepper(); loop();
+    $("start").remove(); started = true; renderStepper(); loop();
     if (store.get("guided", false)) goTo(0); else { flow.phase = "demo"; showGuide(); }
   } catch (err) {
     console.error(err);
@@ -911,7 +999,7 @@ $("go").addEventListener("click", async () => {
 });
 resize();
 if (new URLSearchParams(location.search).has("autostart")) {   // automated testing only
-  window.__mm = { van, snap, goTo, act, setView, flow, results, finish, ACTS, showSummary, get current() { return current; } };
+  window.__mm = { van, snap, goTo, act, setView, flow, results, finish, ACTS, showSummary, showMap, get current() { return current; } };
   $("go").click();
 }
 </script>
