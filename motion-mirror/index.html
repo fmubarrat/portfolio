@@ -86,7 +86,7 @@
   .eyebrow { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: var(--accent); }
   .card h2 { font-size: 28px; line-height: 1.15; letter-spacing: -.5px; margin: 10px 0 8px; }
   .card p.lead { font-size: 17px; color: var(--muted); line-height: 1.5; margin: 0 0 18px; }
-  .demo { width: 100%; aspect-ratio: 2 / 1; border-radius: 16px; background: radial-gradient(circle at 50% 40%, rgba(94,234,212,.08), rgba(255,255,255,.02)); border: 1px solid var(--line); display: block; margin-bottom: 20px; }
+  .demo { width: 100%; aspect-ratio: 2 / 1; object-fit: contain; border-radius: 16px; background: radial-gradient(circle at 50% 40%, rgba(94,234,212,.08), rgba(255,255,255,.02)); border: 1px solid var(--line); display: block; margin-bottom: 20px; }
   .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
   .row .grow { flex: 1; }
   .points { list-style: none; margin: 0 0 18px; padding: 0; }
@@ -114,6 +114,12 @@
   .tip .big svg { width: 32px; height: 32px; }
   .sum td:first-child { display: flex; align-items: center; gap: 10px; }
 
+  @keyframes rise { from { opacity: 0; transform: translateY(16px) scale(.985); } to { opacity: 1; transform: none; } }
+  @keyframes pop { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.6); } 35% { opacity: 1; transform: translate(-50%, -50%) scale(1.06); } 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+  .card { animation: rise .5s cubic-bezier(.2,.8,.2,1) both; }
+  #count.pop { animation: pop .6s cubic-bezier(.2,.8,.2,1) both; }
+  #fxTop { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 11; pointer-events: none; }
+  @media (prefers-reduced-motion: reduce) { .card, #count.pop { animation: none; } }
   /* center overlays */
   #count { position: fixed; left: 50%; top: 45%; transform: translate(-50%, -50%); font-size: 140px; font-weight: 800; color: var(--text);
     opacity: 0; pointer-events: none; text-shadow: 0 10px 50px rgba(0,0,0,.5); transition: opacity .15s; }
@@ -152,6 +158,7 @@
 <body>
 <video id="video" playsinline muted></video>
 <canvas id="stage"></canvas>
+<canvas id="fxTop"></canvas>
 
 <header class="chrome">
   <div class="logo surface"><span id="logoMark"></span><span class="lbl">Motion Mirror</span></div>
@@ -207,6 +214,7 @@ const SEG_MODEL = "https://storage.googleapis.com/mediapipe-models/image_segment
 const ICONS = {
   logo: '<circle cx="12" cy="12" r="9"/><path d="M7.5 12a4.5 4.5 0 0 1 9 0"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/>',
   tap: '<circle cx="7" cy="16" r="2.5"/><circle cx="17" cy="8" r="2.5"/><path d="M9 14.5l6-5"/>',
+  twotap: '<circle cx="6" cy="12" r="3.5"/><circle cx="18" cy="12" r="3.5"/><path d="M9.5 12h5"/>',
   steady: '<path d="M2 12h4l2-5 4 10 2-5h8"/>',
   write: '<path d="M4 20h16"/><path d="M6 16l9.5-9.5a2.1 2.1 0 0 1 3 3L9 19l-4 1z"/>',
   spiral: '<path d="M12 12a1.5 1.5 0 0 1 1.5 1.5A3 3 0 0 1 10.5 16 4.5 4.5 0 0 1 6 11.5 6 6 0 0 1 12 5.5a7.5 7.5 0 0 1 7.5 7.5"/>',
@@ -324,6 +332,72 @@ function tremorOf(hist, span) {
   return { spec, amp: rms, peak: rms > 1.2 ? bf : null, bandShare: total ? band / total : 0 };
 }
 
+// SPARC smoothness of a speed profile (closer to zero = smoother)
+function sparc(speed, fs, fc = 10, ampTh = 0.05, pad = 4) {
+  const n = speed.length; if (n < 16) return null;
+  const nfft = 2 ** (Math.ceil(Math.log2(n)) + pad), df = fs / nfft, kMax = Math.floor(fc / df), mag = new Float64Array(kMax + 1);
+  let peak = 0;
+  for (let k = 0; k <= kMax; k++) { let re = 0, im = 0; for (let i = 0; i < n; i++) { const a = 2 * Math.PI * k * i / nfft; re += speed[i] * Math.cos(a); im -= speed[i] * Math.sin(a); } mag[k] = Math.hypot(re, im); if (mag[k] > peak) peak = mag[k]; }
+  if (!peak) return null;
+  let last = 0; for (let k = 0; k <= kMax; k++) { mag[k] /= peak; if (mag[k] >= ampTh) last = k; }
+  if (last < 2) return null;
+  const fmax = last * df; let len = 0;
+  for (let k = 1; k <= last; k++) len += Math.hypot(df / fmax, mag[k] - mag[k - 1]);
+  return -len;
+}
+// Hesitations (like a pen hovering on a tablet) and smoothness along a traced path
+function pathStats(hist) {
+  const fs = 30, r = resample(hist, 1e9, fs);
+  if (!r) return { pauses: 0, pauseSecs: 0, sparc: null };
+  const v = []; for (let i = 1; i < r.n; i++) v.push(Math.hypot(r.xs[i] - r.xs[i - 1], r.ys[i] - r.ys[i - 1]) * fs);
+  const med = [...v].sort((a, b) => a - b)[Math.floor(v.length / 2)] || 0, th = med * 0.3;
+  let pauses = 0, pauseSecs = 0, run = 0;
+  for (const x of v.concat([Infinity])) { if (x < th) run++; else { if (run >= 12) { pauses++; pauseSecs += run / fs; } run = 0; } }
+  return { pauses, pauseSecs, sparc: sparc(v, fs) };
+}
+
+// ---------- calm visual effects (drawn above the cards) ----------
+const fxc = $("fxTop"), fctx = fxc.getContext("2d");
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const fxp = [];
+function ripple(x, y, color = "94,234,212") { if (!reduceMotion) fxp.push({ kind: "ripple", x, y, t: performance.now(), max: 800, color }); }
+function sparkle(x, y, n = 8, color = "251,191,119") {
+  if (reduceMotion) return; const now = performance.now();
+  for (let i = 0; i < n; i++) fxp.push({ kind: "dot", x, y, vx: (Math.random() - 0.5) * 1.4, vy: -(0.5 + Math.random() * 1.3), t: now, max: 1400 + Math.random() * 900, r: 1.5 + Math.random() * 3, color });
+}
+function celebrate() {
+  if (reduceMotion) return; const now = performance.now();
+  for (let i = 0; i < 70; i++) fxp.push({ kind: "dot", x: Math.random() * W, y: H + 10, vx: (Math.random() - 0.5) * 0.5, vy: -(1.2 + Math.random() * 1.6), t: now + Math.random() * 900, max: 3200, r: 2 + Math.random() * 4, color: Math.random() < 0.55 ? "94,234,212" : "251,191,119" });
+}
+function drawFx(now) {
+  if (fxc.width !== W || fxc.height !== H) { fxc.width = W; fxc.height = H; }
+  fctx.clearRect(0, 0, W, H);
+  fctx.globalCompositeOperation = "lighter";
+  for (let i = fxp.length - 1; i >= 0; i--) {
+    const f = fxp[i], age = (now - f.t) / f.max;
+    if (age < 0) continue;
+    if (age >= 1) { fxp.splice(i, 1); continue; }
+    if (f.kind === "ripple") {
+      fctx.strokeStyle = `rgba(${f.color},${0.8 * (1 - age)})`; fctx.lineWidth = 3;
+      fctx.beginPath(); fctx.arc(f.x, f.y, 12 + 70 * Math.sqrt(age), 0, 7); fctx.stroke();
+    } else {
+      f.x += f.vx; f.y += f.vy; f.vy -= 0.004;
+      const a = Math.sin(Math.PI * age);
+      const g = fctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.r * 4);
+      g.addColorStop(0, `rgba(${f.color},${0.9 * a})`); g.addColorStop(1, `rgba(${f.color},0)`);
+      fctx.fillStyle = g; fctx.beginPath(); fctx.arc(f.x, f.y, f.r * 4, 0, 7); fctx.fill();
+    }
+  }
+  fctx.globalCompositeOperation = "source-over";
+}
+// A soft glow around the hand: "I can see you"
+function drawAura() {
+  if (!lm || reduceMotion) return;
+  const c = P(lm[9]), r = handSize * 2.4, g = ctx.createRadialGradient(c.x, c.y, handSize * 0.3, c.x, c.y, r);
+  g.addColorStop(0, "rgba(94,234,212,0.16)"); g.addColorStop(1, "rgba(94,234,212,0)");
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(c.x, c.y, r, 0, 7); ctx.fill();
+}
+
 // ---------- sound ----------
 function tone(freq, dur = 0.12, type = "sine", gain = 0.1) {
   if (!audio || !soundOn) return;
@@ -354,11 +428,11 @@ function flowTick(now, countdown = true) {
 let lastN = "";
 function drawCountdown(now) {
   const el = $("count");
-  if (flow.phase === "count") { const n = String(3 - Math.floor((now - flow.t0) / 1000)); if (n !== lastN) { lastN = n; el.textContent = n; tone(440, 0.08, "triangle", 0.07); } el.style.opacity = 1; }
+  if (flow.phase === "count") { const n = String(3 - Math.floor((now - flow.t0) / 1000)); if (n !== lastN) { lastN = n; el.textContent = n; el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop"); tone(440, 0.08, "triangle", 0.07); } el.style.opacity = 1; }
   else { el.style.opacity = 0; lastN = ""; }
 }
 function finish(now, res) {
-  flow.phase = "result"; flow.t0 = now; results[A().key] = res; chime(); renderStepper(); showResult();
+  flow.phase = "result"; flow.t0 = now; results[A().key] = res; chime(); celebrate(); renderStepper(); showResult();
 }
 
 // =====================================================================
@@ -371,6 +445,7 @@ const SRC = {
   big: "Ebersbach G et al. Comparing exercise in Parkinson's disease: the Berlin LSVT BIG study. Movement Disorders, 2010.",
   cue: "Nieuwboer A et al. Cueing training in the home improves gait-related mobility in Parkinson's disease (RESCUE trial). J Neurol Neurosurg Psychiatry, 2007.",
   spiral: "Bain PG, Findley LJ et al. Assessing tremor severity. J Neurol Neurosurg Psychiatry, 1993.",
+  twotap: "Lee CY et al. A validation study of a smartphone-based finger tapping application for quantitative assessment of bradykinesia in Parkinson's disease. PLoS ONE, 2016.",
 };
 
 // ---------- 1. Finger tapping ----------
@@ -388,7 +463,7 @@ const TAP = {
     if (flow.phase !== "run" || !lm || !handSize) return;
     const d = dLm(4, 8) / handSize;
     if (d > 0.45) { tap.open = true; tap.peak = Math.max(tap.peak, d); }
-    if (tap.open && d < 0.25) { tap.taps.push({ t: now, amp: tap.peak }); tap.open = false; tap.peak = 0; tone(500 + tap.taps.length * 45, 0.07, "triangle", 0.08); }
+    if (tap.open && d < 0.25) { tap.taps.push({ t: now, amp: tap.peak }); tap.open = false; tap.peak = 0; { const a = P(lm[4]), b = P(lm[8]); ripple((a.x + b.x) / 2, (a.y + b.y) / 2); } tone(500 + tap.taps.length * 45, 0.07, "triangle", 0.08); }
     if (tap.taps.length >= TAP_MAX || now - flow.t0 > TAP_TIME) finish(now, TAP.analyse());
   },
   analyse() {
@@ -427,6 +502,66 @@ const TAP = {
     if (r.short) return "";
     return table([["Taps (max 10 in 15 s)", r.n], ["Tapping rate", r.rate.toFixed(2) + " /s"], ["Amplitude change, first 3 → last 3", fmtPct(r.dec)], ["Inter-tap interval CV", r.cv.toFixed(2)]])
       + `<div class="fine" style="margin:12px 0 0">Amplitude of each tap (thumb–index distance ÷ hand size)</div>${bars(r.amps)}`;
+  },
+};
+
+// ---------- 1b. Two-target tapping ----------
+const tt = { next: 0, hits: [], at: 0 };
+const TT_TIME = 15000;
+function ttTargets() { const d = Math.min(W, H) * 0.24, r = Math.max(48, Math.min(W, H) * 0.075), y = H * 0.46; return [{ x: W / 2 - d, y, r }, { x: W / 2 + d, y, r }]; }
+const TWO = {
+  key: "twotap", name: "Two targets", icon: "twotap",
+  title: "Two-target tapping", lead: "Touch the glowing circle with your index finger, then the other one. Left, right, left, as fast as you comfortably can, for 15 seconds.",
+  why: "Alternately tapping two targets measures slowness of movement (bradykinesia). A smartphone version of this test separated people with Parkinson's from controls (57 patients, 87 controls) and matched clinical scores.", src: SRC.twotap,
+  clinic: "A two-target tapping test on a board or a phone counts taps in a set time.", here: "You touch two glowing targets in the air. The camera counts and times every touch.",
+  reset() { tt.next = 0; tt.hits = []; tt.at = 0; },
+  begin() { tt.next = 0; tt.hits = []; },
+  update(now) {
+    flowTick(now);
+    if (flow.phase !== "run") return;
+    if (lm && handSize) {
+      const tip = P(lm[8]), T = ttTargets()[tt.next], d = dist(tip, T);
+      if (d < T.r) { tt.hits.push({ t: now, err: d / T.r }); tt.next ^= 1; ripple(T.x, T.y, "251,191,119"); sparkle(T.x, T.y, 5); tone(tt.next ? 587 : 698, 0.08, "sine", 0.08); }
+    }
+    if (now - flow.t0 >= TT_TIME) finish(now, TWO.analyse());
+  },
+  analyse() {
+    const h = tt.hits, n = h.length;
+    if (n < 4) return { n, short: true };
+    const iv = h.slice(1).map((x, i) => x.t - h[i].t), m = iv.reduce((a, b) => a + b) / iv.length;
+    const cv = Math.sqrt(iv.reduce((s, v) => s + (v - m) ** 2, 0) / iv.length) / m;
+    return { n, rate: n / (TT_TIME / 1000), cv, meanErr: h.reduce((s, x) => s + x.err, 0) / n, mt: m };
+  },
+  draw(now) {
+    const T = ttTargets();
+    ctx.save(); ctx.setLineDash([10, 12]); ctx.strokeStyle = "rgba(255,255,255,.18)"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(T[0].x + T[0].r, T[0].y); ctx.lineTo(T[1].x - T[1].r, T[1].y); ctx.stroke(); ctx.setLineDash([]);
+    T.forEach((t, i) => {
+      const active = flow.phase === "run" ? i === tt.next : true, pulse = 1 + (active ? 0.06 * Math.sin(now / 220) : 0);
+      ctx.fillStyle = active ? "rgba(251,191,119,.22)" : "rgba(94,234,212,.08)"; ctx.beginPath(); ctx.arc(t.x, t.y, t.r * pulse, 0, 7); ctx.fill();
+      ctx.strokeStyle = active ? "#fbbf77" : "rgba(94,234,212,.5)"; ctx.lineWidth = active ? 4 : 2;
+      if (active) { ctx.shadowBlur = 26; ctx.shadowColor = "#fbbf77"; }
+      ctx.beginPath(); ctx.arc(t.x, t.y, t.r * pulse, 0, 7); ctx.stroke(); ctx.shadowBlur = 0;
+    });
+    ctx.restore();
+    if (lm) { const tip = P(lm[8]); ctx.save(); ctx.fillStyle = "#5eead4"; ctx.shadowBlur = 18; ctx.shadowColor = "#5eead4"; ctx.beginPath(); ctx.arc(tip.x, tip.y, 10, 0, 7); ctx.fill(); ctx.restore(); }
+  },
+  hud(now) {
+    if (flow.phase === "ready") return { icon: "hand", text: "Show your hand", sub: "Point with your index finger" };
+    if (flow.phase === "count") return { icon: "twotap", text: "Get ready: left, right, left" };
+    return { icon: "twotap", text: `Touch the glowing circle  ${tt.hits.length}`, sub: "Left, right, left…", bar: (now - flow.t0) / TT_TIME };
+  },
+  summary(r) {
+    if (r.short) return { headline: "Not enough touches detected", points: ["Point with your index finger and move it fully into each circle."] };
+    return { headline: `${r.n} touches in 15 seconds`, points: [
+      `That is about ${r.rate.toFixed(1)} touches per second${r.cv < 0.3 ? ", with an even rhythm" : ", with an uneven rhythm"}.`,
+      r.meanErr < 0.5 ? "Most touches landed close to the centre." : "Most touches landed near the edge of the circles."],
+      line: `${r.n} touches · ${r.rate.toFixed(1)}/s · rhythm CV ${r.cv.toFixed(2)} · error ${Math.round(r.meanErr * 100)}% of radius` };
+  },
+  metrics(r) {
+    if (r.short) return "";
+    return table([["Touches in 15 s", r.n], ["Rate", r.rate.toFixed(2) + " /s"], ["Mean movement time", Math.round(r.mt) + " ms"],
+      ["Interval variability (CV)", r.cv.toFixed(2)], ["Mean distance from centre", Math.round(r.meanErr * 100) + "% of radius"]]);
   },
 };
 
@@ -527,7 +662,7 @@ const SPIRAL = {
     if (flow.phase !== "run") return;
     const pacer = spiralAt(sp.pos);
     sp.paused = !tip || dist(tip, pacer) > sp.tol * 2.6;      // the light waits for you
-    if (!sp.paused) sp.pos += sp.len / SP_TIME * dt;
+    if (!sp.paused) { sp.pos += sp.len / SP_TIME * dt; if (now - (sp.spark || 0) > 140) { sp.spark = now; const q = spiralAt(sp.pos); sparkle(q.x, q.y, 1); } }
     if (tip && handSize) {
       const dev = nearestDev(tip);
       sp.total++; sp.devSum += dev; if (dev < sp.tol) sp.on++;
@@ -535,7 +670,7 @@ const SPIRAL = {
     }
     if (sp.pos >= sp.len) {
       const tr = tremorOf(sp.hist, 60000) || { amp: 0, peak: null, spec: new Array(12).fill(0), bandShare: 0 };
-      finish(now, { onTrack: sp.total ? sp.on / sp.total : 0, meanDev: sp.total ? sp.devSum / sp.total / sp.R : 0, tr, secs: (now - flow.t0) / 1000 });
+      finish(now, { onTrack: sp.total ? sp.on / sp.total : 0, meanDev: sp.total ? sp.devSum / sp.total / sp.R : 0, tr, secs: (now - flow.t0) / 1000, ...pathStats(sp.hist) });
     }
   },
   draw(now) {
@@ -569,6 +704,7 @@ const SPIRAL = {
   summary(r) {
     const pct = Math.round(r.onTrack * 100), t = r.tr, p = [];
     p.push(`You stayed on the path ${pct}% of the time.`);
+    if (r.pauses != null) p.push(r.pauses <= 1 ? "You moved along smoothly, with hardly any pauses." : `You paused ${r.pauses} times along the way.`);
     if (!t.peak || t.amp < 1.5) p.push("We did not pick up any clear shaking while you traced.");
     else p.push(`We picked up ${t.amp < 3 ? "very small" : "some"} shaking while you traced, about ${Math.round(t.peak)} times per second.`);
     return { headline: pct >= 80 ? "You followed the spiral closely" : pct >= 50 ? "You followed most of the spiral" : "The spiral was hard to follow", points: p,
@@ -577,7 +713,7 @@ const SPIRAL = {
   metrics(r) {
     const t = r.tr;
     return table([["Time on path (within lane)", Math.round(r.onTrack * 100) + "%"], ["Mean deviation from spiral", (r.meanDev * 100).toFixed(1) + "% of radius"],
-      ["Tremor peak while tracing", t.peak ? t.peak.toFixed(1) + " Hz" : "none above noise floor"], ["Tremor amplitude", t.amp.toFixed(1) + "% hand size"], ["Duration (pacer waits if needed)", r.secs.toFixed(0) + " s"]])
+      ["Tremor peak while tracing", t.peak ? t.peak.toFixed(1) + " Hz" : "none above noise floor"], ["Tremor amplitude", t.amp.toFixed(1) + "% hand size"], ["Hesitations (pauses ≥ 0.4 s)", r.pauses != null ? `${r.pauses} (${(r.pauseSecs || 0).toFixed(1)} s)` : "–"], ["Smoothness (SPARC)", r.sparc != null ? r.sparc.toFixed(2) : "–"], ["Duration (pacer waits if needed)", r.secs.toFixed(0) + " s"]])
       + bars(t.spec, i => i + 1 >= 4 && i + 1 <= 7) + `<div class="axis"><span>1 Hz</span><span>4–7 Hz</span><span>12 Hz</span></div>`;
   },
 };
@@ -603,7 +739,7 @@ const AMP = {
     bl.beats++;
     const hit = bl.peak > 0.85 && lm;
     bl.marks.push(hit ? 1 : 0);
-    if (hit) { bl.hits++; tone(523 + (bl.hits % 5) * 98, 0.35, "sine", 0.08); } else { tone(220, 0.05, "square", 0.03); bl.missAt = now; }
+    if (hit) { bl.hits++; tone(523 + (bl.hits % 5) * 98, 0.35, "sine", 0.08); const c = P(lm[9]); sparkle(c.x, c.y, 14, "167,139,250"); sparkle(c.x, c.y, 8); } else { tone(220, 0.05, "square", 0.03); bl.missAt = now; }
     bl.peak = 0; bl.pulse = now; bl.next += BL_GAP;
     if (bl.beats >= BL_BEATS) finish(now, { hits: bl.hits, beats: bl.beats });
   },
@@ -755,7 +891,8 @@ const FINALE = {
   },
 };
 
-const ACTS = [TAP, STEADY, SPIRAL, AMP, FINALE];
+const ACTS = [TAP, TWO, STEADY, SPIRAL, AMP, FINALE];
+const FIN = ACTS.length - 1, NTEST = ACTS.length - 1;
 let current = 0;
 const A = () => ACTS[current];
 
@@ -784,7 +921,7 @@ const whyBox = (a) => `<div class="why"><b>Why this activity</b><br>${a.why}<spa
 let demoAnim = 0;
 function showDemo() {
   const a = A();
-  layer(`<div class="eyebrow">${icon(a.icon)}Activity ${current + 1} of 4</div><h2>${a.title}</h2><p class="lead">${a.lead}</p>
+  layer(`<div class="eyebrow">${icon(a.icon)}Activity ${current + 1} of ${NTEST}</div><h2>${a.title}</h2><p class="lead">${a.lead}</p>
     <canvas class="demo" id="demo" width="640" height="360"></canvas>
     <div class="cmp"><div><b>${icon("clipboard")}In the clinic today</b>${a.clinic}</div><div class="mm"><b>${icon("logo")}With Motion Mirror</b>${a.here}</div></div>
     <div class="row stick"><button class="btn" data-act="start">${icon("play")}Start</button><div class="grow"></div>
@@ -819,6 +956,14 @@ function drawDemo(g, key, t) {
     g.beginPath(); g.moveTo(thumb.x, thumb.y); g.lineTo(index.x, index.y); g.stroke();
     for (const p of [thumb, index]) { g.beginPath(); g.arc(p.x, p.y, 14, 0, 7); g.stroke(); }
     label(g, o < 0.15 ? "Close" : "Open wide", w, h);
+  } else if (key === "twotap") {
+    const L = { x: 200, y: 175 }, R = { x: 440, y: 175 }, ph = (t * 0.9) % 2, f = ph % 1, e = f < 0.5 ? 2 * f * f : 1 - Math.pow(-2 * f + 2, 2) / 2;
+    const from = ph < 1 ? L : R, to = ph < 1 ? R : L, x = from.x + (to.x - from.x) * e;
+    for (const [c, on] of [[L, ph >= 1 && f > 0.85 || ph < 1 && f < 0.15], [R, ph < 1 && f > 0.85 || ph >= 1 && f < 0.15]]) {
+      g.lineWidth = on ? 5 : 3; g.strokeStyle = on ? "#fbbf77" : "rgba(94,234,212,.6)"; g.beginPath(); g.arc(c.x, c.y, 46, 0, 7); g.stroke();
+    }
+    g.fillStyle = "#5eead4"; g.beginPath(); g.arc(x, 175, 11, 0, 7); g.fill();
+    label(g, "Left, right, left…", w, h);
   } else if (key === "steady") {
     glyph(g, 320, 210, 150, 1);
     const f = (t % 3) / 3; g.lineWidth = 6; g.strokeStyle = "rgba(255,255,255,.12)"; g.beginPath(); g.arc(320, 180, 150, 0, 7); g.stroke();
@@ -854,7 +999,7 @@ let detailsOpen = false, whyOpen = false;
 function showResult() {
   const a = A(), r = results[a.key], s = a.summary(r);
   const doctor = view === "doctor";
-  const last = current === 3;
+  const last = current === NTEST - 1;
   const body = doctor ? a.metrics(r) : `<ul class="points">${s.points.map(p => `<li><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="currentColor"/></svg><span>${p}</span></li>`).join("")}</ul>`;
   const details = !doctor && detailsOpen ? `<div class="details">${a.metrics(r)}</div>` : "";
   layer(`<div class="eyebrow">${icon(a.icon)}${a.name} · Result</div><h2>${s.headline}</h2>${body}${details}${whyOpen ? whyBox(a) : ""}
@@ -866,14 +1011,14 @@ function showResult() {
 }
 function showSummary() {
   hud(null);
-  const rows = ACTS.slice(0, 4).map(a => { const r = results[a.key]; const s = r ? a.summary(r) : null;
+  const rows = ACTS.slice(0, NTEST).map(a => { const r = results[a.key]; const s = r ? a.summary(r) : null;
     return `<tr><td>${icon(a.icon)}${a.name}</td><td>${s ? (view === "doctor" ? (s.line || s.headline) : s.headline) : "Not done"}</td></tr>`; }).join("");
   layer(`<div class="eyebrow">${icon("doc")}Session summary</div><h2>Your results</h2><table class="m sum">${rows}</table>
     <div class="fine">A demo, not a medical test. Nothing was recorded; these results disappear when you close the page.</div>
     <div class="row" style="margin-top:18px"><button class="btn" data-act="finale">${icon("finale")}Finale</button>
     <button class="btn secondary" data-act="print">${icon("printer")}Print or save as PDF</button></div>`);
   const date = new Date().toLocaleString();
-  $("report").innerHTML = `<h1>Motion Mirror: session summary</h1><div class="d">${date}</div><table>${ACTS.slice(0, 4).map(a => { const r = results[a.key]; const s = r ? a.summary(r) : null;
+  $("report").innerHTML = `<h1>Motion Mirror: session summary</h1><div class="d">${date}</div><table>${ACTS.slice(0, NTEST).map(a => { const r = results[a.key]; const s = r ? a.summary(r) : null;
     return `<tr><td><b>${a.name}</b></td><td>${s ? s.headline + (s.line ? "<br><small>" + s.line + "</small>" : "") : "Not done"}</td></tr>`; }).join("")}</table>
     <div class="n">Research demo, not a medical device. Thresholds are illustrative, not clinically validated. Measured with a webcam on the user's own device; no video was stored.</div>`;
 }
@@ -896,11 +1041,11 @@ function showGuide() {
 // ---------- clinic mapping (for presentations) ----------
 let started = false;
 function showMap() {
-  const rows = ACTS.slice(0, 4).map(a => `<tr><td>${a.clinic}</td><td><div class="k">${icon(a.icon)}${a.title}</div>${a.here}</td></tr>`).join("");
+  const rows = ACTS.slice(0, NTEST).map(a => `<tr><td>${a.clinic}</td><td><div class="k">${icon(a.icon)}${a.title}</div>${a.here}</td></tr>`).join("");
   $("layer").innerHTML = `<div class="scrim"><div class="card wide"><div class="eyebrow">${icon("clipboard")}How it maps to the clinic</div>
     <h2>Today's tests and therapy, at home</h2>
     <table class="map"><tr><th>In the clinic today</th><th>With Motion Mirror</th></tr>${rows}</table>
-    <div class="fine">Activities 1–3 replicate parts of the standard motor exam (MDS-UPDRS) and spiral drawing. Activity 4 replicates amplitude-based physiotherapy (LSVT BIG) with rhythmic cueing. Sources are listed under "Why this activity" in each result.</div>
+    <div class="fine">Activities 1–4 replicate parts of the standard motor exam (MDS-UPDRS), two-target tapping and spiral drawing. Activity 5 replicates amplitude-based physiotherapy (LSVT BIG) with rhythmic cueing. Sources are listed under "Why this activity" in each result.</div>
     <div class="row stick" style="margin-top:18px"><button class="btn" data-act="closemap">${icon("close")}Close</button></div></div></div>`;
 }
 
@@ -923,7 +1068,7 @@ function act(a) {
   else if (a === "details") { detailsOpen = !detailsOpen; showResult(); }
   else if (a === "why") { whyOpen = !whyOpen; showResult(); }
   else if (a === "summary") showSummary();
-  else if (a === "finale") goTo(4);
+  else if (a === "finale") goTo(FIN);
   else if (a === "print") window.print();
   else if (a === "snap") snap(now);
   else if (a === "tipnext") { if (tipIdx < TIPS.length - 1) { tipIdx++; showGuide(); } else { store.set("guided", true); goTo(current); } }
@@ -947,14 +1092,14 @@ addEventListener("keydown", (e) => {
   const k = e.key.toLowerCase();
   if (k === "h") document.body.classList.toggle("clean");
   else if (k === "f") document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
-  else if (k === "s" && current === 4) act("snap");
-  else if (k === "r" && current === 4) goTo(4);
+  else if (k === "s" && current === FIN) act("snap");
+  else if (k === "r" && current === FIN) goTo(FIN);
 });
 
 // =====================================================================
 // Main loop
 // =====================================================================
-let lastUi = 0;
+let lastUi = 0, hadHand = false;
 function loop() {
   const now = performance.now();
   if (video.readyState >= 2 && video.currentTime !== lastVideoTime) {
@@ -962,12 +1107,16 @@ function loop() {
     const res = hands.detectForVideo(video, now);
     lm = res.landmarks && res.landmarks.length ? res.landmarks[0] : null;
     handSize = lm ? dLm(0, 9) : 0;
-    if (current === 4) segment(now);
+    if (lm && !hadHand && (flow.phase === "ready" || flow.phase === "run")) { const c = P(lm[9]); ripple(c.x, c.y); }
+    hadHand = !!lm;
+    if (current === FIN) segment(now);
     if (flow.phase !== "demo" && flow.phase !== "result") A().update(now);
   }
-  if (current === 4 && van.phase === "gone") drawWithoutPerson(); else drawVideo(current === 4 ? 0 : 0.45);
+  if (current === FIN && van.phase === "gone") drawWithoutPerson(); else drawVideo(current === FIN ? 0 : 0.45);
+  if (flow.phase === "ready" || flow.phase === "count" || flow.phase === "run") drawAura();
   if (flow.phase !== "demo") A().draw(now);
   drawCountdown(now);
+  drawFx(now);
   if (now - lastUi > 100) { lastUi = now; hud(flow.phase === "demo" || flow.phase === "result" ? null : A().hud(now)); }
   requestAnimationFrame(loop);
 }
