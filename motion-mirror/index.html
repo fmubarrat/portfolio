@@ -54,6 +54,16 @@
   .seg button.on { background: rgba(255,255,255,.1); color: var(--text); }
   .iconbtn { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; color: var(--muted); }
   .iconbtn:hover { color: var(--text); }
+  #simBtn { width: auto; padding: 0 14px; gap: 8px; display: inline-flex; align-items: center; font-weight: 600; font-size: 14px; }
+  #simBtn.on { color: #1a1206; background: linear-gradient(135deg, #fbbf77, #f59e0b); border-color: transparent; }
+  #simBadge { position: fixed; left: 50%; top: 84px; transform: translateX(-50%); padding: 8px 16px; border-radius: 999px; font-size: 14px; font-weight: 700;
+    color: #1a1206; background: #fbbf77; box-shadow: 0 6px 24px rgba(251,191,119,.35); z-index: 6; display: none; align-items: center; gap: 8px; white-space: nowrap; }
+  #simBadge.on { display: inline-flex; }
+  .cmpbox { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0 6px; }
+  .cmpbox > div { border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+  .cmpbox .v { font-size: 30px; font-weight: 800; margin-top: 4px; }
+  .cmpbox .lb { font-size: 13px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+  .cmpbox .good { border-color: rgba(94,234,212,.55); background: rgba(94,234,212,.07); }
 
   /* instruction bar */
   #hud { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 3; display: flex; align-items: center; gap: 14px;
@@ -151,6 +161,8 @@
     #report table { width: 100%; border-collapse: collapse; } #report td { border-top: 1px solid #ddd; padding: 8px 0; vertical-align: top; }
     #report .n { color: #555; font-size: 12px; margin-top: 20px; }
   }
+  .stepper button, .logo, #simBtn { white-space: nowrap; }
+  @media (max-width: 1500px) { .stepper button:not(.on) .lbl { display: none; } }
   @media (max-width: 900px) {
     .stepper .lbl, .seg .lbl, .logo .lbl { display: none; }
     #privacy { display: none; }
@@ -170,6 +182,7 @@
     <button data-view="patient" class="on"><span data-icon="user"></span><span class="lbl">Patient</span></button>
     <button data-view="doctor"><span data-icon="clipboard"></span><span class="lbl">Clinician</span></button>
   </div>
+  <button class="iconbtn surface" id="simBtn" aria-pressed="false" title="Add simulated Parkinson's symptoms to your hand"><span data-icon="sim"></span><span class="lbl">Feel Parkinson's</span></button>
   <button class="iconbtn surface" id="soundBtn" aria-label="Sound"><span data-icon="volume"></span></button>
   <button class="iconbtn surface" id="helpBtn" aria-label="Show the tutorial again" title="Show the tutorial again"><span data-icon="help"></span></button>
 </header>
@@ -182,6 +195,7 @@
 
 <div id="privacy" class="chrome"><span data-icon="shield"></span>Runs on this device. Nothing is recorded or sent.</div>
 <div id="count"></div>
+<div id="simBadge"><span data-icon="sim"></span>Simulated Parkinson's: tremor, slowness, shrinking taps</div>
 <div id="thanks"><div>Thank you</div><small>Motion Mirror · Md Fayek Mubarrat Jamee</small></div>
 <div id="layer"></div>
 <div id="report"></div>
@@ -218,6 +232,8 @@ const ICONS = {
   tap: '<circle cx="7" cy="16" r="2.5"/><circle cx="17" cy="8" r="2.5"/><path d="M9 14.5l6-5"/>',
   twotap: '<circle cx="6" cy="12" r="3.5"/><circle cx="18" cy="12" r="3.5"/><path d="M9.5 12h5"/>',
   steady: '<path d="M2 12h4l2-5 4 10 2-5h8"/>',
+  beat: '<path d="M8 21h8l-3-17h-2z"/><path d="M12 15l5-8"/><circle cx="17.5" cy="6.5" r="1.3" fill="currentColor"/>',
+  sim: '<path d="M3 12c1.5-3 3-3 4.5 0s3 3 4.5 0 3-3 4.5 0 3 3 4.5 0"/><circle cx="12" cy="5" r="1.5" fill="currentColor"/>',
   write: '<path d="M4 20h16"/><path d="M6 16l9.5-9.5a2.1 2.1 0 0 1 3 3L9 19l-4 1z"/>',
   spiral: '<path d="M12 12a1.5 1.5 0 0 1 1.5 1.5A3 3 0 0 1 10.5 16 4.5 4.5 0 0 1 6 11.5 6 6 0 0 1 12 5.5a7.5 7.5 0 0 1 7.5 7.5"/>',
   flower: '<circle cx="12" cy="9" r="2.2"/><path d="M12 6.8a2.6 2.6 0 1 1 2.6-2.6M14.2 9a2.6 2.6 0 1 1 2.6 2.6M12 11.2a2.6 2.6 0 1 1-2.6 2.6M9.8 9a2.6 2.6 0 1 1-2.6-2.6"/><path d="M12 11.5V21M12 17c-2 0-3.5-1-4-3M12 18c2 0 3.5-1 4-3"/>',
@@ -417,6 +433,32 @@ function whoosh(reverse = false) {
   const g = audio.createGain(); g.gain.value = 0.28; src.connect(f).connect(g).connect(audio.destination); src.start();
 }
 
+// ---------- "Feel Parkinson's": simulated symptoms applied to the tracked hand ----------
+// Tremor: ~5 Hz oscillation (typical Parkinson's tremor is 4-6 Hz). Bradykinesia: the hand follows with a lag.
+// Hypokinesia / sequence effect: the thumb-index opening shrinks the longer you tap.
+const sim = { on: false, sm: null };
+function simulatePD(raw, now) {
+  if (!raw) { sim.sm = null; return raw; }
+  if (!sim.sm || sim.sm.length !== raw.length) sim.sm = raw.map(p => ({ x: p.x, y: p.y, z: p.z }));
+  const a = 0.16;   // lag: about 0.2 s to catch up at 30 fps
+  sim.sm.forEach((q, i) => { q.x += (raw[i].x - q.x) * a; q.y += (raw[i].y - q.y) * a; q.z = raw[i].z; });
+  const hs = Math.hypot(raw[0].x - raw[9].x, raw[0].y - raw[9].y), t = now / 1000;
+  const amp = hs * 0.16 * (0.75 + 0.25 * Math.sin(t * 0.7));
+  const ox = amp * Math.sin(2 * Math.PI * 5.1 * t), oy = amp * 0.7 * Math.sin(2 * Math.PI * 5.1 * t + 1.3);
+  const out = sim.sm.map((q, i) => { const f = [4, 8, 12, 16, 20].includes(i) ? 1.35 : 1; return { x: q.x + ox * f, y: q.y + oy * f, z: q.z }; });
+  if (flow.phase === "run" && (A() === TAP || A() === BEAT)) {
+    const k = 0.85 - 0.35 * Math.min(1, (now - flow.t0) / 12000), th = out[4], ix = out[8], mx = (th.x + ix.x) / 2, my = (th.y + ix.y) / 2;
+    out[4] = { x: mx + (th.x - mx) * k, y: my + (th.y - my) * k, z: th.z }; out[8] = { x: mx + (ix.x - mx) * k, y: my + (ix.y - my) * k, z: ix.z };
+  }
+  return out;
+}
+function setSim(on) {
+  sim.on = on; sim.sm = null;
+  $("simBtn").classList.toggle("on", on); $("simBtn").setAttribute("aria-pressed", on);
+  $("simBadge").classList.toggle("on", on);
+  if (on) tone(300, 0.25, "triangle", 0.08); else tone(600, 0.15, "sine", 0.07);
+}
+
 // =====================================================================
 // Shared flow: demo -> show hand -> 3-2-1 -> run -> result
 // =====================================================================
@@ -434,7 +476,7 @@ function drawCountdown(now) {
   else { el.style.opacity = 0; lastN = ""; }
 }
 function finish(now, res) {
-  flow.phase = "result"; flow.t0 = now; results[A().key] = res; chime(); celebrate(); renderStepper(); showResult();
+  flow.phase = "result"; flow.t0 = now; if (sim.on) res.sim = true; results[A().key] = res; chime(); celebrate(); renderStepper(); showResult();
 }
 
 // =====================================================================
@@ -447,6 +489,7 @@ const SRC = {
   big: "Ebersbach G et al. Comparing exercise in Parkinson's disease: the Berlin LSVT BIG study. Movement Disorders, 2010.",
   cue: "Nieuwboer A et al. Cueing training in the home improves gait-related mobility in Parkinson's disease (RESCUE trial). J Neurol Neurosurg Psychiatry, 2007.",
   spiral: "Bain PG, Findley LJ et al. Assessing tremor severity. J Neurol Neurosurg Psychiatry, 1993.",
+  cueTap: "Nieuwboer A et al. Cueing training in the home improves gait-related mobility in Parkinson's disease (RESCUE trial). J Neurol Neurosurg Psychiatry, 2007; Spaulding SJ et al. Cueing and gait improvement among people with Parkinson's disease: a meta-analysis. Arch Phys Med Rehabil, 2013.",
   twotap: "Lee CY et al. A validation study of a smartphone-based finger tapping application for quantitative assessment of bradykinesia in Parkinson's disease. PLoS ONE, 2016.",
 };
 
@@ -504,6 +547,87 @@ const TAP = {
     if (r.short) return "";
     return table([["Taps (max 10 in 15 s)", r.n], ["Tapping rate", r.rate.toFixed(2) + " /s"], ["Amplitude change, first 3 → last 3", fmtPct(r.dec)], ["Inter-tap interval CV", r.cv.toFixed(2)]])
       + `<div class="fine" style="margin:12px 0 0">Amplitude of each tap (thumb–index distance ÷ hand size)</div>${bars(r.amps)}`;
+  },
+};
+
+// ---------- 1a. Rhythm with a beat (external cueing) ----------
+// Tap on your own for 10 s, then with a soft metronome set to your own pace for 10 s, and compare rhythm.
+const bt = { stage: "free", t0: 0, open: false, free: [], cued: [], hz: 1.6, nextBeat: 0, lastBeat: 0 };
+const BT_FREE = 10000, BT_GAP = 3000, BT_CUED = 10000;
+const cvOf = (t) => { if (t.length < 4) return null; const iv = t.slice(1).map((x, i) => x - t[i]), m = iv.reduce((a, b) => a + b) / iv.length; return Math.sqrt(iv.reduce((s, v) => s + (v - m) ** 2, 0) / iv.length) / m; };
+const rateOf = (t) => t.length < 2 ? 0 : (t.length - 1) / ((t[t.length - 1] - t[0]) / 1000);
+const BEAT = {
+  key: "beat", name: "Rhythm", icon: "beat",
+  title: "Rhythm with a beat", lead: "Tap your thumb and index finger at a comfortable pace. After 10 seconds a soft beat starts. Keep tapping along with it.",
+  why: "Rhythmic cues, such as a metronome or music, are a standard strategy in Parkinson's rehabilitation. They are best studied for walking (for example the RESCUE trial). Here the same idea is applied to finger tapping, so you can see the effect of a cue on your own rhythm.", src: SRC.cueTap,
+  clinic: "Physiotherapists use a metronome or music so people keep a steady rhythm while walking or moving.", here: "You tap on your own, then with a soft beat, and see how much steadier your rhythm becomes.",
+  reset() { Object.assign(bt, { stage: "free", t0: 0, open: false, free: [], cued: [], hz: 1.6, nextBeat: 0, lastBeat: 0 }); },
+  begin(now) { BEAT.reset(); bt.t0 = now; },
+  update(now) {
+    flowTick(now);
+    if (flow.phase !== "run") return;
+    const el = now - bt.t0;
+    if (bt.stage === "free" && el > BT_FREE) {
+      const r = rateOf(bt.free); bt.hz = r ? Math.max(1.0, Math.min(2.5, r)) : 1.6;
+      bt.stage = "gap"; bt.nextBeat = now + 1000 / bt.hz;
+    }
+    if (bt.stage === "gap" && el > BT_FREE + BT_GAP) bt.stage = "cued";
+    if ((bt.stage === "gap" || bt.stage === "cued") && now >= bt.nextBeat) {
+      bt.lastBeat = bt.nextBeat; bt.nextBeat += 1000 / bt.hz; tone(bt.stage === "gap" ? 660 : 880, 0.06, "sine", 0.09);
+    }
+    if (bt.stage === "cued" && el > BT_FREE + BT_GAP + BT_CUED) return finish(now, BEAT.analyse());
+    if (!lm || !handSize) return;
+    const d = dLm(4, 8) / handSize;
+    if (d > 0.4) bt.open = true;
+    if (bt.open && d < 0.25) {
+      bt.open = false;
+      if (bt.stage === "free") bt.free.push(now); else if (bt.stage === "cued") bt.cued.push(now); else return;
+      const a = P(lm[4]), b = P(lm[8]); ripple((a.x + b.x) / 2, (a.y + b.y) / 2);
+    }
+  },
+  analyse() {
+    const cf = cvOf(bt.free), cc = cvOf(bt.cued);
+    if (cf == null || cc == null) return { short: true, nf: bt.free.length, nc: bt.cued.length };
+    return { short: false, nf: bt.free.length, nc: bt.cued.length, cvFree: cf, cvCued: cc, rateFree: rateOf(bt.free), rateCued: rateOf(bt.cued), hz: bt.hz, gain: 100 * (cf - cc) / cf };
+  },
+  draw(now) {
+    drawHand();
+    if (!lm) return;
+    const a = P(lm[4]), b = P(lm[8]), closed = dLm(4, 8) / (handSize || 1) < 0.25, col = closed ? "#fbbf77" : "#5eead4";
+    ctx.save(); ctx.strokeStyle = col; ctx.lineWidth = 5; ctx.shadowBlur = 22; ctx.shadowColor = col;
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); ctx.restore();
+    if (flow.phase === "run" && bt.stage !== "free" && bt.lastBeat) {   // a soft pulse on every beat
+      const k = Math.min(1, (now - bt.lastBeat) / 450), c = P(lm[9]);
+      ctx.save(); ctx.globalAlpha = (1 - k) * 0.8; ctx.strokeStyle = "#fbbf77"; ctx.lineWidth = 6 * (1 - k) + 1;
+      ctx.beginPath(); ctx.arc(c.x, c.y, handSize * (1.2 + 0.6 * k), 0, 7); ctx.stroke(); ctx.restore();
+    }
+  },
+  hud(now) {
+    if (flow.phase === "ready") return { icon: "hand", text: "Show your hand", sub: "Palm towards the camera" };
+    if (flow.phase === "count") return { icon: "beat", text: "Get ready to tap" };
+    const el = now - bt.t0;
+    if (bt.stage === "free") return { icon: "tap", text: "Tap at your own pace", sub: `No beat yet · ${bt.free.length} taps`, bar: el / BT_FREE };
+    if (bt.stage === "gap") return { icon: "beat", text: "Listen to the beat", sub: "Start tapping along when you are ready", bar: (el - BT_FREE) / BT_GAP };
+    return { icon: "beat", text: "Tap with the beat", sub: soundOn ? `${bt.cued.length} taps` : "Sound is off: follow the pulsing ring", bar: (el - BT_FREE - BT_GAP) / BT_CUED };
+  },
+  summary(r) {
+    if (r.short) return { headline: "Not enough taps detected", points: ["Keep your hand in view and open your fingers a little between taps.", "Try to tap at least 5 times in each part."] };
+    const g = r.gain, steadier = g >= 10, worse = g <= -10;
+    return {
+      headline: steadier ? `Your rhythm was ${Math.round(g)}% steadier with the beat` : worse ? "The beat did not help this time" : "Your rhythm was similar with and without the beat",
+      points: [
+        steadier ? "A steady beat helped you keep an even rhythm. This is why therapists use cues." : worse ? "That is common at first. Following a beat takes a little practice." : "Your rhythm was already quite even on your own.",
+        `On your own you tapped ${r.rateFree.toFixed(1)} times per second. With the beat, ${r.rateCued.toFixed(1)}.`,
+        `The beat was set to your own pace (${r.hz.toFixed(1)} per second), as therapists often do.`,
+      ],
+      line: `rhythm CV ${r.cvFree.toFixed(2)} → ${r.cvCued.toFixed(2)} (${g >= 0 ? "−" : "+"}${Math.abs(g).toFixed(0)}%)`,
+      compare: [["On your own", r.cvFree], ["With the beat", r.cvCued]],
+    };
+  },
+  metrics(r) {
+    if (r.short) return table([["Taps without beat", r.nf], ["Taps with beat", r.nc]]);
+    return table([["Inter-tap interval CV, no cue", r.cvFree.toFixed(3)], ["Inter-tap interval CV, cued", r.cvCued.toFixed(3)], ["Change in variability", (r.gain >= 0 ? "−" : "+") + Math.abs(r.gain).toFixed(0) + "%"],
+      ["Tapping rate, no cue → cued", `${r.rateFree.toFixed(2)} → ${r.rateCued.toFixed(2)} /s`], ["Cue rate (matched to own pace)", r.hz.toFixed(2) + " Hz"], ["Taps, no cue / cued", `${r.nf} / ${r.nc}`]]);
   },
 };
 
@@ -958,7 +1082,7 @@ const FINALE = {
   },
 };
 
-const ACTS = [TAP, TWO, STEADY, SPIRAL, AMP, FINALE];
+const ACTS = [TAP, BEAT, TWO, STEADY, SPIRAL, AMP, FINALE];
 const FIN = ACTS.length - 1, NTEST = ACTS.length - 1;
 let current = 0;
 const A = () => ACTS[current];
@@ -967,7 +1091,7 @@ const A = () => ACTS[current];
 // UI: stepper, hud, cards
 // =====================================================================
 function renderStepper() {
-  $("stepper").innerHTML = ACTS.map((a, i) => `<button data-go="${i}" class="${i === current ? "on" : ""} ${results[a.key] ? "done" : ""}">
+  $("stepper").innerHTML = ACTS.map((a, i) => `<button data-go="${i}" title="${a.name}" aria-label="${a.name}" class="${i === current ? "on" : ""} ${results[a.key] ? "done" : ""}">
     ${results[a.key] ? icon("check") : icon(a.icon)}<span class="lbl">${a.name}</span></button>`).join("");
 }
 let hudKey = "";
@@ -1023,6 +1147,14 @@ function drawDemo(g, key, t) {
     g.beginPath(); g.moveTo(thumb.x, thumb.y); g.lineTo(index.x, index.y); g.stroke();
     for (const p of [thumb, index]) { g.beginPath(); g.arc(p.x, p.y, 14, 0, 7); g.stroke(); }
     label(g, o < 0.15 ? "Close" : "Open wide", w, h);
+  } else if (key === "beat") {
+    const hz = 1.6, ph = (t * hz) % 1, o = (Math.cos(ph * Math.PI * 2) + 1) / 2, cued = (t % 8) > 4;
+    const cx = 320, cy = 175, thumb = { x: cx - 30 - o * 50, y: cy + 10 + o * 15 }, index = { x: cx + 10 + o * 35, y: cy - 35 - o * 55 };
+    if (cued) { const k = ph; g.globalAlpha = 1 - k; g.strokeStyle = "#fbbf77"; g.lineWidth = 5 * (1 - k) + 1; g.beginPath(); g.arc(cx, cy - 20, 90 + 50 * k, 0, 7); g.stroke(); g.globalAlpha = 1; }
+    g.lineWidth = 6; g.lineCap = "round"; g.strokeStyle = o < 0.15 ? "#fbbf77" : "#5eead4";
+    g.beginPath(); g.moveTo(thumb.x, thumb.y); g.lineTo(index.x, index.y); g.stroke();
+    for (const p of [thumb, index]) { g.beginPath(); g.arc(p.x, p.y, 14, 0, 7); g.stroke(); }
+    label(g, cued ? "Now tap with the beat" : "First, tap at your own pace", w, h);
   } else if (key === "twotap") {
     const L = { x: 200, y: 175 }, R = { x: 440, y: 175 }, ph = (t * 0.9) % 2, f = ph % 1, e = f < 0.5 ? 2 * f * f : 1 - Math.pow(-2 * f + 2, 2) / 2;
     const from = ph < 1 ? L : R, to = ph < 1 ? R : L, x = from.x + (to.x - from.x) * e;
@@ -1067,9 +1199,10 @@ function showResult() {
   const a = A(), r = results[a.key], s = a.summary(r);
   const doctor = view === "doctor";
   const last = current === NTEST - 1;
-  const body = doctor ? a.metrics(r) : `<ul class="points">${s.points.map(p => `<li><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="currentColor"/></svg><span>${p}</span></li>`).join("")}</ul>`;
+  const cmp = !doctor && s.compare ? `<div class="cmpbox">${s.compare.map(([k, v], i) => `<div class="${i === 1 && v < s.compare[0][1] ? "good" : ""}"><div class="lb">${k}</div><div class="v">${Math.round(100 * Math.max(0, 1 - v))}<small style="font-size:16px;color:var(--muted)"> / 100</small></div><div class="fine" style="margin:2px 0 0">rhythm evenness</div></div>`).join("")}</div>` : "";
+  const body = cmp + (doctor ? a.metrics(r) : `<ul class="points">${s.points.map(p => `<li><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="currentColor"/></svg><span>${p}</span></li>`).join("")}</ul>`);
   const details = !doctor && detailsOpen ? `<div class="details">${a.metrics(r)}</div>` : "";
-  layer(`<div class="eyebrow">${icon(a.icon)}${a.name} · Result</div><h2>${s.headline}</h2>${body}${details}${whyOpen ? whyBox(a) : ""}
+  layer(`<div class="eyebrow">${icon(a.icon)}${a.name} · Result${r.sim ? " · simulated Parkinson's" : ""}</div><h2>${s.headline}</h2>${body}${details}${whyOpen ? whyBox(a) : ""}
     <div class="fine">${doctor ? "Demo thresholds, not validated clinical cut-offs. Webcam at about 30 frames per second; amplitudes are normalised to hand size." : "A demo, not a medical test. If you notice changes in how you move, talk to your doctor."}</div>
     <div class="row" style="margin-top:10px">${doctor ? "" : `<button class="btn link" data-act="details">${detailsOpen ? "Hide" : "Show"} numbers</button>`}
     <button class="btn link" data-act="why">${icon("info")}${whyOpen ? "Hide" : "Why this activity"}</button></div>
@@ -1079,7 +1212,7 @@ function showResult() {
 function showSummary() {
   hud(null);
   const rows = ACTS.slice(0, NTEST).map(a => { const r = results[a.key]; const s = r ? a.summary(r) : null;
-    return `<tr><td>${icon(a.icon)}${a.name}</td><td>${s ? (view === "doctor" ? (s.line || s.headline) : s.headline) : "Not done"}</td></tr>`; }).join("");
+    return `<tr><td>${icon(a.icon)}${a.name}</td><td>${s ? (view === "doctor" ? (s.line || s.headline) : s.headline) + (r.sim ? " <small>(simulated)</small>" : "") : "Not done"}</td></tr>`; }).join("");
   layer(`<div class="eyebrow">${icon("doc")}Session summary</div><h2>Your results</h2><table class="m sum">${rows}</table>
     <div class="fine">A demo, not a medical test. Nothing was recorded; these results disappear when you close the page.</div>
     <div class="row" style="margin-top:18px"><button class="btn" data-act="finale">${icon("finale")}Finale</button>
@@ -1153,6 +1286,7 @@ function setView(v) {
   document.querySelectorAll("#audience button").forEach(b => b.classList.toggle("on", b.dataset.view === v));
   if (flow.phase === "result") showResult();
 }
+$("simBtn").addEventListener("click", () => setSim(!sim.on));
 $("soundBtn").addEventListener("click", () => { soundOn = !soundOn; store.set("sound", soundOn); $("soundBtn").innerHTML = icon(soundOn ? "volume" : "mute"); });
 $("helpBtn").addEventListener("click", () => { skipDemos = false; store.set("skipDemos", false); tipIdx = 0; flow.phase = "demo"; hud(null); showGuide(); });
 addEventListener("keydown", (e) => {
@@ -1173,6 +1307,7 @@ function loop() {
     lastVideoTime = video.currentTime;
     const res = hands.detectForVideo(video, now);
     lm = res.landmarks && res.landmarks.length ? res.landmarks[0] : null;
+    if (sim.on && current !== FIN) lm = simulatePD(lm, now);
     handSize = lm ? dLm(0, 9) : 0;
     if (lm && !hadHand && (flow.phase === "ready" || flow.phase === "run")) { const c = P(lm[9]); ripple(c.x, c.y); }
     hadHand = !!lm;
@@ -1215,7 +1350,7 @@ $("go").addEventListener("click", async () => {
 });
 resize();
 if (new URLSearchParams(location.search).has("autostart")) {   // automated testing only
-  window.__mm = { van, snap, goTo, act, setView, flow, results, finish, ACTS, showSummary, showMap, get current() { return current; },
+  window.__mm = { van, snap, sim, setSim, simulatePD, bt, goTo, act, setView, flow, results, finish, ACTS, showSummary, showMap, get current() { return current; },
     demo(key, t) { cancelAnimationFrame(demoAnim); const c = $("demo"); if (c) drawDemo(c.getContext("2d"), key, t); } };
   $("go").click();
 }
