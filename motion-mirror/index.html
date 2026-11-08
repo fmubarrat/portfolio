@@ -1056,8 +1056,17 @@ function drawWithoutPerson() {
   ctx.drawImage(fx, 0, 0);
 }
 // Backdrop: a clean studio white replaces the room, so the vanish is always clean.
-van.bgMode = "white";
+van.bgMode = "photo";
+// Backdrop photo: "Sunrise over a mountain lake with icy rocks", Unsplash (free under the Unsplash License)
+const bgPhoto = new Image(); bgPhoto.src = "backdrop.jpg";
 function drawBackdrop() {
+  if (van.bgMode === "photo" && bgPhoto.complete && bgPhoto.naturalWidth) {
+    const s = Math.max(W / bgPhoto.naturalWidth, H / bgPhoto.naturalHeight), w = bgPhoto.naturalWidth * s, h = bgPhoto.naturalHeight * s;
+    ctx.drawImage(bgPhoto, (W - w) / 2, (H - h) / 2, w, h);
+    const v = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.max(W, H) * 0.75);
+    v.addColorStop(0, "rgba(0,0,0,0)"); v.addColorStop(1, "rgba(0,0,0,0.35)"); ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+    return;
+  }
   if (van.bgMode === "green") {
     ctx.fillStyle = "#00b140"; ctx.fillRect(0, 0, W, H);
     const g = ctx.createRadialGradient(W / 2, H * 0.45, Math.min(W, H) * 0.2, W / 2, H / 2, Math.max(W, H) * 0.8);
@@ -1158,7 +1167,7 @@ function dustDraw(now) {
 }
 const FINALE = {
   key: "finale", name: "Finale", icon: "finale", noDemo: true, noResult: true,
-  reset() { van.phase = "ready"; van.t0 = performance.now(); van.n = 0; van.frames = 0; van.fadeT = 0; $("thanks").style.opacity = 0; $("thanks").classList.add("dark"); bg.width = Math.round(W * SC); bg.height = Math.round(H * SC); },
+  reset() { van.phase = "ready"; van.t0 = performance.now(); van.n = 0; van.frames = 0; van.fadeT = 0; $("thanks").style.opacity = 0; $("thanks").classList.toggle("dark", !(bgPhoto.complete && bgPhoto.naturalWidth)); bg.width = Math.round(W * SC); bg.height = Math.round(H * SC); },
   begin() {},
   update(now) {
     if (van.mask && van.mw) buildMasks();
