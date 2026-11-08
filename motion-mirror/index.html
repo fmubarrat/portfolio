@@ -473,7 +473,7 @@ let lastN = "";
 function drawCountdown(now) {
   const el = $("count");
   if (flow.phase === "count") { const n = String(3 - Math.floor((now - flow.t0) / 1000)); if (n !== lastN) { lastN = n; el.textContent = n; el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop"); tone(440, 0.08, "triangle", 0.07); } el.style.opacity = 1; }
-  else { el.style.opacity = 0; lastN = ""; }
+  else if (lastN) { el.classList.remove("pop"); el.style.opacity = 0; el.textContent = ""; lastN = ""; }
 }
 function finish(now, res) {
   flow.phase = "result"; flow.t0 = now; if (sim.on) res.sim = true; results[A().key] = res; chime(); celebrate(); renderStepper(); showResult();
@@ -750,10 +750,10 @@ const STEADY = {
 // ---------- 3. Spiral tracing (follow the light) ----------
 // Replaces pen-and-paper spiral drawing: the person only follows a slow light with a fingertip.
 const sp = { pts: [], cum: [], len: 0, R: 0, tol: 0, pos: 0, touch: 0, lastT: 0, hist: [], trail: [], on: 0, total: 0, devSum: 0, paused: false };
-const SP_TIME = 14000;          // same slow speed as before, over a shorter path
+const SP_TIME = 12000;          // same slow speed, over a shorter path
 function spiralBuild() {
-  const cx = W / 2, cy = H * 0.46, R = Math.min(W, H) * 0.3, turns = 1.75, n = 700;
-  sp.pts = []; sp.cum = [0]; sp.R = R; sp.tol = Math.max(44, Math.min(W, H) * 0.085);
+  const cx = W / 2, cy = H * 0.46, R = Math.min(W, H) * 0.36, turns = 1.5, n = 700;
+  sp.pts = []; sp.cum = [0]; sp.R = R; sp.gap = R * 0.8 / turns; sp.tol = Math.max(52, Math.min(W, H) * 0.1);
   for (let i = 0; i <= n; i++) {
     const f = i / n, th = f * turns * Math.PI * 2, r = R * (0.2 + 0.8 * f);
     sp.pts.push({ x: cx + r * Math.cos(th), y: cy + r * Math.sin(th) });
@@ -772,9 +772,9 @@ const SPIRAL = {
   title: "Trace the spiral", lead: "Rest your elbow on the table. Put your index finger on the light, then follow it slowly. The light waits for you.",
   why: "Drawing an Archimedean spiral is a common clinical way to assess tremor and movement control. It is usually done on paper and rated by eye on a 0–10 scale.", src: SRC.spiral,
   clinic: "The patient draws a spiral on paper. A clinician rates it by eye from 0 to 10.", here: "You follow a slow light in the air. The camera measures accuracy and shaking.",
-  reset() { spiralBuild(); sp.pos = 0; sp.touch = 0; sp.hist = []; sp.trail = []; sp.on = 0; sp.total = 0; sp.devSum = 0; sp.lastT = 0; sp.paused = false; },
+  reset() { spiralBuild(); sp.st = null; sp.pos = 0; sp.touch = 0; sp.hist = []; sp.trail = []; sp.on = 0; sp.total = 0; sp.devSum = 0; sp.lastT = 0; sp.paused = false; },
   begin() {},
-  tip() { return lm ? P(lm[8]) : null; },
+  tip() { if (!lm) { sp.st = null; return null; } const r = P(lm[8]); if (!sp.st) sp.st = { ...r }; else { sp.st.x += (r.x - sp.st.x) * 0.35; sp.st.y += (r.y - sp.st.y) * 0.35; } return sp.st; },
   update(now) {
     const dt = sp.lastT ? Math.min(80, now - sp.lastT) : 0; sp.lastT = now;
     const tip = SPIRAL.tip();
@@ -787,12 +787,12 @@ const SPIRAL = {
     }
     if (flow.phase !== "run") return;
     const pacer = spiralAt(sp.pos);
-    sp.paused = !tip || dist(tip, pacer) > sp.tol * 2.6;      // the light waits for you
+    sp.paused = !tip || dist(tip, pacer) > sp.tol * 3;        // the light waits for you
     if (!sp.paused) { sp.pos += sp.len / SP_TIME * dt; if (now - (sp.spark || 0) > 140) { sp.spark = now; const q = spiralAt(sp.pos); sparkle(q.x, q.y, 1); } }
     if (tip && handSize) {
       const dev = nearestDev(tip);
       sp.total++; sp.devSum += dev; if (dev < sp.tol) sp.on++;
-      sp.hist.push({ t: now, x: tip.x / handSize, y: tip.y / handSize });
+      const rt = P(lm[8]); sp.hist.push({ t: now, x: rt.x / handSize, y: rt.y / handSize });   // raw fingertip for tremor
     }
     if (sp.pos >= sp.len) {
       const tr = tremorOf(sp.hist, 60000) || { amp: 0, peak: null, spec: new Array(12).fill(0), bandShare: 0 };
@@ -802,7 +802,7 @@ const SPIRAL = {
   draw(now) {
     if (!sp.pts.length) spiralBuild();
     ctx.save(); ctx.lineCap = "round"; ctx.lineJoin = "round";
-    ctx.strokeStyle = "rgba(94,234,212,.10)"; ctx.lineWidth = sp.tol * 2;   // the "lane" you can stay within
+    ctx.strokeStyle = "rgba(94,234,212,.12)"; ctx.lineWidth = Math.min(sp.tol * 2, sp.gap * 0.7);   // the "lane", kept narrower than the gap between turns
     ctx.beginPath(); sp.pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke();
     ctx.strokeStyle = "rgba(94,234,212,.55)"; ctx.lineWidth = 2; ctx.setLineDash([10, 10]);
     ctx.beginPath(); sp.pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke(); ctx.setLineDash([]);
@@ -819,7 +819,7 @@ const SPIRAL = {
     ctx.fillStyle = "rgba(251,191,119,.25)"; ctx.beginPath(); ctx.arc(p.x, p.y, sp.tol * 1.2 * pulse, 0, 7); ctx.fill();
     ctx.fillStyle = "#fbbf77"; ctx.shadowBlur = 30; ctx.shadowColor = "#fbbf77"; ctx.beginPath(); ctx.arc(p.x, p.y, 14, 0, 7); ctx.fill();
     ctx.restore();
-    const tip = SPIRAL.tip();
+    const tip = lm ? sp.st : null;
     if (tip) { ctx.save(); ctx.strokeStyle = "#5eead4"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(tip.x, tip.y, 16, 0, 7); ctx.stroke(); ctx.restore(); }
     if (flow.phase === "ready" && sp.touch) ring(sp.pts[0].x, sp.pts[0].y, sp.tol * 1.6, (now - sp.touch) / 700, "#fbbf77");
   },
@@ -1176,7 +1176,7 @@ function drawDemo(g, key, t) {
     for (let x = 80; x <= xEnd; x += 3) { const y = 175 - 45 * Math.sin((x - 80) * 0.06) * (0.6 + 0.4 * Math.sin((x - 80) * 0.013)); x === 80 ? g.moveTo(x, y) : g.lineTo(x, y); }
     g.stroke(); label(g, "Pinch and write", w, h);
   } else if (key === "spiral") {
-    const cx = 320, cy = 170, R = 125, turns = 1.75, n = 300, pts = [];
+    const cx = 320, cy = 170, R = 125, turns = 1.5, n = 300, pts = [];
     for (let i = 0; i <= n; i++) { const f = i / n, th = f * turns * Math.PI * 2, r = R * (0.2 + 0.8 * f); pts.push([cx + r * Math.cos(th), cy + r * Math.sin(th)]); }
     g.lineCap = "round"; g.strokeStyle = "rgba(94,234,212,.12)"; g.lineWidth = 34; g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(...p) : g.moveTo(...p)); g.stroke();
     const k = Math.floor(((t % 6) / 5.4) * n), upto = Math.min(n, k);
