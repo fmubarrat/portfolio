@@ -171,7 +171,7 @@
     <button data-view="doctor"><span data-icon="clipboard"></span><span class="lbl">Clinician</span></button>
   </div>
   <button class="iconbtn surface" id="soundBtn" aria-label="Sound"><span data-icon="volume"></span></button>
-  <button class="iconbtn surface" id="helpBtn" aria-label="Setup guide"><span data-icon="help"></span></button>
+  <button class="iconbtn surface" id="helpBtn" aria-label="Show the tutorial again" title="Show the tutorial again"><span data-icon="help"></span></button>
 </header>
 
 <div id="hud" class="surface chrome hidden">
@@ -626,12 +626,12 @@ const STEADY = {
 // ---------- 3. Spiral tracing (follow the light) ----------
 // Replaces pen-and-paper spiral drawing: the person only follows a slow light with a fingertip.
 const sp = { pts: [], cum: [], len: 0, R: 0, tol: 0, pos: 0, touch: 0, lastT: 0, hist: [], trail: [], on: 0, total: 0, devSum: 0, paused: false };
-const SP_TIME = 18000;          // a slow, comfortable pace
+const SP_TIME = 14000;          // same slow speed as before, over a shorter path
 function spiralBuild() {
-  const cx = W / 2, cy = H * 0.46, R = Math.min(W, H) * 0.3, turns = 2.25, n = 700;
-  sp.pts = []; sp.cum = [0]; sp.R = R; sp.tol = Math.max(34, Math.min(W, H) * 0.06);
+  const cx = W / 2, cy = H * 0.46, R = Math.min(W, H) * 0.3, turns = 1.75, n = 700;
+  sp.pts = []; sp.cum = [0]; sp.R = R; sp.tol = Math.max(44, Math.min(W, H) * 0.085);
   for (let i = 0; i <= n; i++) {
-    const f = i / n, th = f * turns * Math.PI * 2, r = R * (0.1 + 0.9 * f);
+    const f = i / n, th = f * turns * Math.PI * 2, r = R * (0.2 + 0.8 * f);
     sp.pts.push({ x: cx + r * Math.cos(th), y: cy + r * Math.sin(th) });
     if (i) sp.cum.push(sp.cum[i - 1] + dist(sp.pts[i], sp.pts[i - 1]));
   }
@@ -645,7 +645,7 @@ function spiralAt(s) {
 function nearestDev(p) { let m = 1e9; for (let i = 0; i < sp.pts.length; i += 2) { const d = dist(p, sp.pts[i]); if (d < m) m = d; } return m; }
 const SPIRAL = {
   key: "spiral", name: "Spiral", icon: "spiral",
-  title: "Trace the spiral", lead: "Put your index finger on the light, then follow it slowly as it moves along the spiral.",
+  title: "Trace the spiral", lead: "Rest your elbow on the table. Put your index finger on the light, then follow it slowly. The light waits for you.",
   why: "Drawing an Archimedean spiral is a common clinical way to assess tremor and movement control. It is usually done on paper and rated by eye on a 0–10 scale.", src: SRC.spiral,
   clinic: "The patient draws a spiral on paper. A clinician rates it by eye from 0 to 10.", here: "You follow a slow light in the air. The camera measures accuracy and shaking.",
   reset() { spiralBuild(); sp.pos = 0; sp.touch = 0; sp.hist = []; sp.trail = []; sp.on = 0; sp.total = 0; sp.devSum = 0; sp.lastT = 0; sp.paused = false; },
@@ -835,10 +835,8 @@ function drawWithoutPerson() {
   fxCtx.globalCompositeOperation = "source-in"; fxCtx.drawImage(fill, 0, 0, W, H); fxCtx.globalCompositeOperation = "source-over";
   ctx.drawImage(fx, 0, 0);
 }
-// Backdrop: a clean studio white or a green screen replaces the room, so the vanish is always clean.
-// "room" keeps the learned-background version.
-const BACKDROPS = { white: "White", green: "Green", room: "Room" };
-van.bgMode = "white"; try { const s = localStorage.getItem("mm.backdrop"); if (s && BACKDROPS[s]) van.bgMode = s; } catch {}
+// Backdrop: a clean studio white replaces the room, so the vanish is always clean.
+van.bgMode = "white";
 function drawBackdrop() {
   if (van.bgMode === "green") {
     ctx.fillStyle = "#00b140"; ctx.fillRect(0, 0, W, H);
@@ -861,19 +859,8 @@ function drawPerson(alpha) {
 }
 function drawFinaleScene(now) {
   const gone = van.phase === "gone" || van.phase === "return";
-  if (van.bgMode === "room") { if (gone) drawWithoutPerson(); else drawMirrored(ctx, video); return; }
   drawBackdrop();
   if (!gone) drawPerson(van.fadeT ? Math.min(1, (now - van.fadeT) / 500) : 1);
-}
-function setBackdrop(m) {
-  if (!BACKDROPS[m]) return;
-  van.bgMode = m; try { localStorage.setItem("mm.backdrop", m); } catch {}
-  $("thanks").classList.toggle("dark", m === "white");
-  if (m === "room" && van.phase === "ready" && van.frames < 20) { van.phase = "learn"; van.t0 = performance.now(); }
-  hudKey = "";
-}
-function backdropButtons() {
-  return Object.keys(BACKDROPS).map(k => `<button class="btn ${k === van.bgMode ? "" : "secondary"}" data-act="bg-${k}">${BACKDROPS[k]}</button>`).join("");
 }
 // Samples the visible person into coloured particles (every 4th pixel).
 function samplePerson() {
@@ -951,10 +938,10 @@ function dustDraw(now) {
 }
 const FINALE = {
   key: "finale", name: "Finale", icon: "finale", noDemo: true, noResult: true,
-  reset() { van.phase = van.bgMode === "room" ? "learn" : "ready"; van.t0 = performance.now(); van.n = 0; van.frames = 0; van.fadeT = 0; $("thanks").style.opacity = 0; $("thanks").classList.toggle("dark", van.bgMode === "white"); bg.width = Math.round(W * SC); bg.height = Math.round(H * SC); },
+  reset() { van.phase = "ready"; van.t0 = performance.now(); van.n = 0; van.frames = 0; van.fadeT = 0; $("thanks").style.opacity = 0; $("thanks").classList.add("dark"); bg.width = Math.round(W * SC); bg.height = Math.round(H * SC); },
   begin() {},
   update(now) {
-    if (van.mask && van.mw) { buildMasks(); learnBackground(); }
+    if (van.mask && van.mw) buildMasks();
     if (van.phase === "learn" && now - van.t0 > 2500 && van.frames > 20) van.phase = "ready";
     if (van.phase === "gone" && now - van.t0 > 2400) $("thanks").style.opacity = 1;
     if (!lm || !handSize) return;
@@ -965,7 +952,7 @@ const FINALE = {
   draw(now) { dustDraw(now); },
   hud(now) {
     if (van.phase === "learn") return { icon: "eye", text: "Learning the room", sub: "Step aside for a moment if you can", bar: Math.min(1, (now - van.t0) / 2500) };
-    if (van.phase === "ready") return { icon: "finale", text: "Snap your fingers", sub: "or use the button", buttons: `${backdropButtons()}<button class="btn" data-act="snap">${icon("finale")}Vanish</button>` };
+    if (van.phase === "ready") return { icon: "finale", text: "Snap your fingers", sub: "or use the button", buttons: `<button class="btn" data-act="snap">${icon("finale")}Vanish</button>` };
     if (van.phase === "gone" && now - van.t0 > 2400) return { icon: "finale", text: "Snap again to come back", sub: "or use the button", buttons: `<button class="btn" data-act="snap">${icon("redo")}Come back</button>` };
     return null;
   },
@@ -1057,8 +1044,8 @@ function drawDemo(g, key, t) {
     for (let x = 80; x <= xEnd; x += 3) { const y = 175 - 45 * Math.sin((x - 80) * 0.06) * (0.6 + 0.4 * Math.sin((x - 80) * 0.013)); x === 80 ? g.moveTo(x, y) : g.lineTo(x, y); }
     g.stroke(); label(g, "Pinch and write", w, h);
   } else if (key === "spiral") {
-    const cx = 320, cy = 170, R = 125, turns = 2.25, n = 300, pts = [];
-    for (let i = 0; i <= n; i++) { const f = i / n, th = f * turns * Math.PI * 2, r = R * (0.1 + 0.9 * f); pts.push([cx + r * Math.cos(th), cy + r * Math.sin(th)]); }
+    const cx = 320, cy = 170, R = 125, turns = 1.75, n = 300, pts = [];
+    for (let i = 0; i <= n; i++) { const f = i / n, th = f * turns * Math.PI * 2, r = R * (0.2 + 0.8 * f); pts.push([cx + r * Math.cos(th), cy + r * Math.sin(th)]); }
     g.lineCap = "round"; g.strokeStyle = "rgba(94,234,212,.12)"; g.lineWidth = 34; g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(...p) : g.moveTo(...p)); g.stroke();
     const k = Math.floor(((t % 6) / 5.4) * n), upto = Math.min(n, k);
     g.strokeStyle = "rgba(243,246,251,.9)"; g.lineWidth = 4; g.beginPath(); pts.slice(0, upto + 1).forEach((p, i) => i ? g.lineTo(...p) : g.moveTo(...p)); g.stroke();
@@ -1151,7 +1138,6 @@ function act(a) {
   else if (a === "finale") goTo(FIN);
   else if (a === "print") window.print();
   else if (a === "snap") { if (van.phase === "gone") comeBack(now); else snap(now); }
-  else if (a.startsWith("bg-")) setBackdrop(a.slice(3));
   else if (a === "tipnext") { if (tipIdx < TIPS.length - 1) { tipIdx++; showGuide(); } else { store.set("guided", true); goTo(current); } }
   else if (a === "tipskip") { store.set("guided", true); goTo(current); }
   else if (a === "map") showMap();
@@ -1168,7 +1154,7 @@ function setView(v) {
   if (flow.phase === "result") showResult();
 }
 $("soundBtn").addEventListener("click", () => { soundOn = !soundOn; store.set("sound", soundOn); $("soundBtn").innerHTML = icon(soundOn ? "volume" : "mute"); });
-$("helpBtn").addEventListener("click", () => { tipIdx = 0; flow.phase = "demo"; hud(null); showGuide(); });
+$("helpBtn").addEventListener("click", () => { skipDemos = false; store.set("skipDemos", false); tipIdx = 0; flow.phase = "demo"; hud(null); showGuide(); });
 addEventListener("keydown", (e) => {
   const k = e.key.toLowerCase();
   if (k === "h") document.body.classList.toggle("clean");
