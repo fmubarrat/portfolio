@@ -126,6 +126,8 @@
   #thanks { position: fixed; left: 50%; top: 42%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; opacity: 0; transition: opacity 1.4s; }
   #thanks div { font-size: 64px; font-weight: 800; letter-spacing: -1px; text-shadow: 0 6px 30px rgba(0,0,0,.6); }
   #thanks small { display: block; margin-top: 8px; font-size: 18px; color: #e6ecf6; text-shadow: 0 2px 12px rgba(0,0,0,.8); }
+  #thanks.dark div { color: #0f172a; text-shadow: 0 4px 24px rgba(15,23,42,.12); }
+  #thanks.dark small { color: #475569; text-shadow: none; }
 
   #privacy { position: fixed; left: 16px; bottom: 16px; display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--muted); z-index: 2; }
 
@@ -406,12 +408,12 @@ function tone(freq, dur = 0.12, type = "sine", gain = 0.1) {
   g.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + dur); o.connect(g).connect(audio.destination); o.start(); o.stop(audio.currentTime + dur);
 }
 const chime = () => [523, 659, 784].forEach((f, i) => setTimeout(() => tone(f, 0.45, "sine", 0.07), i * 90));
-function whoosh() {
+function whoosh(reverse = false) {
   if (!audio || !soundOn) return;
   const len = audio.sampleRate * 2.4, buf = audio.createBuffer(1, len, audio.sampleRate), d = buf.getChannelData(0);
-  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.2);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(reverse ? i / len : 1 - i / len, 2.2);
   const src = audio.createBufferSource(); src.buffer = buf;
-  const f = audio.createBiquadFilter(); f.type = "bandpass"; f.frequency.setValueAtTime(350, audio.currentTime); f.frequency.exponentialRampToValueAtTime(3200, audio.currentTime + 2.2);
+  const f = audio.createBiquadFilter(); f.type = "bandpass"; f.frequency.setValueAtTime(reverse ? 3200 : 350, audio.currentTime); f.frequency.exponentialRampToValueAtTime(reverse ? 350 : 3200, audio.currentTime + 2.2);
   const g = audio.createGain(); g.gain.value = 0.28; src.connect(f).connect(g).connect(audio.destination); src.start();
 }
 
@@ -833,9 +835,48 @@ function drawWithoutPerson() {
   fxCtx.globalCompositeOperation = "source-in"; fxCtx.drawImage(fill, 0, 0, W, H); fxCtx.globalCompositeOperation = "source-over";
   ctx.drawImage(fx, 0, 0);
 }
-function snap(now) {
-  if (van.phase !== "ready" || !van.mask || !van.mw || now - van.lastSnap < 1500) return;
-  van.lastSnap = now;
+// Backdrop: a clean studio white or a green screen replaces the room, so the vanish is always clean.
+// "room" keeps the learned-background version.
+const BACKDROPS = { white: "White", green: "Green", room: "Room" };
+van.bgMode = "white"; try { const s = localStorage.getItem("mm.backdrop"); if (s && BACKDROPS[s]) van.bgMode = s; } catch {}
+function drawBackdrop() {
+  if (van.bgMode === "green") {
+    ctx.fillStyle = "#00b140"; ctx.fillRect(0, 0, W, H);
+    const g = ctx.createRadialGradient(W / 2, H * 0.45, Math.min(W, H) * 0.2, W / 2, H / 2, Math.max(W, H) * 0.8);
+    g.addColorStop(0, "rgba(255,255,255,0.06)"); g.addColorStop(1, "rgba(0,40,10,0.25)"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    return;
+  }
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, "#ffffff"); g.addColorStop(0.72, "#eef1f5"); g.addColorStop(1, "#dfe4ea");
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  const f = ctx.createRadialGradient(W / 2, H * 0.98, 10, W / 2, H * 0.98, W * 0.45);
+  f.addColorStop(0, "rgba(120,130,150,0.18)"); f.addColorStop(1, "rgba(120,130,150,0)"); ctx.fillStyle = f; ctx.fillRect(0, 0, W, H);
+}
+function drawPerson(alpha) {
+  if (!van.mask || !pMask.width) { ctx.globalAlpha = alpha; drawMirrored(ctx, video); ctx.globalAlpha = 1; return; }
+  if (fx.width !== W || fx.height !== H) { fx.width = W; fx.height = H; }
+  fxCtx.globalCompositeOperation = "source-over"; fxCtx.clearRect(0, 0, W, H); maskTo(fxCtx, pMask, 1, 2);
+  fxCtx.globalCompositeOperation = "source-in"; drawMirrored(fxCtx, video); fxCtx.globalCompositeOperation = "source-over";
+  ctx.globalAlpha = alpha; ctx.drawImage(fx, 0, 0); ctx.globalAlpha = 1;
+}
+function drawFinaleScene(now) {
+  const gone = van.phase === "gone" || van.phase === "return";
+  if (van.bgMode === "room") { if (gone) drawWithoutPerson(); else drawMirrored(ctx, video); return; }
+  drawBackdrop();
+  if (!gone) drawPerson(van.fadeT ? Math.min(1, (now - van.fadeT) / 500) : 1);
+}
+function setBackdrop(m) {
+  if (!BACKDROPS[m]) return;
+  van.bgMode = m; try { localStorage.setItem("mm.backdrop", m); } catch {}
+  $("thanks").classList.toggle("dark", m === "white");
+  if (m === "room" && van.phase === "ready" && van.frames < 20) { van.phase = "learn"; van.t0 = performance.now(); }
+  hudKey = "";
+}
+function backdropButtons() {
+  return Object.keys(BACKDROPS).map(k => `<button class="btn ${k === van.bgMode ? "" : "secondary"}" data-act="bg-${k}">${BACKDROPS[k]}</button>`).join("");
+}
+// Samples the visible person into coloured particles (every 4th pixel).
+function samplePerson() {
   grab.width = W; grab.height = H; drawMirrored(grabCtx, video);
   const img = grabCtx.getImageData(0, 0, W, H).data, step = 4, list = [];
   for (let y = Math.max(0, Math.floor(rect.y)); y < Math.min(H, rect.y + rect.h); y += step)
@@ -845,14 +886,52 @@ function snap(now) {
     }
   const n = list.length / 2;
   van.n = n; van.px = new Float32Array(n); van.py = new Float32Array(n); van.vx = new Float32Array(n); van.vy = new Float32Array(n); van.dl = new Float32Array(n); van.col = new Uint8ClampedArray(n * 3);
+  van.tx = new Float32Array(n); van.ty = new Float32Array(n);
   for (let i = 0; i < n; i++) {
     const x = list[i * 2], y = list[i * 2 + 1], k = (y * W + x) * 4;
-    van.px[i] = x; van.py[i] = y; van.vx[i] = 0.6 + Math.random() * 2.6; van.vy[i] = -Math.random() * 1.6; van.dl[i] = Math.random() * 1500 + (y - rect.y) / rect.h * 300;
+    van.tx[i] = x; van.ty[i] = y;
     van.col[i * 3] = img[k]; van.col[i * 3 + 1] = img[k + 1]; van.col[i * 3 + 2] = img[k + 2];
   }
-  van.phase = "gone"; van.t0 = now; whoosh(); hud(null);
+  return n;
+}
+function snap(now) {
+  if (van.phase !== "ready" || !van.mask || !van.mw || now - van.lastSnap < 1500) return;
+  van.lastSnap = now;
+  const n = samplePerson();
+  for (let i = 0; i < n; i++) {
+    van.px[i] = van.tx[i]; van.py[i] = van.ty[i]; van.vx[i] = 0.6 + Math.random() * 2.6; van.vy[i] = -Math.random() * 1.6; van.dl[i] = Math.random() * 1500 + (van.ty[i] - rect.y) / rect.h * 300;
+  }
+  van.phase = "gone"; van.t0 = now; van.fadeT = 0; whoosh(); hud(null);
+}
+// Snap again: the dust flies back in from where it drifted and rebuilds the person.
+const RET_MS = 1500, RET_SPREAD = 800;
+function comeBack(now) {
+  if (van.phase !== "gone" || !van.mask || !van.mw || now - van.t0 < 1800 || now - van.lastSnap < 1500) return;
+  van.lastSnap = now;
+  const n = samplePerson();
+  for (let i = 0; i < n; i++) {
+    const a = -0.35 - Math.random() * 0.9, r = 120 + Math.random() * Math.min(W, H) * 0.4;
+    van.px[i] = van.tx[i] + Math.cos(a) * r; van.py[i] = van.ty[i] + Math.sin(a) * r;
+    van.dl[i] = Math.random() * RET_SPREAD + (1 - (van.ty[i] - rect.y) / rect.h) * 200;
+  }
+  van.n = n; van.phase = "return"; van.t0 = now; $("thanks").style.opacity = 0; whoosh(true); hud(null);
+}
+function returnDraw(now) {
+  if (dust.width !== W || dust.height !== H) { dust.width = W; dust.height = H; }
+  const img = dustCtx.createImageData(W, H), d = img.data, t = now - van.t0;
+  for (let i = 0; i < van.n; i++) {
+    const p = Math.max(0, Math.min(1, (t - van.dl[i]) / RET_MS));
+    if (p <= 0) continue;
+    const e = 1 - Math.pow(1 - p, 3), x = (van.px[i] + (van.tx[i] - van.px[i]) * e) | 0, y = (van.py[i] + (van.ty[i] - van.py[i]) * e) | 0;
+    if (x < 0 || y < 0 || x >= W - 4 || y >= H - 4) continue;
+    const s = p > 0.85 ? 4 : 2, a = Math.min(1, p * 1.6) * 255;
+    for (let yy = 0; yy < s; yy++) for (let xx = 0; xx < s; xx++) { const k = ((y + yy) * W + x + xx) * 4; d[k] = van.col[i * 3]; d[k + 1] = van.col[i * 3 + 1]; d[k + 2] = van.col[i * 3 + 2]; d[k + 3] = a; }
+  }
+  dustCtx.putImageData(img, 0, 0); ctx.drawImage(dust, 0, 0);
+  if (t > RET_MS + RET_SPREAD + 250) { van.phase = "ready"; van.fadeT = now; van.n = 0; chime(); const c = rect.x + rect.w / 2; ripple(c, H * 0.45); }
 }
 function dustDraw(now) {
+  if (van.phase === "return") return returnDraw(now);
   if (!van.n) return;
   if (dust.width !== W) { dust.width = W; dust.height = H; }
   const img = dustCtx.createImageData(W, H), d = img.data, t = now - van.t0;
@@ -872,7 +951,7 @@ function dustDraw(now) {
 }
 const FINALE = {
   key: "finale", name: "Finale", icon: "finale", noDemo: true, noResult: true,
-  reset() { van.phase = "learn"; van.t0 = performance.now(); van.n = 0; van.frames = 0; $("thanks").style.opacity = 0; bg.width = Math.round(W * SC); bg.height = Math.round(H * SC); },
+  reset() { van.phase = van.bgMode === "room" ? "learn" : "ready"; van.t0 = performance.now(); van.n = 0; van.frames = 0; van.fadeT = 0; $("thanks").style.opacity = 0; $("thanks").classList.toggle("dark", van.bgMode === "white"); bg.width = Math.round(W * SC); bg.height = Math.round(H * SC); },
   begin() {},
   update(now) {
     if (van.mask && van.mw) { buildMasks(); learnBackground(); }
@@ -881,12 +960,13 @@ const FINALE = {
     if (!lm || !handSize) return;
     const tm = dLm(4, 12) / handSize, fold = dLm(12, 0) / handSize;
     if (tm < 0.25) van.armT = now;
-    else if (van.armT && now - van.armT < 350 && tm > 0.45 && fold < 1.3) { van.armT = 0; snap(now); }
+    else if (van.armT && now - van.armT < 350 && tm > 0.45 && fold < 1.3) { van.armT = 0; if (van.phase === "ready") snap(now); else if (van.phase === "gone") comeBack(now); }
   },
   draw(now) { dustDraw(now); },
   hud(now) {
     if (van.phase === "learn") return { icon: "eye", text: "Learning the room", sub: "Step aside for a moment if you can", bar: Math.min(1, (now - van.t0) / 2500) };
-    if (van.phase === "ready") return { icon: "finale", text: "Snap your fingers", sub: "or use the button", buttons: `<button class="btn" data-act="snap">${icon("finale")}Vanish</button>` };
+    if (van.phase === "ready") return { icon: "finale", text: "Snap your fingers", sub: "or use the button", buttons: `${backdropButtons()}<button class="btn" data-act="snap">${icon("finale")}Vanish</button>` };
+    if (van.phase === "gone" && now - van.t0 > 2400) return { icon: "finale", text: "Snap again to come back", sub: "or use the button", buttons: `<button class="btn" data-act="snap">${icon("redo")}Come back</button>` };
     return null;
   },
 };
@@ -1070,7 +1150,8 @@ function act(a) {
   else if (a === "summary") showSummary();
   else if (a === "finale") goTo(FIN);
   else if (a === "print") window.print();
-  else if (a === "snap") snap(now);
+  else if (a === "snap") { if (van.phase === "gone") comeBack(now); else snap(now); }
+  else if (a.startsWith("bg-")) setBackdrop(a.slice(3));
   else if (a === "tipnext") { if (tipIdx < TIPS.length - 1) { tipIdx++; showGuide(); } else { store.set("guided", true); goTo(current); } }
   else if (a === "tipskip") { store.set("guided", true); goTo(current); }
   else if (a === "map") showMap();
@@ -1112,8 +1193,8 @@ function loop() {
     if (current === FIN) segment(now);
     if (flow.phase !== "demo" && flow.phase !== "result") A().update(now);
   }
-  if (current === FIN && van.phase === "gone") drawWithoutPerson(); else drawVideo(current === FIN ? 0 : 0.45);
-  if (flow.phase === "ready" || flow.phase === "count" || flow.phase === "run") drawAura();
+  if (current === FIN) drawFinaleScene(now); else drawVideo(0.45);
+  if ((flow.phase === "ready" || flow.phase === "count" || flow.phase === "run") && current !== FIN) drawAura();
   if (flow.phase !== "demo") A().draw(now);
   drawCountdown(now);
   drawFx(now);
