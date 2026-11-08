@@ -238,6 +238,7 @@ const ICONS = {
   spiral: '<path d="M12 12a1.5 1.5 0 0 1 1.5 1.5A3 3 0 0 1 10.5 16 4.5 4.5 0 0 1 6 11.5 6 6 0 0 1 12 5.5a7.5 7.5 0 0 1 7.5 7.5"/>',
   flower: '<circle cx="12" cy="9" r="2.2"/><path d="M12 6.8a2.6 2.6 0 1 1 2.6-2.6M14.2 9a2.6 2.6 0 1 1 2.6 2.6M12 11.2a2.6 2.6 0 1 1-2.6 2.6M9.8 9a2.6 2.6 0 1 1-2.6-2.6"/><path d="M12 11.5V21M12 17c-2 0-3.5-1-4-3M12 18c2 0 3.5-1 4-3"/>',
   close: '<path d="M6 6l12 12M18 6L6 18"/>',
+  mirror: '<path d="M12 3v18" stroke-dasharray="2 2.5"/><path d="M9 8.5a3 3 0 0 0-3-1.5c-1.7 0-3 1.6-3 4.5S4.3 17 6 17c1.3 0 2.4-.7 3-2"/><path d="M15 8.5a3 3 0 0 1 3-1.5c1.7 0 3 1.6 3 4.5S19.7 17 18 17c-1.3 0-2.4-.7-3-2" opacity=".55"/>',
   amplitude: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
   finale: '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 17l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/>',
   user: '<circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/>',
@@ -288,6 +289,9 @@ const dLm = (i, j) => dist(P(lm[i]), P(lm[j]));
 function drawMirrored(c, src) { c.save(); c.translate(rect.x + rect.w, rect.y); c.scale(-1, 1); c.drawImage(src, 0, 0, rect.w, rect.h); c.restore(); }
 function drawVideo(dim) {
   drawMirrored(ctx, video);
+  drawVignette(dim);
+}
+function drawVignette(dim) {
   if (!dim) return;
   const g = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.25, W / 2, H / 2, Math.max(W, H) * 0.75);
   g.addColorStop(0, `rgba(7,11,20,${dim * 0.5})`); g.addColorStop(1, `rgba(7,11,20,${Math.min(0.88, dim * 1.7)})`);
@@ -490,6 +494,7 @@ const SRC = {
   cue: "Nieuwboer A et al. Cueing training in the home improves gait-related mobility in Parkinson's disease (RESCUE trial). J Neurol Neurosurg Psychiatry, 2007.",
   spiral: "Bain PG, Findley LJ et al. Assessing tremor severity. J Neurol Neurosurg Psychiatry, 1993.",
   cueTap: "Nieuwboer A et al. Cueing training in the home improves gait-related mobility in Parkinson's disease (RESCUE trial). J Neurol Neurosurg Psychiatry, 2007; Spaulding SJ et al. Cueing and gait improvement among people with Parkinson's disease: a meta-analysis. Arch Phys Med Rehabil, 2013.",
+  mirror: "Thieme H, Morkisch N, Mehrholz J et al. Mirror therapy for improving motor function after stroke. Cochrane Database of Systematic Reviews, 2018; Ramachandran VS, Rogers-Ramachandran D. Synaesthesia in phantom limbs induced with mirrors. Proceedings of the Royal Society B, 1996.",
   twotap: "Lee CY et al. A validation study of a smartphone-based finger tapping application for quantitative assessment of bradykinesia in Parkinson's disease. PLoS ONE, 2016.",
 };
 
@@ -910,6 +915,97 @@ function bloom(x, y, r, hue, a) {
   ctx.fillStyle = `rgba(251,191,119,${a})`; ctx.beginPath(); ctx.arc(0, 0, r * 0.2, 0, 7); ctx.fill(); ctx.restore();
 }
 
+// ---------- 7. Mirror therapy (augmented reality) ----------
+// One hand moves; the camera image of that half is reflected onto the other half,
+// so the other hand appears to move too. This is the mirror box from stroke rehab, without the box.
+const mir = { side: 0, reps: 0, state: "closed", lo: 9, hi: 0, open: 0, cycles: [], lastOpenAt: 0, opens: [], peak: 0, flash: 0 };
+const MR_REPS = 8, MR_TIME = 45000;
+const MIRROR = {
+  key: "mirror", name: "Mirror", icon: "mirror",
+  title: "Mirror hand", lead: "Use one hand only, on either side of the screen. Open and close it slowly, and watch the other hand in the mirror move with it.",
+  why: "Mirror therapy is used in stroke rehabilitation. The patient moves the healthy hand while watching its reflection where the affected hand would be, and the brain treats the reflection as the affected hand moving. A Cochrane review found moderate-quality evidence that it improves motor function after stroke.", src: SRC.mirror,
+  clinic: "A therapist puts a mirror box between the patient's arms, and the patient watches the reflection of the healthy hand.", here: "The camera becomes the mirror: no box, no headset, at home. The same idea could run on a headset's passthrough in the clinic.",
+  reset() { mir.side = 0; mir.reps = 0; mir.state = "closed"; mir.lo = 9; mir.hi = 0; mir.open = 0; mir.cycles = []; mir.opens = []; mir.peak = 0; mir.lastOpenAt = 0; },
+  begin(now) { mir.reps = 0; mir.cycles = []; mir.opens = []; mir.state = "closed"; mir.lastOpenAt = now; mir.peak = 0; },
+  update(now) {
+    flowTick(now);
+    if (lm && handSize) {
+      const v = [8, 12, 16, 20].reduce((s, i) => s + dLm(i, 0), 0) / 4 / handSize;
+      mir.lo = Math.min(mir.lo * 0.998 + v * 0.002, v); mir.hi = Math.max(mir.hi * 0.998 + v * 0.002, v);
+      mir.open = Math.min(1, Math.max(0, (v - mir.lo) / Math.max(0.35, mir.hi - mir.lo)));
+      mir.peak = Math.max(mir.peak, v);
+    }
+    if (flow.phase !== "run" || !lm) { if (flow.phase === "run" && now - flow.t0 > MR_TIME) this.done(now); return; }
+    if (mir.state === "closed" && mir.open > 0.75) { mir.state = "open"; }
+    else if (mir.state === "open" && mir.open < 0.3) {
+      mir.state = "closed"; mir.reps++; mir.cycles.push(now - mir.lastOpenAt); mir.lastOpenAt = now; mir.opens.push(mir.peak); mir.peak = 0; mir.flash = now;
+      tone(440 + mir.reps * 55, 0.3, "sine", 0.07);
+      const c = P(lm[9]); sparkle(c.x, c.y, 10); sparkle(W - c.x, c.y, 10, "94,234,212");
+      if (mir.reps >= MR_REPS) this.done(now);
+    }
+    if (now - flow.t0 > MR_TIME) this.done(now);
+  },
+  done(now) {
+    const cyc = mir.cycles.slice(1), mean = cyc.length ? cyc.reduce((a, b) => a + b, 0) / cyc.length : 0;
+    finish(now, { reps: mir.reps, secs: (now - flow.t0) / 1000, cycle: mean / 1000, cv: cyc.length > 2 ? Math.sqrt(cyc.reduce((s, v) => s + (v - mean) ** 2, 0) / cyc.length) / mean : null,
+      open: mir.opens.length ? mir.opens.reduce((a, b) => a + b, 0) / mir.opens.length : null, side: mir.side < 0 ? "left" : "right" });
+  },
+  draw(now) {
+    // the mirror line: a soft glowing seam down the middle
+    const t = now / 1000, x = W / 2;
+    ctx.save();
+    const g = ctx.createLinearGradient(x - 40, 0, x + 40, 0);
+    g.addColorStop(0, "rgba(94,234,212,0)"); g.addColorStop(0.5, "rgba(94,234,212,0.18)"); g.addColorStop(1, "rgba(94,234,212,0)");
+    ctx.fillStyle = g; ctx.fillRect(x - 40, 0, 80, H);
+    ctx.strokeStyle = "rgba(220,255,250,0.75)"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    for (let i = 0; i < 3; i++) { const y = ((t * 0.08 + i / 3) % 1) * H; const gg = ctx.createRadialGradient(x, y, 0, x, y, 26); gg.addColorStop(0, "rgba(220,255,250,.55)"); gg.addColorStop(1, "rgba(220,255,250,0)"); ctx.fillStyle = gg; ctx.fillRect(x - 26, y - 26, 52, 52); }
+    ctx.restore();
+    if (!lm || !mir.side) return;
+    // labels under each hand
+    const c = P(lm[0]), k = Math.max(0, 1 - (now - mir.flash) / 600);
+    ctx.save(); ctx.font = "700 18px Inter, sans-serif"; ctx.textAlign = "center"; ctx.shadowBlur = 10; ctx.shadowColor = "rgba(0,0,0,.7)";
+    ctx.fillStyle = "rgba(243,246,251,.9)"; ctx.fillText("Your hand", c.x, Math.min(H - 130, c.y + handSize * 0.9));
+    ctx.fillStyle = "#5eead4"; ctx.fillText("In the mirror", W - c.x, Math.min(H - 130, c.y + handSize * 0.9));
+    if (k > 0) { ctx.strokeStyle = `rgba(94,234,212,${k})`; ctx.lineWidth = 4; const m = P(lm[9]);
+      for (const xx of [m.x, W - m.x]) { ctx.beginPath(); ctx.arc(xx, m.y, handSize * (1.6 + (1 - k) * 0.6), 0, 7); ctx.stroke(); } }
+    ctx.restore();
+  },
+  hud(now) {
+    if (flow.phase === "ready") return { icon: "hand", text: "Show one hand on either side", sub: "Keep your other hand resting" };
+    if (flow.phase === "count") return { icon: "mirror", text: "Watch the mirror hand" };
+    return { icon: "mirror", text: mir.state === "open" ? "Now close slowly" : "Open slowly, wide", sub: `${mir.reps} of ${MR_REPS} · watch the hand in the mirror`, bar: mir.reps / MR_REPS };
+  },
+  summary(r) {
+    return { headline: r.reps >= MR_REPS ? `Both hands moved ${r.reps} times` : `${r.reps} mirrored movements`,
+      points: [`You moved your ${r.side} hand ${r.reps} times, and the mirror showed your other hand doing the same.`,
+        "In stroke rehabilitation, watching the healthy hand's reflection can help the affected side recover. Here the camera is the mirror."],
+      line: `${r.reps} open-close cycles (${r.side} hand mirrored)${r.cycle ? `, ${r.cycle.toFixed(1)} s per cycle` : ""}` };
+  },
+  metrics(r) {
+    return table([["Open-close cycles", `${r.reps} / ${MR_REPS}`], ["Mirrored hand", r.side], ["Mean cycle time", r.cycle ? r.cycle.toFixed(2) + " s" : "–"],
+      ["Cycle-time variability (CV)", r.cv == null ? "–" : (r.cv * 100).toFixed(0) + "%"], ["Mean peak opening", r.open == null ? "–" : r.open.toFixed(2) + " × hand size"], ["Duration", r.secs.toFixed(1) + " s"]]);
+  },
+};
+// Draw the camera with the hand's half reflected onto the other half
+function drawMirrorVideo() {
+  drawMirrored(ctx, video);
+  if (!mir.side) { drawVignette(0.45); return; }
+  ctx.save();
+  ctx.beginPath(); if (mir.side < 0) ctx.rect(W / 2, 0, W / 2, H); else ctx.rect(0, 0, W / 2, H); ctx.clip();
+  ctx.translate(W, 0); ctx.scale(-1, 1); drawMirrored(ctx, video);
+  ctx.restore();
+  ctx.save(); ctx.fillStyle = "rgba(94,234,212,0.06)"; if (mir.side < 0) ctx.fillRect(W / 2, 0, W / 2, H); else ctx.fillRect(0, 0, W / 2, H); ctx.restore();
+  drawVignette(0.3);
+}
+function pickMirrorHand(list) {
+  if (!list.length) return null;
+  const sx = (h) => rect.x + (1 - h[9].x) * rect.w < W / 2 ? -1 : 1;
+  if (!mir.side) { if (flow.phase === "ready" || flow.phase === "run" || flow.phase === "count") mir.side = sx(list[0]); return list[0]; }
+  return list.find((h) => sx(h) === mir.side) || null;
+}
+let handsN = 1;
+function setHandsN(n) { if (hands && n !== handsN) { handsN = n; hands.setOptions({ numHands: n }); } }
+
 // ---------- 5. Finale: vanish ----------
 const van = { mask: null, mw: 0, mh: 0, invert: false, phase: "learn", t0: 0, armT: 0, lastSnap: 0, frames: 0, n: 0, px: null, py: null, vx: null, vy: null, dl: null, col: null };
 const SC = 0.5;
@@ -1082,7 +1178,7 @@ const FINALE = {
   },
 };
 
-const ACTS = [TAP, BEAT, TWO, STEADY, SPIRAL, AMP, FINALE];
+const ACTS = [TAP, BEAT, TWO, STEADY, SPIRAL, AMP, MIRROR, FINALE];
 const FIN = ACTS.length - 1, NTEST = ACTS.length - 1;
 let current = 0;
 const A = () => ACTS[current];
@@ -1183,6 +1279,13 @@ function drawDemo(g, key, t) {
     g.strokeStyle = "rgba(243,246,251,.9)"; g.lineWidth = 4; g.beginPath(); pts.slice(0, upto + 1).forEach((p, i) => i ? g.lineTo(...p) : g.moveTo(...p)); g.stroke();
     const p = pts[upto]; g.fillStyle = "#fbbf77"; g.beginPath(); g.arc(p[0], p[1], 10, 0, 7); g.fill();
     label(g, "Follow the light", w, h);
+  } else if (key === "mirror") {
+    const o = (Math.sin(t * Math.PI * 2 * 0.45) + 1) / 2;
+    g.save(); g.strokeStyle = "rgba(220,255,250,.8)"; g.lineWidth = 2; g.setLineDash([8, 8]); g.beginPath(); g.moveTo(320, 30); g.lineTo(320, 320); g.stroke(); g.restore();
+    glyph(g, 200, 200, 120, o);
+    g.save(); g.globalAlpha = 0.75; g.translate(640, 0); g.scale(-1, 1); glyph(g, 200, 200, 120, o); g.restore();
+    g.fillStyle = "rgba(94,234,212,.9)"; g.font = "600 16px Inter, sans-serif"; g.textAlign = "center"; g.fillText("Your hand", 200, 300); g.fillText("In the mirror", 440, 300);
+    label(g, o > 0.7 ? "Open slowly" : o < 0.3 ? "Close slowly" : "Watch the mirror", w, h);
   } else if (key === "amp") {
     const beat = t % 1.8, o = beat < 0.6 ? beat / 0.6 : Math.max(0, 1 - (beat - 0.6) / 0.9);
     g.strokeStyle = o > 0.85 ? "#fbbf77" : "rgba(255,255,255,.35)"; g.lineWidth = 4; g.setLineDash(o > 0.85 ? [] : [10, 10]);
@@ -1245,13 +1348,13 @@ function showMap() {
   $("layer").innerHTML = `<div class="scrim"><div class="card wide"><div class="eyebrow">${icon("clipboard")}How it maps to the clinic</div>
     <h2>Today's tests and therapy, at home</h2>
     <table class="map"><tr><th>In the clinic today</th><th>With Motion Mirror</th></tr>${rows}</table>
-    <div class="fine">Activities 1–4 replicate parts of the standard motor exam (MDS-UPDRS), two-target tapping and spiral drawing. Activity 5 replicates amplitude-based physiotherapy (LSVT BIG) with rhythmic cueing. Sources are listed under "Why this activity" in each result.</div>
+    <div class="fine">Tapping, two targets, steadiness and the spiral replicate parts of the standard motor exam (MDS-UPDRS) and common clinic tests. Rhythm and Big movements replicate cueing and amplitude-based physiotherapy (LSVT BIG). Mirror replicates mirror therapy from stroke rehabilitation. Sources are listed under "Why this activity" in each result.</div>
     <div class="row stick" style="margin-top:18px"><button class="btn" data-act="closemap">${icon("close")}Close</button></div></div></div>`;
 }
 
 // ---------- navigation ----------
 function goTo(i) {
-  current = i; detailsOpen = false; whyOpen = false;
+  current = i; detailsOpen = false; whyOpen = false; setHandsN(A() === MIRROR ? 2 : 1);
   ACTS.forEach(a => a.reset());
   $("thanks").style.opacity = 0;
   renderStepper();
@@ -1306,7 +1409,8 @@ function loop() {
   if (video.readyState >= 2 && video.currentTime !== lastVideoTime) {
     lastVideoTime = video.currentTime;
     const res = hands.detectForVideo(video, now);
-    lm = res.landmarks && res.landmarks.length ? res.landmarks[0] : null;
+    const found = (window.__mm && window.__mm.fakeLm) || res.landmarks || [];
+    lm = A() === MIRROR ? pickMirrorHand(found) : (found.length ? found[0] : null);
     if (sim.on && current !== FIN) lm = simulatePD(lm, now);
     handSize = lm ? dLm(0, 9) : 0;
     if (lm && !hadHand && (flow.phase === "ready" || flow.phase === "run")) { const c = P(lm[9]); ripple(c.x, c.y); }
@@ -1314,7 +1418,7 @@ function loop() {
     if (current === FIN) segment(now);
     if (flow.phase !== "demo" && flow.phase !== "result") A().update(now);
   }
-  if (current === FIN) drawFinaleScene(now); else drawVideo(0.45);
+  if (current === FIN) drawFinaleScene(now); else if (A() === MIRROR) drawMirrorVideo(); else drawVideo(0.45);
   if ((flow.phase === "ready" || flow.phase === "count" || flow.phase === "run") && current !== FIN) drawAura();
   if (flow.phase !== "demo") A().draw(now);
   drawCountdown(now);
@@ -1350,7 +1454,7 @@ $("go").addEventListener("click", async () => {
 });
 resize();
 if (new URLSearchParams(location.search).has("autostart")) {   // automated testing only
-  window.__mm = { van, snap, sim, setSim, simulatePD, bt, goTo, act, setView, flow, results, finish, ACTS, showSummary, showMap, get current() { return current; },
+  window.__mm = { mir, van, snap, sim, setSim, simulatePD, bt, goTo, act, setView, flow, results, finish, ACTS, showSummary, showMap, get current() { return current; },
     demo(key, t) { cancelAnimationFrame(demoAnim); const c = $("demo"); if (c) drawDemo(c.getContext("2d"), key, t); } };
   $("go").click();
 }
