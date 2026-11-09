@@ -168,6 +168,7 @@
     #privacy { display: none; }
   }
 </style>
+<script data-goatcounter="https://fayekportfolio.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
 <video id="video" playsinline muted></video>
@@ -1236,7 +1237,7 @@ function showSummary() {
 const TIPS = [
   { icon: "sun", title: "Find good light", text: "Face a window or a lamp. Avoid bright light behind you." },
   { icon: "ruler", title: "Sit about an arm's length away", text: "Keep your hand and shoulders inside the picture." },
-  { icon: "shield", title: "Your camera stays private", text: "Everything runs on this device. Nothing is recorded or sent." },
+  { icon: "shield", title: "Your camera stays private", text: "Everything runs on this device. Your video is never recorded or sent." },
 ];
 let tipIdx = 0;
 function showGuide() {
@@ -1268,8 +1269,13 @@ function goTo(i) {
   if (skipDemos) { flow.phase = "ready"; flow.seen = 0; layer(""); }
   else { flow.phase = "demo"; showDemo(); }
 }
+function track(name) {
+  try { window.goatcounter && window.goatcounter.count && window.goatcounter.count({ path: "motion-mirror/" + name, title: "Motion Mirror: " + name, event: true }); } catch (e) {}
+}
 function act(a) {
   const now = performance.now();
+  if (a === "start") track("start-" + A().key);
+  else if (a === "finale" || a === "print" || a === "map") track(a);
   if (a === "start") { flow.phase = "ready"; flow.seen = 0; layer(""); }
   else if (a === "skipdemos") { skipDemos = true; store.set("skipDemos", true); act("start"); }
   else if (a === "next") goTo(Math.min(current + 1, ACTS.length - 1));
