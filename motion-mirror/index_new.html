@@ -686,12 +686,12 @@ const BT_START = 700;                                                         //
 const btBeatAt = (k) => bt.t0 + BT_START + k * BT_I;                         // k = 0..3 listen, 4..19 tap
 const cvOf = (t) => { if (t.length < 4) return null; const iv = t.slice(1).map((x, i) => x - t[i]), m = iv.reduce((a, b) => a + b) / iv.length; return Math.sqrt(iv.reduce((s, v) => s + (v - m) ** 2, 0) / iv.length) / m; };
 const rateOf = (t) => t.length < 2 ? 0 : (t.length - 1) / ((t[t.length - 1] - t[0]) / 1000);
-// ---- the music: a warm original piece in F major. One bar to listen (Fmaj7), then Dm9, Bbmaj7, Csus4 to C
-// to tap along with, resolving home to Fmaj9. Soft felt-piano tone, gentle string pad and a little room reverb. ----
-const BT_CH = [[41, [53, 57, 60, 64]], [38, [53, 57, 60, 64]], [34, [50, 53, 57, 62]], [36, [55, 60, 65]], [29, [53, 57, 60, 64, 67]]];   // [bass, chord] per bar
-const btChord = (j) => j >= 14 && j < 16 ? [55, 60, 64] : BT_CH[Math.min(4, Math.floor(j / 4))][1];   // Csus4 resolves to C halfway through the last bar
-const BT_MEL = [69, 72, 77, 76, 74, null, 72, 69, 70, 74, 77, null, 76, 77, 79, 76, 77];     // one note per beat; null = the note before is held
-const BT_LEN = { 4: 2, 10: 2, 16: 4 };                                                         // held notes (in beats)
+// ---- the music: the opening phrase of Beethoven's Fur Elise (public domain), slowed so there is one note per beat.
+// One bar to listen (E D# E D#), then three bars to tap along with, ending on a held C over A minor. ----
+const BT_CH = [[40, [52, 56, 59]], [40, [52, 56, 59, 62]], [45, [57, 60, 64]], [40, [52, 56, 59]], [45, [57, 60, 64]]];   // [bass, chord] per bar
+const btChord = (j) => BT_CH[Math.min(4, Math.floor(j / 4))][1];
+const BT_MEL = [76, 75, 76, 75, 76, 71, 74, 72, 69, 60, 64, 69, 71, 64, 68, 71, 72];     // one note per beat; null = the note before is held
+const BT_LEN = { 16: 4 };                                                         // held notes (in beats)
 const btShow = (j) => { j = ((j % 17) + 17) % 17; for (let i = j; i >= 0; i--) if (BT_MEL[i] != null) return BT_MEL[i]; return 72; };
 const midiHz = (m) => 440 * Math.pow(2, (m - 69) / 12);
 let btMusic = null;
@@ -748,7 +748,7 @@ function btBell(j) {   // your tap: a quiet, bell-like note that fits the chord 
   setTimeout(() => { try { out.disconnect(); } catch {} }, 1400);
 }
 const BT_FLAT = [false, true, false, true, false, false, true, false, true, false, true, false];
-const btDia = (m) => Math.floor(m / 12) * 7 + [0, 1, 1, 2, 2, 3, 4, 4, 5, 5, 6, 6][m % 12];   // staff position (flats sit on the note above)
+const btDia = (m) => Math.floor(m / 12) * 7 + [0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6][m % 12];   // staff position (sharps sit on the note below)
 function btLane(g, cx, y, half, now, t0, taps, beatsAt, nIn, nAll, pxPerMs, kOff = 0) {
   // a music staff; the notes of the tune slide from right to left and reach the line on each beat
   const gap = 10, fadeAt = (x) => Math.max(0, Math.min(1, 1 - (Math.abs(x - cx) - half * 0.7) / (half * 0.3)));
@@ -766,7 +766,7 @@ function btLane(g, cx, y, half, now, t0, taps, beatsAt, nIn, nAll, pxPerMs, kOff
     g.globalAlpha = fadeAt(x) * (near ? 1 : held ? 0.3 : 0.65);
     const col = listen ? "#f3f6fb" : "#fbbf77"; g.fillStyle = col; g.strokeStyle = col;
     if (near) { g.shadowBlur = 16; g.shadowColor = col; }
-    if (BT_FLAT[btShow(j) % 12]) { g.font = "600 16px 'Segoe UI Symbol', sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("\u266D", x - 15 * s, ny - 2); }
+    if (BT_FLAT[btShow(j) % 12]) { g.font = "600 16px 'Segoe UI Symbol', sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("\u266F", x - 15 * s, ny - 2); }
     g.save(); g.translate(x, ny); g.rotate(-0.35); g.beginPath(); g.ellipse(0, 0, 8 * s, 5.8 * s, 0, 0, 7);
     if (held) { g.lineWidth = 1.5; g.stroke(); } else g.fill();
     g.restore();
