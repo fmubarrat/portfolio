@@ -248,6 +248,33 @@
     .stepper .lbl, .seg .lbl, .logo .lbl { display: none; }
     #privacy { display: none; }
   }
+
+  /* ── Light mode for the whole app (matches the light start screen) ── */
+  html[data-theme="light"] {
+    --bg:#f6f8f7; --surface:rgba(255,255,255,.88); --surface-solid:#ffffff; --line:rgba(15,31,28,.12);
+    --text:#0f1f1c; --muted:#4b5b57; --accent:#0f766e; --accent-2:#0e7490; --warm:#b45309; --on-accent:#ffffff;
+    color-scheme:light;
+  }
+  html[data-theme="light"] .surface { box-shadow:0 8px 24px -12px rgba(15,31,28,.25); }
+  html[data-theme="light"] .btn.secondary { background:#ffffff; }
+  html[data-theme="light"] .btn.secondary:hover { border-color:var(--accent); }
+  html[data-theme="light"] .stepper button.on { background:rgba(15,118,110,.12); }
+  html[data-theme="light"] .seg button.on { background:rgba(15,31,28,.07); }
+  html[data-theme="light"] .cmpbox .good { border-color:rgba(15,118,110,.45); background:rgba(15,118,110,.07); }
+  html[data-theme="light"] #hud .ic, html[data-theme="light"] .tip .big { background:rgba(15,118,110,.1); }
+  html[data-theme="light"] #hudBar { background:rgba(15,31,28,.1); }
+  html[data-theme="light"] .cmp div, html[data-theme="light"] .clin, html[data-theme="light"] .why { background:rgba(15,31,28,.035); }
+  html[data-theme="light"] .cmp .mm, html[data-theme="light"] .tut-mm { border-color:rgba(15,118,110,.35); background:rgba(15,118,110,.06); }
+  html[data-theme="light"] .card { background:rgba(255,255,255,.98); box-shadow:0 30px 80px -20px rgba(15,31,28,.35); }
+  html[data-theme="light"] .card .stick { background:rgba(255,255,255,.97); }
+  html[data-theme="light"] .scrim { background:rgba(15,31,28,.35); }
+  html[data-theme="light"] .demo { background:#0b1622; }
+  html[data-theme="light"] .bars i { background:linear-gradient(180deg, var(--accent), rgba(14,116,144,.55)); }
+  html[data-theme="light"] .dots i { background:rgba(15,31,28,.15); }
+  html[data-theme="light"] .dots i.on { background:var(--accent); }
+  /* over the live camera image these stay light, so they read on any background */
+  html[data-theme="light"] #count { color:#ffffff; }
+  html[data-theme="light"] #privacy { color:#ffffff; text-shadow:0 1px 6px rgba(0,0,0,.6); }
 </style>
 <script data-goatcounter="https://motionmirror.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
@@ -266,6 +293,7 @@
   </div>
   <button class="iconbtn surface" id="simBtn" aria-pressed="false" title="Add simulated Parkinson's symptoms to your hand"><span data-icon="sim"></span><span class="lbl">Feel Parkinson's</span></button>
   <button class="iconbtn surface" id="soundBtn" aria-label="Sound"><span data-icon="volume"></span></button>
+  <button class="iconbtn surface themeToggle" id="themeBtn2" aria-label="Switch light or dark mode" title="Light or dark mode"></button>
   <button class="iconbtn surface" id="helpBtn" aria-label="Show the tutorial again" title="Show the tutorial again"><span data-icon="help"></span></button>
 </header>
 
@@ -288,7 +316,7 @@
       <div class="brand"><span id="startMark"></span>Motion Mirror</div>
       <div class="grow"></div>
       <span class="pill"><span data-icon="shield"></span>Private: runs on your device</span>
-      <button class="theme" id="themeBtn" aria-label="Switch light or dark mode"></button>
+      <button class="theme themeToggle" id="themeBtn" aria-label="Switch light or dark mode"></button>
     </div>
     <div class="page">
       <h1 class="in">Your hand movement,<br><span>measured at home</span></h1>
@@ -1600,11 +1628,13 @@ function loop() {
 
 paintIcons();
 $("logoMark").innerHTML = icon("logo"); $("startMark").innerHTML = icon("logo", "i mark");
-{ const tb = $("themeBtn"), root = document.documentElement;
+{ const root = document.documentElement;
   const SUN = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
   const MOON = '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>';
-  const paint = () => { tb.innerHTML = `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${root.dataset.theme === "dark" ? SUN : MOON}</svg>`; };
-  tb.addEventListener("click", () => { root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark"; try { localStorage.setItem("mm-theme", root.dataset.theme); } catch (e) {} paint(); });
+  const paint = () => document.querySelectorAll(".themeToggle").forEach(b => { b.innerHTML = `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${root.dataset.theme === "dark" ? SUN : MOON}</svg>`; });
+  document.querySelectorAll(".themeToggle").forEach(b => b.addEventListener("click", () => {
+    root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
+    try { localStorage.setItem("mm-theme", root.dataset.theme); } catch (e) {} paint(); }));
   paint(); }
 $("soundBtn").innerHTML = icon(soundOn ? "volume" : "mute");
 document.querySelectorAll("#audience button").forEach(b => b.classList.toggle("on", b.dataset.view === view));
