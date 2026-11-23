@@ -681,20 +681,24 @@ const TAP = {
 // One bar of gentle music to listen to, then three bars to tap along with. The notes slide along a staff and reach
 // the line on each beat; every tap rings a soft bell. Timing against the beat is measured as before.
 const bt = { t0: 0, open: false, taps: [], hit: [], fb: null, fbT: 0, lastBeat: -1, beatT: 0 };
-const BT_HZ = 1.2, BT_I = 1000 / BT_HZ, BT_IN = 4, BT_N = 12, BT_ON = 300, BT_NEAR = 350;   // a calm 72 beats per minute; "on the beat" = within 300 ms; a tap within 350 ms plays the note
+const BT_HZ = 1.6, BT_I = 1000 / BT_HZ, BT_IN = 4, BT_N = 35, BT_ON = 250;   // a note every 0.625 s; "on a note" = within 250 ms
 const BT_START = 700;                                                         // first beat 0.7 s after the start
 const btBeatAt = (k) => bt.t0 + BT_START + k * BT_I;                         // k = 0..3 listen, 4..19 tap
 const cvOf = (t) => { if (t.length < 4) return null; const iv = t.slice(1).map((x, i) => x - t[i]), m = iv.reduce((a, b) => a + b) / iv.length; return Math.sqrt(iv.reduce((s, v) => s + (v - m) ** 2, 0) / iv.length) / m; };
 const rateOf = (t) => t.length < 2 ? 0 : (t.length - 1) / ((t[t.length - 1] - t[0]) / 1000);
-// ---- the music: the opening phrase of Beethoven's Fur Elise (public domain), slowed so there is one note per beat.
-// One bar to listen (E D# E D#), then three bars to tap along with, ending on a held C over A minor. ----
-const BT_CH = [[40, [52, 56, 59]], [40, [52, 56, 59, 62]], [45, [57, 60, 64]], [40, [52, 56, 59]], [45, [57, 60, 64]]];   // [bass, chord] per bar
-const btChord = (j) => BT_CH[Math.min(4, Math.floor(j / 4))][1];
-const BT_MEL = [76, 75, 76, 75, 76, 71, 74, 72, 69, 60, 64, 69, 71, 64, 68, 71, 72];     // one note per beat; null = the note before is held
-const BT_LEN = { 16: 4 };                                                         // held notes (in beats)
-const btShow = (j) => { j = ((j % 17) + 17) % 17; for (let i = j; i >= 0; i--) if (BT_MEL[i] != null) return BT_MEL[i]; return 72; };
+// ---- the music: the main theme of Beethoven's Fur Elise (public domain), played slowly, one note per slot.
+// The first four notes are the count-in; then the whole theme plays through. Tap along with any notes you like. ----
+const BT_CHD = { A: [45, [57, 60, 64]], E: [40, [52, 56, 59]] };   // A minor and E major: [bass, chord]
+const BT_HARM = "EEEEEEEEAAAAAEEEEEAAAAAEEEEEEAAAAAEEEEEA";   // the harmony under each note
+const btHarm = (j) => BT_CHD[BT_HARM[Math.max(0, Math.min(BT_HARM.length - 1, j))]];
+const BT_BAR = new Set([2, 8, 13, 18, 23, 29, 34, 39]);   // where each bar of the piece begins   // [bass, chord] per bar
+const btChord = (j) => btHarm(j)[1];
+const BT_MEL = [76, 75, 76, 75, 76, 71, 74, 72, 69, null, 60, 64, 69, 71, null, 64, 68, 71, 72, null, 64, 76, 75,
+  76, 75, 76, 71, 74, 72, 69, null, 60, 64, 69, 71, null, 64, 72, 71, 69];     // one note per beat; null = the note before is held
+const BT_LEN = { 8: 2, 13: 2, 18: 2, 29: 2, 34: 2, 39: 4 };                                                         // held notes (in beats)
+const btShow = (j) => { j = Math.max(0, Math.min(BT_MEL.length - 1, j)); for (let i = j; i >= 0; i--) if (BT_MEL[i] != null) return BT_MEL[i]; return 72; };
 const midiHz = (m) => 440 * Math.pow(2, (m - 69) / 12);
-let btMusic = null, btMel = [];
+let btMusic = null;
 function btNote(out, t, m, dur, gain, bright = 1, attack = 0.018) {   // a soft felt-piano note at audio time t
   t = Math.max(t, audio.currentTime + 0.005);   // never schedule in the past
   const f = midiHz(m), env = audio.createGain(), lp = audio.createBiquadFilter();
@@ -725,28 +729,24 @@ function btStopMusic() {
   setTimeout(() => { try { o.disconnect(); } catch {} }, 600);
 }
 function btStartMusic(startPerf) {
-  btStopMusic(); btMel = []; if (!audio || !soundOn) return;
+  btStopMusic(); if (!audio || !soundOn) return;
   const master = audio.createGain(); master.gain.value = 1.25; master.connect(audio.destination); btMusic = master;
   const dry = audio.createGain(); dry.gain.value = 0.82; dry.connect(master);
   const room = btRoom(), wet = audio.createGain(); wet.gain.value = 0.3; room.connect(wet).connect(master);
   const out = audio.createGain(); out.connect(dry); out.connect(room);
   const t0 = audio.currentTime + (startPerf + BT_START - performance.now()) / 1000, I = BT_I / 1000;
-  for (let bar = 0; bar <= 4; bar++) btPad(out, t0 + bar * 4 * I, BT_CH[bar][1].slice(0, 3), bar === 4 ? 4 * I : 4 * I, 0.006);
-  for (let j = 0; j <= BT_IN + BT_N; j++) {
-    const t = t0 + j * I, bass = BT_CH[Math.min(4, Math.floor(j / 4))][0], ch = btChord(j), last = j === BT_IN + BT_N;
-    btNote(out, t, bass, last ? 4 : 1.1, j % 4 ? 0.07 : 0.09, 0.5);                            // a soft bass note on every beat: the pulse
-    btNote(out, t, ch[0], last ? 4 : 0.8, 0.026, 0.6);                                          // broken chord: low note on the beat,
-    btNote(out, t + I / 2, ch[(j % 2) + 1], 0.7, 0.018, 0.6, 0.03);                            // a higher one gently in between
-    if (last) ch.forEach((m, i) => btNote(out, t + i * 0.07, m, 4.2, 0.03, 0.7));              // the final chord, softly rolled
-    if (BT_MEL[j] == null) continue;
-    if (j < BT_IN || last) { btNote(out, t, BT_MEL[j] + 12, (BT_LEN[j] || 1) * I * 1.15, j < BT_IN ? 0.05 : 0.062, 0.9, 0.025); continue; }   // listen bar and final note
-    const g = audio.createGain(); g.gain.value = 0.3; g.connect(out); btMel[j] = g;   // tap bar: the melody plays quietly until you tap near its beat
-    btNote(g, t, BT_MEL[j] + 12, (BT_LEN[j] || 1) * I * 1.15, 0.07, 0.9, 0.025);
+  for (let j = 0; j < BT_HARM.length; j++) if (j === 0 || BT_HARM[j] !== BT_HARM[j - 1]) {   // a soft pad under each chord
+    let e = j; while (e + 1 < BT_HARM.length && BT_HARM[e + 1] === BT_HARM[j]) e++;
+    btPad(out, t0 + j * I, btChord(j), (e - j + 1) * I + (e === BT_HARM.length - 1 ? 3 * I : 0), 0.006);
   }
-}
-function btPlay(j) {   // your tap near the beat: that note of the tune comes up to full volume, on the beat
-  const g = btMel[j]; if (!g || !audio) return false;
-  g.gain.cancelScheduledValues(audio.currentTime); g.gain.setTargetAtTime(1, audio.currentTime, 0.012); btMel[j] = null; return true;
+  for (let j = 0; j <= BT_IN + BT_N; j++) {
+    const t = t0 + j * I, bass = btHarm(j)[0], ch = btChord(j), last = j === BT_IN + BT_N;
+    if (j === 0 || last || BT_HARM[j] !== BT_HARM[j - 1] || j % 2 === 0) btNote(out, t, bass, last ? 4 : 1.1, 0.07, 0.5);                            // a soft bass note on every beat: the pulse
+    btNote(out, t, ch[0], last ? 4 : 0.8, 0.026, 0.6);                                          // broken chord: low note on the beat,
+    if (j % 2 === 1) btNote(out, t, ch[1], 0.6, 0.014, 0.6, 0.03);                            // a higher one gently in between
+    if (last) ch.forEach((m, i) => btNote(out, t + i * 0.07, m, 4.2, 0.03, 0.7));              // the final chord, softly rolled
+    if (BT_MEL[j] != null) btNote(out, t, BT_MEL[j], (BT_LEN[j] || 1) * I * 1.15, 0.075, 1.1, 0.02);   // the melody, always in full
+  }
 }
 function btBell(j) {   // your tap: a quiet, bell-like note that fits the chord playing now
   if (!audio || !soundOn) return;
@@ -766,9 +766,9 @@ function btLane(g, cx, y, half, now, t0, taps, beatsAt, nIn, nAll, pxPerMs, kOff
   g.beginPath(); g.moveTo(cx, y - 3 * gap); g.lineTo(cx, y + 3 * gap); g.stroke(); g.shadowBlur = 0;
   for (let k = 0; k < nAll; k++) {
     const j = k + kOff, tb = beatsAt(k), x = cx + (tb - now) * pxPerMs;
-    if (j % 4 === 0) { const xb = x - BT_I * 0.5 * pxPerMs; if (Math.abs(xb - cx) < half) { g.globalAlpha = fadeAt(xb) * 0.35; g.strokeStyle = "#f3f6fb"; g.lineWidth = 1.2; g.beginPath(); g.moveTo(xb, y - 2 * gap); g.lineTo(xb, y + 2 * gap); g.stroke(); } }
+    if (BT_BAR.has(j)) { const xb = x - BT_I * 0.5 * pxPerMs; if (Math.abs(xb - cx) < half) { g.globalAlpha = fadeAt(xb) * 0.35; g.strokeStyle = "#f3f6fb"; g.lineWidth = 1.2; g.beginPath(); g.moveTo(xb, y - 2 * gap); g.lineTo(xb, y + 2 * gap); g.stroke(); } }
     if (x < cx - half - 20 || x > cx + half + 20) continue;
-    const listen = j < nIn && kOff === 0, near = Math.abs(tb - now) < 110, held = BT_MEL[((j % 17) + 17) % 17] == null;
+    const listen = j < nIn && kOff === 0, near = Math.abs(tb - now) < 110, held = BT_MEL[Math.max(0, Math.min(BT_MEL.length - 1, j))] == null;
     const ny = y - (btDia(btShow(j)) - btDia(71)) * gap / 2, up = ny >= y, s = near ? 1.25 : 1;
     g.globalAlpha = fadeAt(x) * (near ? 1 : held ? 0.3 : 0.65);
     const col = listen ? "#f3f6fb" : "#fbbf77"; g.fillStyle = col; g.strokeStyle = col;
@@ -790,7 +790,7 @@ function btLane(g, cx, y, half, now, t0, taps, beatsAt, nIn, nAll, pxPerMs, kOff
 }
 const BEAT = {
   key: "beat", name: "Rhythm", icon: "beat",
-  title: "Tap with the music", lead: "Listen to the opening of F\u00fcr Elise. Then tap your thumb and index finger together as each note reaches the line, and your taps play the tune. You don't need to be exact: close to the beat is fine, and the music keeps playing either way.",
+  title: "Tap with the music", lead: "F\u00fcr Elise plays from start to finish. Tap your thumb and index finger together as notes reach the line. Catch as many as you like: you don't need to tap every note, and close is fine.",
   why: "Rhythmic cues, such as a metronome or music, are a standard strategy in Parkinson's rehabilitation, best studied for walking (for example the RESCUE trial). Keeping time with a beat also shows how well timing and movement work together. Here you tap with a soft beat, and the app measures how closely your taps follow it.", src: SRC.cueTap,
   clinic: "Physiotherapists use a metronome or music so people keep a steady rhythm while walking or moving.", here: "You tap along with a gentle melody while the notes show the beat, and see how closely you stay with it.",
   reset() { btStopMusic(); Object.assign(bt, { t0: 0, open: false, taps: [], hit: [], fb: null, fbT: 0, lastBeat: -1, beatT: 0 }); },
@@ -812,7 +812,7 @@ const BEAT = {
       const first = !bt.hit[j] && Math.abs(asy) <= BT_I / 2, on = first && Math.abs(asy) <= BT_ON;
       const a = P(lm[4]), b = P(lm[8]), mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
       bt.taps.push({ t: now, j, asy, on, first, x: mx, y: my }); if (first) bt.hit[j] = true;
-      ripple(mx, my); if (!(first && Math.abs(asy) <= BT_NEAR && btPlay(j))) btBell(j);
+      ripple(mx, my); btBell(j);
     }
   },
   analyse() {
