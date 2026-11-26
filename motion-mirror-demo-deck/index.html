@@ -654,5 +654,13 @@ document.getElementById('soundToggle').addEventListener('click', (e) => { e.stop
 function flashSoundBtn() { const b = document.getElementById('soundToggle'); if (!b) return; b.style.opacity = 1; b.style.pointerEvents = 'auto';
   clearTimeout(window._sbT); window._sbT = setTimeout(() => { b.style.opacity = 0; b.style.pointerEvents = 'none'; }, 2000); }
 </script>
+<script>
+(function () {
+  const ev = (n) => { try { window.goatcounter && window.goatcounter.count && window.goatcounter.count({ path: n, title: n, event: true }); } catch (e) {} };
+  const go0 = go; let started = false, ended = false;
+  go = function (n) { go0(n); if (!started) { started = true; ev('deck-started'); } if (!ended && cur === slides.length - 1) { ended = true; ev('deck-reached-end'); } };
+})();
+</script>
+<script data-goatcounter="https://motionmirror.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
