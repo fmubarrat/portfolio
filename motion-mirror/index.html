@@ -29,7 +29,7 @@
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); overflow: hidden;
     font-family: Inter, "Segoe UI", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
-  canvas#stage { position: fixed; inset: 0; width: 100vw; height: 100vh; }
+  canvas#stage { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; height: 100dvh; }
   video { display: none; }
   button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; }
   svg.i { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
@@ -121,7 +121,7 @@
   .card .stick { position: sticky; bottom: -28px; margin: 0 -28px -28px; padding: 14px 28px 20px; background: rgba(14,19,32,.97); border-top: 1px solid var(--line); }
   .card { padding-bottom: 28px; }
   .scrim { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 16px; background: rgba(4,7,13,.72); }
-  .card { width: min(520px, 100%); max-height: calc(100vh - 32px); overflow-y: auto; border-radius: 24px; padding: 28px; background: rgba(14,19,32,.92); border: 1px solid var(--line); box-shadow: 0 30px 80px rgba(0,0,0,.45); }
+  .card { width: min(520px, 100%); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow-y: auto; border-radius: 24px; padding: 28px; background: rgba(14,19,32,.92); border: 1px solid var(--line); box-shadow: 0 30px 80px rgba(0,0,0,.45); }
   .eyebrow { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: var(--accent); }
   .card h2 { font-size: 28px; line-height: 1.15; letter-spacing: -.5px; margin: 10px 0 8px; }
   .card p.lead { font-size: 17px; color: var(--muted); line-height: 1.5; margin: 0 0 18px; }
@@ -158,7 +158,7 @@
   @keyframes pop { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.6); } 35% { opacity: 1; transform: translate(-50%, -50%) scale(1.06); } 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
   .card { animation: rise .5s cubic-bezier(.2,.8,.2,1) both; }
   #count.pop { animation: pop .6s cubic-bezier(.2,.8,.2,1) both; }
-  #fxTop { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 11; pointer-events: none; }
+  #fxTop { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; height: 100dvh; z-index: 11; pointer-events: none; }
   @media (prefers-reduced-motion: reduce) { .card, #count.pop { animation: none; } }
   /* center overlays */
   #count { position: fixed; left: 50%; top: 45%; transform: translate(-50%, -50%); font-size: 140px; font-weight: 800; color: var(--text);
@@ -405,15 +405,35 @@ const results = {};     // per-activity results, for the session summary
 
 function resize() {
   W = canvas.width = innerWidth; H = canvas.height = innerHeight;
-  const vw = video.videoWidth || 1280, vh = video.videoHeight || 720, s = Math.max(W / vw, H / vh);
+  // show each canvas at exactly the size it draws at: CSS 100vh is taller than the visible area on phones
+  // (it ignores the address bar), which stretched the picture vertically
+  for (const c of [canvas, $("fxTop")]) if (c) { c.style.width = W + "px"; c.style.height = H + "px"; }
+  const vw = video.videoWidth || 1280, vh = video.videoHeight || 720;
+  // fill the screen, but never zoom more than 12% past the whole camera picture: when the camera and the
+  // screen have different shapes (a phone held sideways, a phone camera on a wide monitor), a full fill
+  // crops a lot and the face looks blown up; the leftover edges get a soft copy of the camera instead
+  const cover = Math.max(W / vw, H / vh), fit = Math.min(W / vw, H / vh), s = Math.min(cover, fit * 1.12);
+  rect.vw = vw; rect.vh = vh; rect.full = s >= cover - 1e-6;
   rect.w = vw * s; rect.h = vh * s; rect.x = (W - rect.w) / 2; rect.y = (H - rect.h) / 2;
 }
 addEventListener("resize", resize);
+addEventListener("orientationchange", () => setTimeout(resize, 300));
+video.addEventListener("resize", resize);   // the camera frame flips between landscape and portrait when the phone turns
 const P = (l) => ({ x: rect.x + (1 - l.x) * rect.w, y: rect.y + l.y * rect.h });
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 const dLm = (i, j) => dist(P(lm[i]), P(lm[j]));
 function drawMirrored(c, src) { c.save(); c.translate(rect.x + rect.w, rect.y); c.scale(-1, 1); c.drawImage(src, 0, 0, rect.w, rect.h); c.restore(); }
+const edgeC = document.createElement("canvas"), edgeCtx = edgeC.getContext("2d");
+function drawEdges() {   // the camera, zoomed to fill the screen and softened (drawn tiny, then scaled up), behind the real picture
+  const cover = Math.max(W / rect.vw, H / rect.vh), k = 48 / W, bw = 48, bh = Math.max(1, Math.round(H * k));
+  if (edgeC.width !== bw || edgeC.height !== bh) { edgeC.width = bw; edgeC.height = bh; }
+  const w = rect.vw * cover * k, h = rect.vh * cover * k;
+  edgeCtx.save(); edgeCtx.translate(bw, 0); edgeCtx.scale(-1, 1); edgeCtx.drawImage(video, (bw - w) / 2, (bh - h) / 2, w, h); edgeCtx.restore();
+  ctx.save(); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high"; ctx.drawImage(edgeC, 0, 0, W, H);
+  ctx.fillStyle = "rgba(7,11,20,.5)"; ctx.fillRect(0, 0, W, H); ctx.restore();
+}
 function drawVideo(dim) {
+  if (!rect.full) drawEdges();
   drawMirrored(ctx, video);
   if (!dim) return;
   const g = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.25, W / 2, H / 2, Math.max(W, H) * 0.75);
@@ -1114,76 +1134,76 @@ const AMP = {
     return table([["Full-amplitude openings on cue", `${r.hits} / ${r.beats}`], ["Cue", "1 beat every 1.8 s"], ["Target", "≥ 85% of calibrated hand-opening range"]]);
   },
 };
-// A flower that opens: a closed bud at open = 0, fully unfurled at open = 1.
-// Two layers of shaded petals, a stamen centre, and a slow sway. Shared by the activity and its demo.
-function petalPath(g, L, w) {
-  g.beginPath(); g.moveTo(0, 0);
-  g.bezierCurveTo(L * 0.22, -w * 1.05, L * 0.78, -w * 0.95, L, 0);
-  g.bezierCurveTo(L * 0.78, w * 0.95, L * 0.22, w * 1.05, 0, 0);
-}
-function drawFlower(g, x, y, r, open, hue, a = 1, t = 0, seed = 0) {
-  const e = Math.max(0, Math.min(1.08, open)), sway = Math.sin(t * 0.9 + seed) * 0.07;
-  g.save(); g.translate(x, y); g.rotate(sway); g.globalAlpha = a;
-  if (e > 0.6) {   // a soft halo once the flower is open
-    const h = g.createRadialGradient(0, 0, r * 0.1, 0, 0, r * 1.25);
-    h.addColorStop(0, `hsla(${hue + 20},90%,75%,${0.28 * (e - 0.6) / 0.48})`); h.addColorStop(1, `hsla(${hue},90%,70%,0)`);
-    g.fillStyle = h; g.beginPath(); g.arc(0, 0, r * 1.25, 0, 7); g.fill();
-  }
-  if (e < 0.55) {   // green sepals hold the bud, then fall away as it opens
-    const k = 1 - e / 0.55;
-    for (const s of [-1, 1]) { g.save(); g.rotate(Math.PI / 2 + s * 0.75); const sg = g.createLinearGradient(0, 0, r * 0.4, 0); sg.addColorStop(0, `rgba(47,125,82,${k})`); sg.addColorStop(1, `rgba(126,211,160,${k})`);
-      petalPath(g, r * 0.38, r * 0.1); g.fillStyle = sg; g.fill(); g.restore(); }
-  }
-  const layers = [{ n: 8, off: 0, len: 1, wid: 1, dl: 0 }, { n: 8, off: Math.PI / 8, len: 0.66, wid: 0.85, dl: 10 }];
-  for (const Ly of layers) {
-    for (let i = 0; i < Ly.n; i++) {
-      const open_ = Math.max(0, Math.min(1.08, e * 1.1 - (Ly.dl ? 0.08 : 0)));   // the inner petals open a little later
-      const base = Ly.off + i * Math.PI * 2 / Ly.n + seed;
-      const bud = -Math.PI / 2 + (i - (Ly.n - 1) / 2) * 0.13;                    // closed: petals bunched upward
-      let d = (base - bud) % (Math.PI * 2); if (d > Math.PI) d -= Math.PI * 2; if (d < -Math.PI) d += Math.PI * 2;   // unfold the short way round
-      const ang = bud + d * Math.min(1, open_);
-      const L = r * Ly.len * (0.42 + 0.58 * open_), w = r * Ly.wid * (0.13 + 0.13 * Math.min(1, open_));
-      g.save(); g.rotate(ang);
-      const gr = g.createLinearGradient(0, 0, L, 0);
-      gr.addColorStop(0, `hsla(${hue - 8},62%,${Ly.dl ? 40 : 34}%,1)`);
-      gr.addColorStop(0.45, `hsla(${hue},74%,${Ly.dl ? 66 : 58}%,1)`);
-      gr.addColorStop(1, `hsla(${hue + 14},92%,${Ly.dl ? 88 : 82}%,1)`);
-      petalPath(g, L, w); g.fillStyle = gr; g.fill();
-      g.strokeStyle = "rgba(255,255,255,.16)"; g.lineWidth = 1; g.stroke();
-      g.strokeStyle = `hsla(${hue},40%,92%,.28)`; g.lineWidth = Math.max(1, r * 0.012);   // the central vein
-      g.beginPath(); g.moveTo(L * 0.1, 0); g.quadraticCurveTo(L * 0.5, w * 0.12, L * 0.8, 0); g.stroke();
-      g.restore();
-    }
-  }
-  const cr = r * 0.19 * Math.min(1, Math.max(0, (e - 0.15) / 0.6));   // the centre: a warm disc ringed with stamens
-  const cg = g.createRadialGradient(-cr * 0.3, -cr * 0.3, cr * 0.1, 0, 0, cr);
-  cg.addColorStop(0, "#fff1c9"); cg.addColorStop(0.55, "#fbbf77"); cg.addColorStop(1, "#c46a2a");
-  if (cr > 0.5) { g.fillStyle = cg; g.beginPath(); g.arc(0, 0, cr, 0, 7); g.fill(); }
-  if (e > 0.25) {
-    g.fillStyle = `rgba(255,236,190,${Math.min(1, (e - 0.25) * 2)})`;
-    for (let i = 0; i < 12; i++) { const an = i * Math.PI / 6 + seed, rr = cr * 1.35; g.beginPath(); g.arc(Math.cos(an) * rr, Math.sin(an) * rr, Math.max(1.2, r * 0.022), 0, 7); g.fill(); }
-  }
-  g.restore();
-}
-// A garden flower: a stem grows, two leaves unfold, then the bloom pops open (with a little overshoot).
-function drawStemFlower(g, x, ground, h, r, hue, age, t, seed, missed) {
-  const grow = Math.min(1, age / 0.7), pop = Math.max(0, Math.min(1, (age - 0.45) / 0.8));
-  const back = pop < 1 ? 1 + 2.2 * Math.pow(pop - 1, 3) + 1.2 * Math.pow(pop - 1, 2) : 1;   // ease-out-back
-  const sway = Math.sin(t * 1.1 + seed) * 5, topX = x + sway * grow, topY = ground - h * grow;
-  g.save(); g.lineCap = "round";
-  g.strokeStyle = missed ? "rgba(140,160,150,.45)" : "#3f9d6b"; g.lineWidth = Math.max(2.5, r * 0.12);
-  g.beginPath(); g.moveTo(x, ground); g.quadraticCurveTo(x - 6, ground - h * 0.5 * grow, topX, topY); g.stroke();
-  if (grow > 0.5) {
-    const lk = Math.min(1, (grow - 0.5) * 2), ly = ground - h * 0.45 * grow;
-    for (const s of [-1, 1]) {
-      g.save(); g.translate(x - 3, ly + s * 4); g.rotate(s > 0 ? -0.5 : Math.PI + 0.5);
-      const lg = g.createLinearGradient(0, 0, r * 0.9, 0); lg.addColorStop(0, missed ? "rgba(120,140,130,.5)" : "#2f7d52"); lg.addColorStop(1, missed ? "rgba(160,180,170,.5)" : "#7ed3a0");
-      petalPath(g, r * 0.9 * lk, r * 0.22 * lk); g.fillStyle = lg; g.fill(); g.restore();
-    }
-  }
-  g.restore();
-  if (missed) drawFlower(g, topX, topY, r * 0.55, 0.05, 220, 0.45, t, seed);
-  else if (grow > 0.4) drawFlower(g, topX, topY, r, pop * back, hue, 1, t, seed);
+// A flower that opens: a closed bud at open = 0, fully unfurled at open = 1.
+// Two layers of shaded petals, a stamen centre, and a slow sway. Shared by the activity and its demo.
+function petalPath(g, L, w) {
+  g.beginPath(); g.moveTo(0, 0);
+  g.bezierCurveTo(L * 0.22, -w * 1.05, L * 0.78, -w * 0.95, L, 0);
+  g.bezierCurveTo(L * 0.78, w * 0.95, L * 0.22, w * 1.05, 0, 0);
+}
+function drawFlower(g, x, y, r, open, hue, a = 1, t = 0, seed = 0) {
+  const e = Math.max(0, Math.min(1.08, open)), sway = Math.sin(t * 0.9 + seed) * 0.07;
+  g.save(); g.translate(x, y); g.rotate(sway); g.globalAlpha = a;
+  if (e > 0.6) {   // a soft halo once the flower is open
+    const h = g.createRadialGradient(0, 0, r * 0.1, 0, 0, r * 1.25);
+    h.addColorStop(0, `hsla(${hue + 20},90%,75%,${0.28 * (e - 0.6) / 0.48})`); h.addColorStop(1, `hsla(${hue},90%,70%,0)`);
+    g.fillStyle = h; g.beginPath(); g.arc(0, 0, r * 1.25, 0, 7); g.fill();
+  }
+  if (e < 0.55) {   // green sepals hold the bud, then fall away as it opens
+    const k = 1 - e / 0.55;
+    for (const s of [-1, 1]) { g.save(); g.rotate(Math.PI / 2 + s * 0.75); const sg = g.createLinearGradient(0, 0, r * 0.4, 0); sg.addColorStop(0, `rgba(47,125,82,${k})`); sg.addColorStop(1, `rgba(126,211,160,${k})`);
+      petalPath(g, r * 0.38, r * 0.1); g.fillStyle = sg; g.fill(); g.restore(); }
+  }
+  const layers = [{ n: 8, off: 0, len: 1, wid: 1, dl: 0 }, { n: 8, off: Math.PI / 8, len: 0.66, wid: 0.85, dl: 10 }];
+  for (const Ly of layers) {
+    for (let i = 0; i < Ly.n; i++) {
+      const open_ = Math.max(0, Math.min(1.08, e * 1.1 - (Ly.dl ? 0.08 : 0)));   // the inner petals open a little later
+      const base = Ly.off + i * Math.PI * 2 / Ly.n + seed;
+      const bud = -Math.PI / 2 + (i - (Ly.n - 1) / 2) * 0.13;                    // closed: petals bunched upward
+      let d = (base - bud) % (Math.PI * 2); if (d > Math.PI) d -= Math.PI * 2; if (d < -Math.PI) d += Math.PI * 2;   // unfold the short way round
+      const ang = bud + d * Math.min(1, open_);
+      const L = r * Ly.len * (0.42 + 0.58 * open_), w = r * Ly.wid * (0.13 + 0.13 * Math.min(1, open_));
+      g.save(); g.rotate(ang);
+      const gr = g.createLinearGradient(0, 0, L, 0);
+      gr.addColorStop(0, `hsla(${hue - 8},62%,${Ly.dl ? 40 : 34}%,1)`);
+      gr.addColorStop(0.45, `hsla(${hue},74%,${Ly.dl ? 66 : 58}%,1)`);
+      gr.addColorStop(1, `hsla(${hue + 14},92%,${Ly.dl ? 88 : 82}%,1)`);
+      petalPath(g, L, w); g.fillStyle = gr; g.fill();
+      g.strokeStyle = "rgba(255,255,255,.16)"; g.lineWidth = 1; g.stroke();
+      g.strokeStyle = `hsla(${hue},40%,92%,.28)`; g.lineWidth = Math.max(1, r * 0.012);   // the central vein
+      g.beginPath(); g.moveTo(L * 0.1, 0); g.quadraticCurveTo(L * 0.5, w * 0.12, L * 0.8, 0); g.stroke();
+      g.restore();
+    }
+  }
+  const cr = r * 0.19 * Math.min(1, Math.max(0, (e - 0.15) / 0.6));   // the centre: a warm disc ringed with stamens
+  const cg = g.createRadialGradient(-cr * 0.3, -cr * 0.3, cr * 0.1, 0, 0, cr);
+  cg.addColorStop(0, "#fff1c9"); cg.addColorStop(0.55, "#fbbf77"); cg.addColorStop(1, "#c46a2a");
+  if (cr > 0.5) { g.fillStyle = cg; g.beginPath(); g.arc(0, 0, cr, 0, 7); g.fill(); }
+  if (e > 0.25) {
+    g.fillStyle = `rgba(255,236,190,${Math.min(1, (e - 0.25) * 2)})`;
+    for (let i = 0; i < 12; i++) { const an = i * Math.PI / 6 + seed, rr = cr * 1.35; g.beginPath(); g.arc(Math.cos(an) * rr, Math.sin(an) * rr, Math.max(1.2, r * 0.022), 0, 7); g.fill(); }
+  }
+  g.restore();
+}
+// A garden flower: a stem grows, two leaves unfold, then the bloom pops open (with a little overshoot).
+function drawStemFlower(g, x, ground, h, r, hue, age, t, seed, missed) {
+  const grow = Math.min(1, age / 0.7), pop = Math.max(0, Math.min(1, (age - 0.45) / 0.8));
+  const back = pop < 1 ? 1 + 2.2 * Math.pow(pop - 1, 3) + 1.2 * Math.pow(pop - 1, 2) : 1;   // ease-out-back
+  const sway = Math.sin(t * 1.1 + seed) * 5, topX = x + sway * grow, topY = ground - h * grow;
+  g.save(); g.lineCap = "round";
+  g.strokeStyle = missed ? "rgba(140,160,150,.45)" : "#3f9d6b"; g.lineWidth = Math.max(2.5, r * 0.12);
+  g.beginPath(); g.moveTo(x, ground); g.quadraticCurveTo(x - 6, ground - h * 0.5 * grow, topX, topY); g.stroke();
+  if (grow > 0.5) {
+    const lk = Math.min(1, (grow - 0.5) * 2), ly = ground - h * 0.45 * grow;
+    for (const s of [-1, 1]) {
+      g.save(); g.translate(x - 3, ly + s * 4); g.rotate(s > 0 ? -0.5 : Math.PI + 0.5);
+      const lg = g.createLinearGradient(0, 0, r * 0.9, 0); lg.addColorStop(0, missed ? "rgba(120,140,130,.5)" : "#2f7d52"); lg.addColorStop(1, missed ? "rgba(160,180,170,.5)" : "#7ed3a0");
+      petalPath(g, r * 0.9 * lk, r * 0.22 * lk); g.fillStyle = lg; g.fill(); g.restore();
+    }
+  }
+  g.restore();
+  if (missed) drawFlower(g, topX, topY, r * 0.55, 0.05, 220, 0.45, t, seed);
+  else if (grow > 0.4) drawFlower(g, topX, topY, r, pop * back, hue, 1, t, seed);
 }
 
 // ---------- 5. Finale: vanish ----------
@@ -1615,6 +1635,7 @@ function loop() {
   const now = performance.now();
   if (video.readyState >= 2 && video.currentTime !== lastVideoTime) {
     lastVideoTime = video.currentTime;
+    if (video.videoWidth && (video.videoWidth !== rect.vw || video.videoHeight !== rect.vh)) resize();
     const res = hands.detectForVideo(video, now);
     lm = res.landmarks && res.landmarks.length ? res.landmarks[0] : null;
     if (sim.on && current !== FIN) lm = simulatePD(lm, now);
